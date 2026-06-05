@@ -1,0 +1,398 @@
+openapi: 3.0.3
+info:
+  title: "Event Central"
+  description: "Centralized API to generate e-invoices (E-Rechnungen) for events, track payments, manage collections and generate reportings"
+  version: 1.0.0
+  contact:
+    name: "Richard Chojetzki"
+    email: "chojetzki@tema.de"
+  license:
+    name: "Proprietary"
+
+servers:
+  - url: "http://localhost:7435"
+    description: "Local Development Server"
+  - url: "https://eu-01.event-central.tema-dev.de"
+    description: "Primary EU Node (FRA)"
+  - url: "https://eu-02.event-central.tema-dev.de"
+    description: "Secondary EU Node (TBD)"
+
+tags:
+  - name: "Auth"
+    description: "Authentication"
+
+paths:
+  /auth/token:
+    post:
+      tags: ["Auth"]
+      operationId: "authToken"
+      summary: "OAuth 2.0 Token"
+      description: >
+        Exchange credentials or token for an access token pair; supports the
+        following grants: password, refresh_token and
+        http://auth0.com/oauth/grant-type/passwordless/otp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthTokenRequest"
+      responses:
+        "200":
+          description: "Authentication successful"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthTokenResponse"
+        default:
+          $ref: "#/components/responses/AuthError"
+
+  /auth/revoke:
+    post:
+      tags: ["Auth"]
+      operationId: "authRevoke"
+      summary: "OAuth 2.0 Revoke Token"
+      description: "Revoke a refresh token, e.g. logout"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRevokeRequest"
+      responses:
+        "200":
+          description: "Logout successful"
+        default:
+          $ref: "#/components/responses/AuthError"
+
+  /auth/userinfo:
+    get:
+      tags: ["Auth"]
+      operationId: "authUserinfo"
+      summary: "OAuth 2.0 Userinfo"
+      description: "Get basic data about the authenticated user"
+      responses:
+        "200":
+          description: "Userinfo fetched"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUserinfoResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: []
+
+  /auth/passwordless/start:
+    post:
+      tags: ["Auth"]
+      operationId: "authPasswordlessStart"
+      summary: "Start passwordless login"
+      description: "Send an email or sms to start the passwordless login flow"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthPasswordlessStartRequest"
+      responses:
+        "200":
+          description: "Data received, opaque response to not leak user inventory"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthPasswordlessStartResponse"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /auth/password-reset/start:
+    post:
+      tags: ["Auth"]
+      operationId: "authPasswordResetStart"
+      summary: "Start password reset process"
+      description: "Send an email or sms to start the password reset flow"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthPasswordResetStartRequest"
+      responses:
+        "200":
+          description: "Data received, opaque response to not leak user inventory"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthPasswordResetStartResponse"
+        default:
+          $ref: "#/components/responses/Error"
+
+  /auth/password-reset/confirm:
+    post:
+      tags: ["Auth"]
+      operationId: "authPasswordResetConfirm"
+      summary: "Finalize password reset"
+      description: "Set the new password, invalidate all current access and refresh tokens"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthPasswordResetConfirmRequest"
+      responses:
+        "200":
+          description: "Password reset successful, new password set"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthPasswordResetConfirmResponse"
+        default:
+          $ref: "#/components/responses/Error"
+
+components:
+  securitySchemes:
+    oAuth:
+      type: oauth2
+      description: >
+        The project's main auth server:
+        Auth can be granted using oAuth tokens (as seen below) or using long lived api-keys.
+        Those are can be used like the access_token issued during the password or passwordless flows.
+      flows:
+        password:
+          tokenUrl: "http://localhost:7435/auth/token"
+          refreshUrl: "http://localhost:7435/auth/token"
+          scopes:
+            users:read:all: "Allow access to all users"
+            users:write:all: "Allow modification of all users"
+            invoices:read:all: "Allow access to all invoices"
+            invoices:read:own: "Allow access to invoices created by the user/app"
+            invoices:read:{eventId}: "Allow access to invoices associated with an event"
+            invoices:write:all: "Allow modification of all invoices"
+            invoices:write:own: "Allow modification of invoices created by the user/app"
+            invoices:write:{eventId}: "Allow modification of invoices associated with an event"
+            orders:read:all: "Allow access to all orders"
+            orders:read:own: "Allow access to orders created by the user/app"
+            orders:read:{eventId}: "Allow access to orders associated with an event"
+            orders:write:all: "Allow modification of all orders"
+            orders:write:own: "Allow modification of orders created by the user/app"
+            orders:write:{eventId}: "Allow modification of orders associated with an event"
+            events:read:all: "Allow access to all events"
+            events:read:own: "Allow access to events created by the user/app"
+            events:read:{eventId}: "Allow access to a specific event"
+            events:write:all: "Allow modification of all events"
+            events:write:own: "Allow modification of events created by the user/app"
+            events:write:{eventId}: "Allow modification of a specific event"
+            payments:read:all: "Allow access to all payments"
+            payments:read:own: "Allow access to payments created by the user/app"
+            payments:read:{eventId}: "Allow access to payments associated with an event"
+            payments:write:all: "Allow modification of all payments"
+            payments:write:own: "Allow modification of payments created by the user/app"
+            payments:write:{eventId}: "Allow modification of payments associated with an event"
+            emails:read:all: "Allow access to all emails"
+            backend:read: "Read misc data necessary to access the backend"
+
+  responses:
+    Error:
+      description: "Error response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    AuthError:
+      description: "Auth Error response"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/AuthError"
+
+  schemas:
+    # Shared building blocks
+    Locale:
+      type: string
+      enum: [de, en]
+
+    Error:
+      type: object
+      description: "Standard error payload (placeholder)"
+      required: [error]
+      properties:
+        code:
+          type: number
+          description: "Machine-readable error code, e.g. 'invalid_request'"
+        error:
+          type: string
+          description: "Machine-readable error code, e.g. 'invalid_request'"
+        message:
+          type: string
+          description: "Human-readable description"
+        correlationId:
+          type: string
+          description: "ID of this error to correlate with log entries"
+        details:
+          type: object
+          additionalProperties: true
+          description: "Optional structured error context"
+
+    AuthError:
+      type: object
+      description: "Standard error payload (placeholder)"
+      required: [error]
+      properties:
+        error:
+          type: string
+          description: "Machine-readable error code, e.g. 'invalid_request'"
+        error_description:
+          type: string
+          description: "Human-readable description"
+        correlationId:
+          type: string
+          description: "ID of this error to correlate with log entries"
+
+    # Auth
+    AuthTokenRequest:
+      type: object
+      description: "OAuth token request"
+      required: [grant_type]
+      properties:
+        grant_type:
+          type: string
+          enum:
+            - password
+            - refresh_token
+            - "http://auth0.com/oauth/grant-type/passwordless/otp"
+        username:
+          type: string
+        password:
+          type: string
+        otp:
+          type: string
+        refresh_token:
+          type: string
+        client_id:
+          type: string
+          description: "ID of the app or device to issue the token to, generated by the client"
+        scope:
+          type: string
+          description: "Space-delimited list of requested scopes"
+
+    AuthTokenResponse:
+      type: object
+      description: "OAuth token response"
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        scope:
+          type: string
+        expires_in:
+          type: integer
+        token_type:
+          type: string
+          example: "Bearer"
+
+    AuthRevokeRequest:
+      type: object
+      description: "Token revocation request"
+      required: [token]
+      properties:
+        token:
+          type: string
+          description: "The refresh token to revoke"
+
+    AuthUserinfoResponse:
+      type: object
+      description: "OIDC-style userinfo"
+      properties:
+        sub:
+          type: string
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+
+    AuthPasswordlessStartRequest:
+      type: object
+      description: "Start passwordless login"
+      properties:
+        client_id:
+          type: string
+          description: "ID of the app or device to issue the token to, generated by the client"
+        connection:
+          type: string
+          enum: [email, sms]
+        email:
+          type: string
+          format: email
+        phoneNumber:
+          type: string
+        send:
+          type: string
+          enum: [link, code]
+        authParams:
+          type: object
+          description: "Additional auth parameters"
+          required: [scope, locale]
+          properties:
+            scope:
+              type: string
+              description: "Space-delimited list of requested scopes"
+            redirectUri:
+              type: string
+              description: "Page to redirect to, when using the send: link"
+            locale:
+              $ref: "#/components/schemas/Locale"
+
+    AuthPasswordlessStartResponse:
+      type: object
+      description: "Opaque acknowledgement"
+      properties:
+        ok:
+          type: boolean
+
+    AuthPasswordResetStartRequest:
+      type: object
+      description: "Start password reset"
+      required: [email, redirectUri, locale]
+      properties:
+        email:
+          type: string
+          format: email
+        redirectUri:
+          type: string
+          description: "Page to redirect to, for setting the password"
+        locale:
+          $ref: "#/components/schemas/Locale"
+
+    AuthPasswordResetStartResponse:
+      type: object
+      description: "Opaque acknowledgement"
+      properties:
+        ok:
+          type: boolean
+
+    AuthPasswordResetConfirmRequest:
+      type: object
+      description: "Confirm password reset"
+      required: [email, code, password]
+      properties:
+        email:
+          type: string
+          format: email
+        code:
+          type: string
+          format: email
+          description: >
+            The code provided sent to the user by /start endpoint.
+            Currently sent as url parameter 'code'
+        password:
+          type: string
+          format: password
+
+    AuthPasswordResetConfirmResponse:
+      type: object
+      description: "Password reset result"
+      properties:
+        ok:
+          type: boolean
