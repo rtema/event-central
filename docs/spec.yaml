@@ -149,6 +149,333 @@ paths:
         default:
           $ref: "#/components/responses/Error"
 
+  /api/v1/users:
+    get:
+      tags: ["Users"]
+      operationId: "listUsers"
+      summary: "List users"
+      description: "Get a list of all users, response is not paged"
+      responses:
+        "200":
+          description: "List of all users, ordered by date created desc"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsersListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["users:read:all"]
+    post:
+      tags: ["Users"]
+      operationId: "createUser"
+      summary: "Create user"
+      description: "Create a new user"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UsersCreateRequest"
+      responses:
+        "201":
+          description: "User successfully created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["users:write:all"]
+
+  /api/v1/users/{userId}:
+    parameters:
+      - $ref: "#/components/parameters/UserId"
+    get:
+      tags: ["Users"]
+      operationId: "getUser"
+      summary: "Get a user"
+      description: "Get all details of a user"
+      responses:
+        "200":
+          description: "Basic user data"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["users:read:all"]
+    post:
+      tags: ["Users"]
+      operationId: "updateUser"
+      summary: "Update user"
+      description: "Set basic data for a user"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdateRequest"
+      responses:
+        "200":
+          description: "User has been successfully updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["users:write:all"]
+    delete:
+      tags: ["Users"]
+      operationId: "deleteUser"
+      summary: "Delete user"
+      description: "Soft-delete a user (sets the user to deleted)"
+      responses:
+        "200":
+          description: "User has been successfully deleted"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["users:write:all"]
+
+  /api/v1/users/{userId}/history:
+    parameters:
+      - $ref: "#/components/parameters/UserId"
+    get:
+      tags: ["Users"]
+      operationId: "getUserHistory"
+      summary: "History of a user"
+      description: "Get a list of all updates that have been done to a user"
+      responses:
+        "200":
+          description: "User change history"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserHistoryResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["users:read:all"]
+
+  /api/v1/users/{userId}/restore:
+    parameters:
+      - $ref: "#/components/parameters/UserId"
+    post:
+      tags: ["Users"]
+      operationId: "restoreUser"
+      summary: "Restore a user"
+      description: "Restore a soft-deleted user account"
+      responses:
+        "200":
+          description: "Restored user"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["users:write:all"]
+
+  /api/v1/users/{userId}/auth:
+    parameters:
+      - $ref: "#/components/parameters/UserId"
+    get:
+      tags: ["Users"]
+      operationId: "listUserAuth"
+      summary: "Authentication configuration for a user"
+      description: "Get a list of all auth methods configured for a user"
+      responses:
+        "200":
+          description: "List of configured auth methods"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserAuthListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["users:read:all"]
+    post:
+      tags: ["Users"]
+      operationId: "createUserAuth"
+      summary: "Set up an auth method for a user"
+      description: "Create a new auth method for a user. Supported methods are api-token, password, passwordless or otp"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserAuthCreateRequest"
+      responses:
+        "200":
+          description: "Auth method has been successfully set up"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserAuthResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["users:write:all"]
+
+  /api/v1/users/{userId}/auth/{userAuthId}:
+    parameters:
+      - $ref: "#/components/parameters/UserId"
+      - $ref: "#/components/parameters/UserAuthId"
+    get:
+      tags: ["Users"]
+      operationId: "getUserAuth"
+      summary: "Get authentication method"
+      description: "Get the configuration for an auth method"
+      responses:
+        "200":
+          description: "Configuration data for an auth method"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserAuthResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["users:read:all"]
+    delete:
+      tags: ["Users"]
+      operationId: "deleteUserAuth"
+      summary: "Disable an authentication method"
+      description: >
+        Authentication methods can never be updated. Therefore deleting and
+        creating a new one is the only way to alter a user's auth, so history
+        is preserved by default.
+      responses:
+        "200":
+          description: "Auth method has been successfully disabled"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserAuthResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["users:write:all"]
+
+  /api/v1/users/{userId}/scopes:
+    parameters:
+      - $ref: "#/components/parameters/UserId"
+    get:
+      tags: ["Users"]
+      operationId: "listUserScopes"
+      summary: "Scopes the user has access to"
+      description: "List all scopes the user has access to with metadata: e.g. start and end times"
+      responses:
+        "200":
+          description: "List of scopes the user has access to"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserScopesListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["users:read:all"]
+    post:
+      tags: ["Users"]
+      operationId: "setUserScopes"
+      summary: "Set access scopes"
+      description: >
+        Update the scopes a user has access to. 
+        Returns the full list of scopes (including the history) as the GET endpoint does. 
+        Simply replace the full value when displaying this in the frontend.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserScopesUpdateRequest"
+      responses:
+        "200":
+          description: "Scopes have been successfully updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserScopesListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["users:write:all"]
+
+  /api/v1/users/{userId}/data:
+    parameters:
+      - $ref: "#/components/parameters/UserId"
+    get:
+      tags: ["Users"]
+      operationId: "getUserData"
+      summary: "Arbitrary user data"
+      description: "Schemaless user data to be used by apps. Should not be used for anything related to security."
+      responses:
+        "200":
+          description: "Current data"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDataResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["users:read:all"]
+    post:
+      tags: ["Users"]
+      operationId: "setUserData"
+      summary: "Set new data"
+      description: "Override the arbitrary user data. There is no diff performed by the api server."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserDataUpdateRequest"
+      responses:
+        "200":
+          description: "User data has been successfully updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDataResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["users:write:all"]
+
+  /api/v1/users/{userId}/data/history:
+    parameters:
+      - $ref: "#/components/parameters/UserId"
+    get:
+      tags: ["Users"]
+      operationId: "getUserDataHistory"
+      summary: "History of arbitrary user data"
+      description: "A list of all updates performed on the arbitrary user data."
+      responses:
+        "200":
+          description: "History of user data"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDataHistoryResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["users:read:all"]
+
 components:
   securitySchemes:
     oAuth:
@@ -191,6 +518,24 @@ components:
             emails:read:all: "Allow access to all emails"
             backend:read: "Read misc data necessary to access the backend"
 
+  parameters:
+    UserId:
+      name: userId
+      in: path
+      required: true
+      description: "ID of the user"
+      schema:
+        type: string
+        format: uuid
+    UserAuthId:
+      name: userAuthId
+      in: path
+      required: true
+      description: "ID of the auth configuration"
+      schema:
+        type: string
+        format: uuid
+
   responses:
     Error:
       description: "Error response"
@@ -213,7 +558,7 @@ components:
 
     Error:
       type: object
-      description: "Standard error payload (placeholder)"
+      description: "Standard error payload"
       required: [error]
       properties:
         code:
@@ -235,7 +580,7 @@ components:
 
     AuthError:
       type: object
-      description: "Standard error payload (placeholder)"
+      description: "Auth error payload"
       required: [error]
       properties:
         error:
@@ -396,3 +741,298 @@ components:
       properties:
         ok:
           type: boolean
+
+    # Users
+    User:
+      type: object
+      description: "A user"
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        title:
+          type: string
+        salutation:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    UserResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/User"
+
+    UsersListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        # pagination is omitted to simplify UI loading patterns
+        # may be added later
+        # pagination:
+        #   $ref: "#/components/schemas/Pagination"
+
+    UsersCreateRequest:
+      type: object
+      description: "Create user payload"
+      required: [email, firstName, lastName]
+      properties:
+        email:
+          type: string
+          format: email
+        title:
+          type: string
+        salutation:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+
+    UserUpdateRequest:
+      type: object
+      description: "Update user payload"
+      properties:
+        email:
+          type: string
+          format: email
+        title:
+          type: string
+        salutation:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+
+    UserHistoryItem:
+      type: object
+      description: "An item in the users history"
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        changedBy:
+          type: string
+          description: "User ID or APP: user:userId or app:appKey"
+        newState:
+          type: object
+          description: "The new state of the user record"
+          properties:
+            email:
+              type: string
+              format: email
+            title:
+              type: string
+            salutation:
+              type: string
+            firstName:
+              type: string
+            lastName:
+              type: string
+
+    UserHistoryResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserHistoryItem"
+
+    UserAuth:
+      type: object
+      description: "Auth configuration item"
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        method:
+          type: string
+          enum: [api-token, password, backup-code, passwordless, otp]
+        secret:
+          type: string
+          description: >
+            API-Key, Password, OTP-Secret or Backup-Code. Value may be hashed, omitted or opaque for security reasons.
+            api-token: returned on creation can only be seen once
+            password: is never returned
+            backup-code: returned on creation can only be seen once
+            passwordless: email or phone number bound to this login method, is returned plain
+            otp: returned on creation can only be seen once
+          nullable: true
+        createdBy:
+          type: string
+          description: "User ID or APP: user:userId or app:appKey"
+        createdReason:
+          type: string
+          enum: [user-request, password-reset, admin-request]
+          description: "State why the auth method was set up"
+        deletedBy:
+          type: string
+          description: "User ID or APP: user:userId or app:appKey"
+        deletedReason:
+          type: string
+          enum: [user-request, password-reset, admin-request, code-used]
+          description: "State why the auth method was set to inactive"
+        createdAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    UserAuthResponse:
+      $ref: "#/components/schemas/UserAuth"
+
+    UserAuthListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserAuth"
+        # pagination is omitted at current scale
+        # may be added later
+        # pagination:
+        #   $ref: "#/components/schemas/Pagination"
+
+    UserAuthCreateRequest:
+      type: object
+      description: "Setup an auth method for a user"
+      required: [method]
+      properties:
+        method:
+          type: string
+          enum: [api-token, password, backup-code, passwordless, otp]
+        secret:
+          type: string
+          description: "Password, if method is password, else omit"
+          nullable: true
+
+    UserScope:
+      type: object
+      description: "An item that describes a scope the user has or had access to"
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        scope:
+          type: string
+          description: The scope the user gets access by
+        createdBy:
+          type: string
+          description: "User ID or APP: user:userId or app:appKey"
+        deletedBy:
+          type: string
+          description: "User ID or APP: user:userId or app:appKey"
+        createdAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    UserScopesListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserScope"
+        # pagination is omitted at current scale
+        # may be added later
+        # pagination:
+        #   $ref: "#/components/schemas/Pagination"
+
+    UserScopesUpdateRequest:
+      type: object
+      description: "Replace the set of scopes the user has access to"
+      properties:
+        scopes:
+          type: array
+          description: >
+            The list of scopes that should represent the new access level of the user.
+            The server will than determine what access is removed and what is newly granted
+          items:
+            type: string
+            description: The scope the user should have access to
+
+    UserDataResponse:
+      type: object
+      description: "The current arbitrary, schemaless user data"
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        changedBy:
+          type: string
+          description: "User ID or APP: user:userId or app:appKey"
+        data:
+          type: object
+          description: "Arbitrary, schemaless user data"
+          additionalProperties: true
+
+    UserDataUpdateRequest:
+      type: object
+      description: "Replacement arbitrary data"
+      additionalProperties: true
+
+    UserDataHistoryResponse:
+      type: array
+      description: The complete history of all changes made to the arbitrary user data
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              userId:
+                type: string
+                format: uuid
+              createdAt:
+                type: string
+                format: date-time
+              changedBy:
+                type: string
+                description: "User ID or APP: user:userId or app:appKey"
+              newState:
+                type: object
+                description: "The new state of the arbitrary user data"
+                additionalProperties: true
