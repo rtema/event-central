@@ -1,0 +1,34 @@
+{
+  "yaml.schemas": {
+    "https://www.schemastore.org/openapi-3.X.json": "file:///home/chojetzki/dev/apps/event-central/docs/spec.yaml"
+  },
+  "cSpell.words": [
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    "befreit",
+    "Burtscheider",
+    "Chefansicht",
+    "Chojetzki",
+    "gemäß",
+    "Handelsregister",
+    "IBAN",
+    "Mehrwertsteuer",
+    "Mehrwertsteuerfrei",
+    "officedocument",
+    "openxmlformats",
+    "passwordless",
+    "Rechnung",
+    "Rechnungen",
+    "Rechnungskreis",
+    "spreadsheetml",
+    "Steuernummer",
+    "Storno",
+    "Technologie",
+    "Teilnahmegebühr",
+    "TEMA",
+    "TEMA Technologie Marketing AG",
+    "Umsatzsteuer",
+    "VATEX-EU-132",
+    "WeasyPrint",
+    "xrechnung"
+  ]
+}

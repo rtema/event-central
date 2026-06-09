@@ -1,0 +1,85 @@
+{
+  "externalOrderId": "1",
+  "locale": "de",
+  "currency": "EUR",
+  "dueDate": "2026-09-30T17:00:00+02:00",
+  "event": {
+    "id": "eac2026",
+    "label": "European Ammonia Conference",
+    "startDt": "2026-10-06T:09:00+02:00",
+    "endDt": "2026-10-06T:18:00+02:00"
+  },
+  "links": {
+    "paymentLink": "https://regme.tema.de/events/eac2026/orders/1/payment",
+    "orderLink": "https://regme.tema.de/events/eac2026/orders/1"
+  },
+  "supplier": {
+    "legalName": "TEMA Technologie Marketing AG",
+    "legalRegistration": "Handelsregister Aachen, HRB 8320",
+    "vatId": "DE212237158",
+    "iban": "DE...",
+    "line1": "TEMA Technologie Marketing AG",
+    "line2": "Burtscheider Markt 24",
+    "city": "Aachen",
+    "zipCode": "52066",
+    "country": "de",
+    "contactName": "Example Employee",
+    "contactPhone": "+49123456789",
+    "contactEmail": "mail@example.com"
+  },
+  "recipient": {
+    "line1": "Example Company",
+    "line2": "Example Street 100",
+    "line3": "z. Hd. v. Example Employee",
+    "city": "Aachen",
+    "zipCode": "52066",
+    "country": "de",
+    "contactName": "Example Employee",
+    "contactPhone": "+49123456789",
+    "contactEmail": "mail@example.com",
+    "contactCcEmail": [
+      "employee@example.com"
+    ],
+    "purchaseOrderReference": "PO-Number",
+    "vatId": "DE..."
+  },
+  "accountingEntity": {
+    "prefix": "EAC26",
+    "firstInvoiceNumber": 100,
+    "padNumber": 5
+  },
+  "taxRates": [
+    {
+      "externalId": "vat",
+      "rate": 19,
+      "label": "Mehrwertsteuer",
+      "type": "standard"
+    },
+    {
+      "externalId": "vat0",
+      "rate": 0,
+      "label": "Mehrwertsteuerfrei",
+      "type": "exempt-verein",
+      "taxExemptionReason": "Die Teilnahmegebühr ist gemäß § 4 (22a) UStG von der Umsatzsteuer befreit."
+    }
+  ],
+  "lineItems": [
+    {
+      "quantity": 1,
+      "pricePerUnit": 125.99,
+      "externalTaxId": "vat",
+      "name": "Hotel Room"
+    },
+    {
+      "quantity": 1,
+      "pricePerUnit": 999.99,
+      "externalTaxId": "vat0",
+      "name": "Event Ticket"
+    }
+  ],
+  "invoiceTemplate": {
+    "template": "invoice-v01-de",
+    "fonts": [],
+    "images": []
+  }
+}

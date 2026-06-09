@@ -20,6 +20,18 @@ servers:
 tags:
   - name: "Auth"
     description: "Authentication"
+  - name: "Invoicing"
+    description: "Create/update/retrieve invoices and download documents"
+  - name: "Events"
+    description: "Get invoices, orders and statistics based on the event"
+  - name: "Orders"
+    description: "Get all invoices/payments associated with an order"
+  - name: "Document Templates"
+    description: "Templates to generate documents"
+  - name: "Files"
+    description: "Download files, secured with signed token as URL parameters"
+  - name: "Misc"
+    description: "General data that needs to be exposed"
 
 paths:
   /auth/token:
@@ -476,6 +488,622 @@ paths:
       security:
         - oAuth: ["users:read:all"]
 
+  /api/v1/invoices:
+    get:
+      tags: ["Invoicing"]
+      operationId: "listInvoices"
+      summary: "Get all invoices"
+      description: "Get a list of all invoices, returns at most 100 invoices"
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: "List of invoices"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoicesListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["invoices:read:all"]
+    post:
+      tags: ["Invoicing"]
+      operationId: "createInvoice"
+      summary: "Create new invoice"
+      description: >
+        Generate an invoice based on the user data supplied and return generated
+        PDFs and XRechnung documents to send to the user. This endpoint is the
+        main endpoint and is designed to be easily integrated in other software.
+        It is meant to allow invoice generation with only one http request.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvoiceCreateRequest"
+      responses:
+        "201":
+          description: "Invoice successfully created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoiceCreateResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["invoices:write:all"]
+        - oAuth: ["invoices:write:own"]
+        - oAuth: ["invoices:write:{eventId}"]
+
+  /api/v1/invoices/{invoiceId}:
+    parameters:
+      - $ref: "#/components/parameters/InvoiceId"
+    get:
+      tags: ["Invoicing"]
+      operationId: "getInvoice"
+      summary: "Get an invoice"
+      description: "Get all details of an invoice"
+      responses:
+        "200":
+          description: "Basic data of an invoice"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoiceResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["invoices:read:all"]
+        - oAuth: ["invoices:read:own"]
+        - oAuth: ["invoices:read:{eventId}"]
+
+  /api/v1/invoices/{invoiceId}/line-items:
+    parameters:
+      - $ref: "#/components/parameters/InvoiceId"
+    get:
+      tags: ["Invoicing"]
+      operationId: "getInvoiceLineItems"
+      summary: "Get all line items of an invoice"
+      description: "Returns a list of all line items attached to the invoice"
+      responses:
+        "200":
+          description: "Basic data of an invoice"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoiceLineItemsListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["invoices:read:all"]
+        - oAuth: ["invoices:read:own"]
+        - oAuth: ["invoices:read:{eventId}"]
+
+  /api/v1/invoices/{invoiceId}/taxes:
+    parameters:
+      - $ref: "#/components/parameters/InvoiceId"
+    get:
+      tags: ["Invoicing"]
+      operationId: "getInvoiceTaxes"
+      summary: "List of all tax rates"
+      description: "Returns a list of all tax rates that have been referenced in the the invoice line items"
+      responses:
+        "200":
+          description: "Basic data of an invoice"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoiceTaxesListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["invoices:read:all"]
+        - oAuth: ["invoices:read:own"]
+        - oAuth: ["invoices:read:{eventId}"]
+
+  /api/v1/invoices/{invoiceId}/link:
+    parameters:
+      - $ref: "#/components/parameters/InvoiceId"
+    post:
+      tags: ["Invoicing"]
+      operationId: "createInvoiceLink"
+      summary: "Create signed download link"
+      description: "Return a signed link to download the invoice"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvoiceLinkRequest"
+      responses:
+        "200":
+          description: "Signed download link"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoiceLinkResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["invoices:read:all"]
+        - oAuth: ["invoices:read:own"]
+        - oAuth: ["invoices:read:{eventId}"]
+
+  /api/v1/invoices/export:
+    post:
+      tags: ["Invoicing"]
+      operationId: "exportInvoices"
+      summary: "Export invoices"
+      description: "Export invoices matching the supplied filter criteria"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvoiceExportRequest"
+      responses:
+        "200":
+          description: "Exported invoices"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoicesExportResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["invoices:read:all"]
+
+  /api/v1/files/invoices/{invoiceId}/{fileName}:
+    parameters:
+      - $ref: "#/components/parameters/InvoiceId"
+      - $ref: "#/components/parameters/FileName"
+    get:
+      tags: ["Files", "Invoicing"]
+      operationId: "downloadInvoiceDocument"
+      summary: "Download an invoice document"
+      description: >
+        Download an invoice document (PDF or XRechnung XML) using a signed link.
+        Authorization is carried by the signature in the query string, so no
+        bearer token is required.
+      parameters:
+        - $ref: "#/components/parameters/SignedToken"
+      responses:
+        "200":
+          description: "The invoice document"
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/xml:
+              schema:
+                type: string
+                format: binary
+        "401":
+          description: "The token has expired"
+          content:
+            text/html:
+              schema:
+                type: string
+                description: >
+                  The token has expired.
+                  A nice error page to let the user know, that they need to request a new link.
+        default:
+          $ref: "#/components/responses/Error"
+
+  /api/v1/events:
+    parameters:
+      - $ref: "#/components/parameters/EventId"
+    get:
+      tags: ["Events"]
+      operationId: "getEvents"
+      summary: "Get events"
+      description: "Get all events"
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: "List of events"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventsListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["events:read:all"]
+
+  /api/v1/events/{eventId}:
+    parameters:
+      - $ref: "#/components/parameters/EventId"
+    get:
+      tags: ["Events"]
+      operationId: "getEvent"
+      summary: "Get event"
+      description: "Get event"
+      responses:
+        "200":
+          description: "List of orders"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["events:read:all"]
+        - oAuth: ["events:read:{eventId}"]
+
+  /api/v1/events/{eventId}/orders:
+    parameters:
+      - $ref: "#/components/parameters/EventId"
+    get:
+      tags: ["Events"]
+      operationId: "getEventOrders"
+      summary: "Get event orders"
+      description: "Get all orders created for an event"
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: "List of orders"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrdersListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["orders:read:all"]
+        - oAuth: ["orders:read:{eventId}"]
+
+  /api/v1/orders:
+    get:
+      tags: ["Orders"]
+      operationId: "listOrders"
+      summary: "Get all orders"
+      description: "Get a list of all orders, returns at most 100 orders"
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: "List of orders"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrdersListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["orders:read:all"]
+
+  /api/v1/orders/{orderId}:
+    parameters:
+      - $ref: "#/components/parameters/OrderId"
+    get:
+      tags: ["Orders"]
+      operationId: "getOrder"
+      summary: "Get order"
+      description: "Get a single order"
+      responses:
+        "200":
+          description: "Single order"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["orders:read:all"]
+        - oAuth: ["orders:read:{eventId}"]
+    delete:
+      tags: ["Orders"]
+      operationId: "cancelOrder"
+      summary: "Cancel order"
+      description: >
+        Cancel an order: create all necessary invoices to set the balance of all
+        invoices for this order to 0.0. Return the created invoice, or the last
+        issued invoice if the balance was already at 0.0.
+      responses:
+        "200":
+          description: "Created (or last issued) invoice"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoiceCreateResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["orders:write:all"]
+        - oAuth: ["orders:write:{eventId}"]
+
+  /api/v1/orders/{orderId}/payments:
+    parameters:
+      - $ref: "#/components/parameters/OrderId"
+    get:
+      tags: ["Orders"]
+      operationId: "listOrderPayments"
+      summary: "Get all payments for an order"
+      description: "Get a list of all payments for an order"
+      responses:
+        "200":
+          description: "List of payments"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentsListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["payments:read:all"]
+        - oAuth: ["payments:read:{eventId}"]
+    post:
+      tags: ["Orders"]
+      operationId: "createOrderPayment"
+      summary: "Create a payment for an order"
+      description: "Record a payment for an order."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentCreateRequest"
+      responses:
+        "201":
+          description: "The created payment"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["payments:write:all"]
+        - oAuth: ["payments:write:{eventId}"]
+
+  /api/v1/orders/{orderId}/invoices:
+    parameters:
+      - $ref: "#/components/parameters/OrderId"
+    get:
+      tags: ["Orders"]
+      operationId: "listOrderInvoices"
+      summary: "Get all invoices for an order"
+      description: "Get a list of all invoices for an order"
+      responses:
+        "200":
+          description: "List of invoices"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoicesListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["invoices:read:all"]
+        - oAuth: ["invoices:read:{eventId}"]
+
+  /api/v1/payments:
+    get:
+      tags: ["Payments"]
+      operationId: "listPayments"
+      summary: "Get all payments"
+      description: "Get a list of all payments, returns at most 100 payments"
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: "List of payments"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaymentsListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["payments:read:all"]
+        - oAuth: ["payments:read:{eventId}"]
+
+  /api/v1/files/exports/{jobId}/{fileName}:
+    parameters:
+      - $ref: "#/components/parameters/JobId"
+      - $ref: "#/components/parameters/FileName"
+    get:
+      tags: ["Files", "Invoicing"]
+      operationId: "downloadExportFile"
+      summary: "Download an exported file"
+      description: >
+        Download an invoice document (PDF or XRechnung XML) using a signed link.
+        Authorization is carried by the signature in the query string, so no
+        bearer token is required.
+      parameters:
+        - $ref: "#/components/parameters/SignedToken"
+      responses:
+        "202":
+          description: "The export is currently being worked on exported file"
+          content:
+            text/html:
+              schema:
+                type: string
+                description: >
+                  The export is not yet ready.
+                  A nice loading screen is shown, that auto refreshes to download the file, once ready.
+        "200":
+          description: "The exported file"
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        default:
+          $ref: "#/components/responses/Error"
+
+  /api/v1/document-templates:
+    get:
+      tags: ["Document Templates"]
+      operationId: "listDocumentTemplates"
+      summary: "List all document templates"
+      description: "This UI endpoint exposes the list of all taxes ever referenced in any invoice line"
+      responses:
+        "200":
+          description: "List of document templates"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentTemplatesListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+
+  /api/v1/document-templates/{documentTemplateId}:
+    parameters:
+      - $ref: "#/components/parameters/DocumentTemplateId"
+    get:
+      tags: ["Document Templates"]
+      operationId: "getDocumentTemplate"
+      summary: "Get a document template"
+      description: "Get all details of an invoice"
+      responses:
+        "200":
+          description: "Basic data of an invoice"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentTemplateResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+
+  /api/v1/document-templates/public:
+    get:
+      tags: ["Document Templates"]
+      operationId: "listPublicDocumentTemplates"
+      summary: "List all document templates"
+      description: "This UI endpoint exposes the list of all taxes ever referenced in any invoice line"
+      responses:
+        "200":
+          description: "List of document templates"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicDocumentTemplatesListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+    post:
+      tags: ["Document Templates"]
+      operationId: "createPublicDocumentTemplate"
+      summary: "Update a public document template"
+      description: "Updates the public document template"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicDocumentTemplateCreateRequest"
+      responses:
+        "200":
+          description: "Exported invoices"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicDocumentTemplateResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:write"]
+
+  /api/v1/document-templates/public/{documentTemplateId}:
+    parameters:
+      - $ref: "#/components/parameters/PublicDocumentTemplateId"
+    get:
+      tags: ["Document Templates"]
+      operationId: "getPublicDocumentTemplate"
+      summary: "Get a public document template"
+      description: "Get all details of a public document template"
+      responses:
+        "200":
+          description: "Basic data of an invoice"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicDocumentTemplateResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+    post:
+      tags: ["Document Templates"]
+      operationId: "updatePublicDocumentTemplate"
+      summary: "Update a public document template"
+      description: "Updates the public document template"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PublicDocumentTemplateUpdateRequest"
+      responses:
+        "200":
+          description: "Exported invoices"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicDocumentTemplateResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:write"]
+
+  /api/v1/taxes:
+    get:
+      tags: ["Misc"]
+      operationId: "listTaxes"
+      summary: "List all taxes"
+      description: "This UI endpoint exposes the list of all taxes ever referenced in any invoice line"
+      responses:
+        "200":
+          description: "List of scopes"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaxesListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+
+  /api/v1/scopes:
+    get:
+      tags: ["Misc"]
+      operationId: "listScopes"
+      summary: "List all scopes"
+      description: "This UI endpoint exposes the list of all scopes available."
+      responses:
+        "200":
+          description: "List of scopes"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScopesListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+
 components:
   securitySchemes:
     oAuth:
@@ -517,6 +1145,7 @@ components:
             payments:write:{eventId}: "Allow modification of payments associated with an event"
             emails:read:all: "Allow access to all emails"
             backend:read: "Read misc data necessary to access the backend"
+            backend:write: "Write misc data necessary to access the backend"
 
   parameters:
     UserId:
@@ -535,6 +1164,87 @@ components:
       schema:
         type: string
         format: uuid
+    InvoiceId:
+      name: invoiceId
+      in: path
+      required: true
+      description: "ID of the the invoice (Opaque UUID)"
+      schema:
+        type: string
+        format: uuid
+    EventId:
+      name: eventId
+      in: path
+      required: true
+      description: "ID of the event. Allowed are lower case letters, numbers, '-' and '_'"
+      schema:
+        type: string
+    OrderId:
+      name: orderId
+      in: path
+      required: true
+      description: "ID of the the order (Opaque UUID)"
+      schema:
+        type: string
+        format: uuid
+    DocumentTemplateId:
+      name: documentTemplateId
+      in: path
+      required: true
+      description: "ID of the document template"
+      schema:
+        type: string
+        format: uuid
+    PublicDocumentTemplateId:
+      name: publicDocumentTemplateId
+      in: path
+      required: true
+      description: "ID of the public document template"
+      schema:
+        type: string
+    JobId:
+      name: jobId
+      in: path
+      required: true
+      description: >
+        ID of the the jon (Opaque UUID).
+        Used to identify asynchronous jobs that might me not ready yet.
+      schema:
+        type: string
+        format: uuid
+    FileName:
+      name: fileName
+      in: path
+      required: true
+      description: >
+        Human-friendly name of the file to download. 
+        Appended to the URL to set the name of the saved file, if "filename" in the Content-Disposition header is ignored.
+      schema:
+        type: string
+    SignedToken:
+      name: token
+      in: query
+      required: true
+      description: "Signed token that authorizes this download. Issued by a /link endpoint."
+      schema:
+        type: string
+    Limit:
+      name: limit
+      in: query
+      required: false
+      description: "Maximum number of items to return"
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 1000
+        default: 100
+    Offset:
+      name: offset
+      in: query
+      required: false
+      description: "Offset for the page to fetch"
+      schema:
+        type: string
 
   responses:
     Error:
@@ -552,10 +1262,6 @@ components:
 
   schemas:
     # Shared building blocks
-    Locale:
-      type: string
-      enum: [de, en]
-
     Error:
       type: object
       description: "Standard error payload"
@@ -572,6 +1278,7 @@ components:
           description: "Human-readable description"
         correlationId:
           type: string
+          format: uuid
           description: "ID of this error to correlate with log entries"
         details:
           type: object
@@ -591,7 +1298,48 @@ components:
           description: "Human-readable description"
         correlationId:
           type: string
+          format: uuid
           description: "ID of this error to correlate with log entries"
+
+    ActorIdentifier:
+      type: string
+      description: "User ID or APP: user:userId or app:appKey"
+
+    Locale:
+      type: string
+      enum: [de, en]
+      description: "The locale of this object. Used for document generation and communication."
+    
+    Currency:
+      type: string
+      enum: [EUR]
+      description: "The currency of this invoice. Only Euro (EUR) is supported."
+    
+    MultiLanguageLabel:
+      type: object
+      description: "Multi language label"
+      required: [error]
+      properties:
+        de:
+          type: string
+          description: "Label in German"
+        en:
+          type: string
+          description: "Label in English"
+
+    Pagination:
+      type: object
+      description: "Pagination metadata"
+      properties:
+        total:
+          type: integer
+          description: How many items are there in total
+        limit:
+          type: integer
+          description: How many items will be returned at max
+        currentOffset:
+          type: integer
+          description: What offset has currently been used
 
     # Auth
     AuthTokenRequest:
@@ -884,8 +1632,7 @@ components:
             otp: returned on creation can only be seen once
           nullable: true
         createdBy:
-          type: string
-          description: "User ID or APP: user:userId or app:appKey"
+          $ref: "#/components/schemas/ActorIdentifier"
         createdReason:
           type: string
           enum: [user-request, password-reset, admin-request]
@@ -947,11 +1694,9 @@ components:
           type: string
           description: The scope the user gets access by
         createdBy:
-          type: string
-          description: "User ID or APP: user:userId or app:appKey"
+          $ref: "#/components/schemas/ActorIdentifier"
         deletedBy:
-          type: string
-          description: "User ID or APP: user:userId or app:appKey"
+          $ref: "#/components/schemas/ActorIdentifier"
         createdAt:
           type: string
           format: date-time
@@ -1036,3 +1781,1002 @@ components:
                 type: object
                 description: "The new state of the arbitrary user data"
                 additionalProperties: true
+
+    # Invoices
+    InvoiceSupplier:
+      type: object
+      description: "Information about the supplier of the goods/services"
+      properties:
+        legalName:
+          type: string
+          example: "TEMA Technologie Marketing AG"
+          description: "The legal name of the supplier"
+        legalRegistration:
+          type: string
+          example: "Handelsregister Aachen, HRB 8320"
+          description: "(Commercial) Register Number"
+        vatId:
+          type: string
+          example: "DE212237158"
+          description: "The VAT ID (Steuernummer) of the Supplier"
+        iban:
+          type: string
+          description: "The IBAN to send the money to"
+        line1:
+          type: string
+          description: "First address line"
+        line2:
+          type: string
+          description: "Second address line"
+        line3:
+          type: string
+          description: "Third address line"
+        city:
+          type: string
+          example: "Aachen"
+          description: "City of the supplier"
+        zipCode:
+          type: string
+          example: "52066"
+          description: "Postal code of the supplier"
+        country:
+          type: string
+          example: "de"
+          description: "Country (ISO 2-letter code) of the recipient"
+        contactName:
+          type: string
+          description: "Name of the contact person"
+        contactPhone:
+          type: string
+          description: "Phone number of the contact person"
+        contactEmail:
+          type: string
+          format: email
+          description: "Email of the contact person"
+
+    InvoiceRecipient:
+      type: object
+      description: "Information about the supplier of the goods/services"
+      properties:
+        line1:
+          type: string
+          description: "First address line"
+        line2:
+          type: string
+          description: "Second address line"
+        line3:
+          type: string
+          description: "Third address line"
+        city:
+          type: string
+          description: "City of the recipient"
+        zipCode:
+          type: string
+          description: "Postal code of the recipient"
+        country:
+          type: string
+          description: "Country (ISO 2-letter code) of the recipient"
+        contactName:
+          type: string
+          description: "Name of the contact person"
+        contactPhone:
+          type: string
+          description: "Phone number of the contact person"
+        contactEmail:
+          type: string
+          format: email
+          description: "Email of the contact person"
+        contactCcEmail:
+          type: array
+          description: "Emails to send invoices/notifications to in cc"
+          items:
+            type: string
+            format: email
+            description: "Email of additional contact persons"
+        purchaseOrderReference:
+          type: string
+          description: "The reference the buyer wants indicated on the invoice"
+        vatId:
+          type: string
+          example: "DE212237158"
+          description: "The VAT ID (Steuernummer) of the recipient"
+
+    Invoice:
+      type: object
+      description: "An invoice"
+      properties:
+        id:
+          type: string
+          format: uuid
+        orderId:
+          type: string
+          format: uuid
+        documentTemplateId:
+          type: string
+          format: uuid
+        locale:
+          $ref: "#/components/schemas/Locale"
+        accountingEntity:
+          type: string
+          description: "The prefix (Rechnungskreis) the invoice is part of"
+          example: "TEMA26-"
+        accountingNumber:
+          type: integer
+          description: "The number of this series"
+          example: 100
+        invoiceNumber:
+          type: string
+          description: "The full invoice Number"
+          example: "TEMA26-000100"
+        invoiceType:
+          type: string
+          enum: [invoice, cancellation]
+          description: "Wether this is an invoice or a credit note"
+          example: "invoice"
+        invoiceTypeCode:
+          type: string
+          description: "380 = invoice (Rechnung), 381 = credit note (Storno)"
+          example: "380"
+        issueDate:
+          type: string
+          format: date-time
+          description: "The date the invoice was created"
+        dueDate:
+          type: string
+          format: date-time
+          description: "The date the invoice has to be paid."
+        currency:
+          $ref: "#/components/schemas/Currency"
+        supplier:
+          $ref: "#/components/schemas/InvoiceSupplier"
+        recipient:
+          $ref: "#/components/schemas/InvoiceRecipient"
+        totalNet:
+          type: number
+          description: Sum of line totals (net)
+        totalTax:
+          type: number
+          description: Sum of tax across all lines
+        totalGross:
+          type: number
+          description: Sum of tax + line totals (net) across all lines
+        createdBy:
+          $ref: "#/components/schemas/ActorIdentifier"
+        createdAt:
+          type: string
+          format: date-time
+
+    InvoiceLineItemTicketMetadata:
+      type: object
+      description: "Metadata of the ticket for statistics (Chefansicht)"
+      properties:
+        externalTicketId:
+          type: string
+          description: "ID of the ticket: e. g. Ticket #001 for First name Last name"
+        externalTicketOptionId:
+          type: string
+          description: "ID of the ticket option: e. g. Exhibitor Ticket (Wednesday)"
+        externalTicketOptionLabel:
+          type: string
+          description: "Label of the ticket option: e. g. Exhibitor Ticket (Wednesday)"
+        externalTicketPriceId:
+          type: string
+          description: "ID of the ticket price"
+        externalTicketPriceLineId:
+          type: string
+          description: "ID of the ticket price: e. g. pro rata for the hotel"
+        externalTicketPriceLineLabel:
+          type: string
+          description: "Label of the ticket price line: e. g. Hotel"
+        externalSalesStageId:
+          type: string
+          description: "ID of the sales stage option: e. g. Early Bird"
+        externalSalesStageLabel:
+          type: string
+          description: "Label of the sales stage option: e. g. Early Bird"
+
+    InvoiceLineItem:
+      type: object
+      description: "A single invoice line"
+      properties:
+        id:
+          type: string
+          format: uuid
+        invoiceId:
+          type: string
+          format: uuid
+        taxId:
+          type: string
+          format: uuid
+        position:
+          type: integer
+          description: "Position of this invoice line in the invoice, asc."
+        quantity:
+          type: number
+          description: "How many units should be billed for"
+        pricePerUnit:
+          type: number
+          description: "Price of this item (Including Tax)"
+        name:
+          type: string
+          description: "Label to print on the invoice"
+        ticket:
+          $ref: "#/components/schemas/InvoiceLineItemTicketMetadata"
+        taxCategory:
+          type: string
+          description: "Tax category: E (exempt), S (standard)"
+        taxRate:
+          type: number
+          description: "Tax rate to apply to this item as percentage: e. g. 19, at max two decimals."
+        taxScheme:
+          type: string
+          description: "Tax scheme: e. g. VAT"
+        taxExemptionReason:
+          type: string
+          description: The reason for the tax exemption as human readable text
+        taxExemptionReasonCode:
+          type: string
+          description: "Tax exemption reason code: e. g. VATEX-EU-132"
+        totalNet:
+          type: number
+          description: Sum of line totals (net)
+        totalTax:
+          type: number
+          description: Sum of tax across all lines
+        totalGross:
+          type: number
+          description: Sum of tax + line totals (net) across all lines
+
+    InvoicesListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Invoice"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    InvoiceCreateRequest:
+      type: object
+      description: "Single-request invoice generation payload"
+      required: [eventId, recipient, lineItems]
+      properties:
+        externalOrderId:
+          type: string
+          description: "ID of the order. Must be unique on a per event basis."
+        locale:
+          $ref: "#/components/schemas/Locale"
+        currency:
+          $ref: "#/components/schemas/Currency"
+        dueDate:
+          type: string
+          format: date-time
+          description: "The date the invoice has to be paid."
+        accountingEntity:
+          type: object
+          description: "All information about the accounting entity (how to generate the invoice number)"
+          required: [prefix, firstInvoiceNumber]
+          properties:
+            prefix:
+              type: string
+              description: "The prefix (Rechnungskreis) to use"
+              example: "TEMA26-"
+            firstInvoiceNumber:
+              type: integer
+              description: >
+                The first invoice number to use in this accounting entity
+                This is discarded, if an invoice with a lower number already exists
+            padNumber:
+              type: integer
+              description: "How many digits the 'number part' of the invoice number should have"
+        event:
+          type: object
+          description: "The event this invoice should be attached to"
+          properties:
+            id:
+              type: string
+              description: "ID of the event. Allowed are lower case letters, numbers, '-' and '_'"
+            label:
+              type: string
+              description: "Name of the event."
+            startDt:
+              type: string
+              format: date-time
+              description: "Start of the event"
+            endDt:
+              type: string
+              format: date-time
+              description: "End of the event"
+        links:
+          type: object
+          description: "All links to view/edit the order"
+          properties:
+            paymentLink:
+              type: string
+              description: "Link to pay for the order"
+            orderLink:
+              type: string
+              description: "Link to view the order online"
+        supplier:
+          $ref: "#/components/schemas/InvoiceSupplier"
+        recipient:
+          $ref: "#/components/schemas/InvoiceRecipient"
+
+        taxRates:
+          type: array
+          description: All tax rates used in the line items
+          items:
+            type: object
+            description: Tax rate referenced in the line items
+            required: [externalId, rate, label]
+            properties:
+              externalId:
+                type: string
+                description: ID of this tax rate. must be unique in this order
+              rate:
+                type: number
+                minimum: 0
+                maximum: 100
+                description: "Tax rate to apply to this item as percentage: e. g. 19, at max two decimals."
+              label:
+                type: string
+                description: label to print on the invoice
+              type:
+                type: string
+                enum: [standard, exempt-verein]
+                description: >
+                  The type of tax to apply:
+                  standard VAT: 19 % or 7% (for Germany)
+                  exempt-verein: 0% (indicate the reason)
+                  If nothing is set, "standard" is assumed
+              taxExemptionReason:
+                type: string
+                description: The reason for the tax exemption as human readable text
+        lineItems:
+          type: array
+          description: All items to bill for. Order is respected
+          items:
+            type: object
+            description: "A line item on the invoice"
+            required: [quantity, pricePerUnit, externalTaxId, name]
+            properties:
+              quantity:
+                type: number
+                description: "How many units should be billed for"
+              pricePerUnit:
+                type: number
+                description: "Price of this item (Including Tax)"
+              externalTaxId:
+                type: string
+                description: "Reference to a tax rate by 'externalId'"
+              name:
+                type: string
+                description: "Label to print on the invoice"
+              ticket:
+                $ref: "#/components/schemas/InvoiceLineItemTicketMetadata"
+        invoiceTemplate:
+          type: object
+          description: The template to use for invoice generation
+          properties:
+            templateName:
+              type: string
+              enum: [invoice-v01, invoice-v01]
+              description: >
+                Use this field to specify a default template, if you do not want to create your own.
+                Some images can be inserted if you use the correct names.
+                See further documentation for details.
+            html:
+              type: string
+              description: >
+                The template is generated by weasyprint
+                and individualization is performed using jinja {{ }} variables syntax.
+                See further documentation for details.
+            css:
+              type: string
+              description: >
+                The template is generated by weasyprint 
+                and individualization is performed using jinja {{ }} variables syntax.
+                See further documentation for details.
+            fonts:
+              type: array
+              description: "Custom fonts to use during document generation"
+              items:
+                type: object
+                description: A font to use
+                properties:
+                  name:
+                    type: string
+                    description: "The name of the font (as used in css)"
+                  file:
+                    type: string
+                    format: base64
+                    description: >
+                      Base64 encoded font file
+                      See further documentation for details.
+            images:
+              type: array
+              description: "Images to use during document generation"
+              items:
+                type: object
+                description: An image to use
+                properties:
+                  name:
+                    type: string
+                    description: "The name of the image, only lowercase chars"
+                  file:
+                    type: string
+                    format: base64
+                    description: >
+                      Base64 encoded image file
+                      See further documentation for details.
+                  link:
+                    type: string
+                    description: >
+                      Link to the image file (only https is supported).
+                      The image needs to be publicly available and needs to be smaller than 200kb.
+                      See further documentation for details.
+
+    InvoiceCreateResponse:
+      type: object
+      properties:
+        invoice:
+          $ref: "#/components/schemas/Invoice"
+        invoiceLines:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvoiceLineItem"
+        order:
+          $ref: "#/components/schemas/Order"
+        event:
+          $ref: "#/components/schemas/Event"
+        invoicePdf:
+          type: string
+          format: base64
+          description: "Base64 encoded ZUGFeRD PDF."
+        invoiceXml:
+          type: string
+          format: base64
+          description: "Base64 encoded XRechnung XML."
+
+    InvoiceResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/Invoice"
+
+    InvoiceLineItemsListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/InvoiceLineItem"
+
+    InvoiceTaxesListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tax"
+
+    InvoiceLinkRequest:
+      type: object
+      description: "Signed-link request"
+      properties:
+        fileType:
+          type: string
+          enum: [pdf, xrechnung]
+          description: "Which file shall be downloaded"
+        expiresIn:
+          type: integer
+          maximum: 31536000
+          description: "Lifetime of the link in seconds"
+
+    InvoiceLinkResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          description: "Shareable download link"
+        expiresAt:
+          type: string
+          format: date-time
+
+    InvoiceExportRequest:
+      type: object
+      description: "Export filter"
+      properties:
+        accountingEntity:
+          type: string
+          description: "Exports all invoices of that accounting entity"
+        format:
+          type: string
+          enum: [xlsx, zip]
+          description: "xlsx: exports a spreadsheet with all invoicing data, zip: exports an archive with all generated files"
+
+    InvoicesExportResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          description: "Download link for the generated export"
+        expiresAt:
+          type: string
+          format: date-time
+
+    # Events
+    Event:
+      type: object
+      description: "An event"
+      properties:
+        id:
+          type: string
+        label:
+          $ref: "#/components/schemas/MultiLanguageLabel"
+        startDt:
+          type: string
+          format: date-time
+          description: "Start of the event"
+        endDt:
+          type: string
+          format: date-time
+          description: "End of the event"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type: string
+          format: date-time
+
+    EventsListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Event"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    EventResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/Event"
+
+    # Orders
+    Order:
+      type: object
+      description: "An order"
+      properties:
+        id:
+          type: string
+          format: uuid
+        eventId:
+          type: string
+        externalId:
+          type: string
+          description: "Set once when the order was created. Is unique on a per event basis."
+        paymentLink:
+          type: string
+          description: "Link to pay for the order"
+        link:
+          type: string
+          description: "Link to view the order online"
+        status:
+          type: string
+          enum: [open, paid, cancelled]
+        recipient:
+          $ref: "#/components/schemas/InvoiceRecipient"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type: string
+          format: date-time
+
+    OrdersListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Order"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    OrderResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/Order"
+
+    # Payments
+    Payment:
+      type: object
+      description: "A payment"
+      properties:
+        id:
+          type: string
+          format: uuid
+        orderId:
+          type: string
+          format: uuid
+        externalId:
+          type: string
+          description: "Set once when the payment was created. Is unique on a per event basis."
+        provider:
+          type: string
+          description: "Payment provider used: e. g. PayOne"
+        method:
+          type: string
+          description: "Payment method used: e. g. VISA"
+        type:
+          type: string
+          enum: [payment, refund]
+          description: "Payment type: Payment or Refund"
+        status:
+          type: string
+          description: "Payment status: Currently unused"
+        amount:
+          type: number
+          description: "Amount payed"
+        currency:
+          $ref: "#/components/schemas/Currency"
+        createdBy:
+          $ref: "#/components/schemas/ActorIdentifier"
+        createdAt:
+          type: string
+          format: date-time
+
+    PaymentsListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Payment"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    PaymentResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/Payment"
+
+    PaymentCreateRequest:
+      type: object
+      properties:
+        externalId:
+          type: string
+          description: "Set once when the payment was created. Is unique on a per event basis."
+        provider:
+          type: string
+          description: "Payment provider used: e. g. PayOne"
+        method:
+          type: string
+          description: "Payment method used: e. g. VISA"
+        type:
+          type: string
+          enum: [payment, refund]
+          description: "Payment type: Payment or Refund"
+        status:
+          type: string
+          description: "Payment status: Currently unused"
+        amount:
+          type: number
+          description: "Amount payed"
+        currency:
+          $ref: "#/components/schemas/Currency"
+
+    # Document Templates
+    DocumentTemplate:
+      type: object
+      description: "A document template"
+      properties:
+        id:
+          type: string
+          format: uuid
+        publicDocumentTemplateId:
+          type: string
+          format: uuid
+          nullable: true
+          description: >
+            Indicate which public ID this template has.
+            Allowed are lower case letters, numbers, '-' and '_'
+            Only templates with a public ID can be used to generate invoices by templateId
+        html:
+          type: string
+          description: >
+            The template is generated by WeasyPrint
+            and individualization is performed using jinja {{ }} variables syntax.
+            See further documentation for details.
+        css:
+          type: string
+          description: >
+            The template is generated by WeasyPrint 
+            and individualization is performed using jinja {{ }} variables syntax.
+            See further documentation for details.
+        fonts:
+          type: array
+          description: "Custom fonts to use during document generation"
+          items:
+            type: object
+            description: A font to use
+            properties:
+              name:
+                type: string
+                description: "The name of the font (as used in css)"
+              file:
+                type: string
+                format: base64
+                description: >
+                  Base64 encoded font file
+                  See further documentation for details.
+        images:
+          type: array
+          description: "Images to use during document generation"
+          items:
+            type: object
+            description: An image to use
+            properties:
+              name:
+                type: string
+                description: "The name of the image, only lowercase chars"
+              file:
+                type: string
+                format: base64
+                description: >
+                  Base64 encoded image file
+                  See further documentation for details.
+              link:
+                type: string
+                description: >
+                  Link to the image file (only https is supported).
+                  The image needs to be publicly available and needs to be smaller than 200kb.
+                  See further documentation for details.
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: "#/components/schemas/ActorIdentifier"
+
+    DocumentTemplatesListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/DocumentTemplate"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    DocumentTemplateResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/DocumentTemplate"
+
+    PublicDocumentTemplate:
+      type: object
+      description: "A document template that can be referenced when creating an invoice using the API"
+      properties:
+        id:
+          type: string
+          description: Allowed are lower case letters, numbers, '-' and '_'
+        documentTemplateId:
+          type: string
+          format: uuid
+          description: The template that is currently set up to be used with this public identifier
+        label:
+          $ref: "#/components/schemas/MultiLanguageLabel"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        deletedAt:
+          type: string
+          format: date-time
+
+    PublicDocumentTemplatesListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/PublicDocumentTemplate"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    PublicDocumentTemplateCreateRequest:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Allowed are lower case letters, numbers, '-' and '_'
+        html:
+          type: string
+          description: >
+            The template is generated by weasyprint
+            and individualization is performed using jinja {{ }} variables syntax.
+            See further documentation for details.
+        css:
+          type: string
+          description: >
+            The template is generated by weasyprint 
+            and individualization is performed using jinja {{ }} variables syntax.
+            See further documentation for details.
+        fonts:
+          type: array
+          description: "Custom fonts to use during document generation"
+          items:
+            type: object
+            description: A font to use
+            properties:
+              name:
+                type: string
+                description: "The name of the font (as used in css)"
+              file:
+                type: string
+                format: base64
+                description: >
+                  Base64 encoded font file
+                  See further documentation for details.
+        images:
+          type: array
+          description: "Images to use during document generation"
+          items:
+            type: object
+            description: An image to use
+            properties:
+              name:
+                type: string
+                description: "The name of the image, only lowercase chars"
+              file:
+                type: string
+                format: base64
+                description: >
+                  Base64 encoded image file
+                  See further documentation for details.
+              link:
+                type: string
+                description: >
+                  Link to the image file (only https is supported).
+                  The image needs to be publicly available and needs to be smaller than 200kb.
+                  See further documentation for details.
+
+    PublicDocumentTemplateResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/PublicDocumentTemplate"
+
+    PublicDocumentTemplateUpdateRequest:
+      type: object
+      properties:
+        html:
+          type: string
+          description: >
+            The template is generated by weasyprint
+            and individualization is performed using jinja {{ }} variables syntax.
+            See further documentation for details.
+        css:
+          type: string
+          description: >
+            The template is generated by weasyprint 
+            and individualization is performed using jinja {{ }} variables syntax.
+            See further documentation for details.
+        fonts:
+          type: array
+          description: "Custom fonts to use during document generation"
+          items:
+            type: object
+            description: A font to use
+            properties:
+              name:
+                type: string
+                description: "The name of the font (as used in css)"
+              file:
+                type: string
+                format: base64
+                description: >
+                  Base64 encoded font file
+                  See further documentation for details.
+        images:
+          type: array
+          description: "Images to use during document generation"
+          items:
+            type: object
+            description: An image to use
+            properties:
+              name:
+                type: string
+                description: "The name of the image, only lowercase chars"
+              file:
+                type: string
+                format: base64
+                description: >
+                  Base64 encoded image file
+                  See further documentation for details.
+              link:
+                type: string
+                description: >
+                  Link to the image file (only https is supported).
+                  The image needs to be publicly available and needs to be smaller than 200kb.
+                  See further documentation for details.
+
+    # Misc
+    Tax:
+      type: object
+      description: "A tax rate"
+      properties:
+        id:
+          type: string
+          format: uuid
+        externalId:
+          type: string
+          format: uuid
+          description: "Id supplied to the API, when this tax rate was created"
+        rate:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: "Tax rate to apply to this item as percentage: e. g. 19, at max two decimals."
+        label:
+          $ref: "#/components/schemas/MultiLanguageLabel"
+        type:
+          type: string
+          enum: [standard, exempt-verein]
+          description: >
+            The type of tax to apply:
+            standard VAT: 19 % or 7% (for Germany)
+            exempt-verein: 0% (indicate the reason)
+            If nothing is set, "standard" is assumed
+        taxExemptionReason:
+          type: string
+          description: The reason for the tax exemption as human readable text
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: "#/components/schemas/ActorIdentifier"
+
+    TaxesListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tax"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    Scope:
+      type: object
+      description: "A scope and its description (placeholder)"
+      properties:
+        scope:
+          type: string
+        label:
+          $ref: "#/components/schemas/MultiLanguageLabel"
+
+    ScopesListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Scope"
