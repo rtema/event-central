@@ -1,0 +1,67 @@
+# Local development stack.
+#
+# Brings up Postgres and MinIO, runs migrations once, then starts the web and
+# queue handlers. The web port is published directly; a reverse proxy / TLS
+# terminator will be added separately later.
+#
+#   docker compose up --build
+#
+# Scale the web tier horizontally:
+#   docker compose up --scale web=3
+#
+# Run an ad-hoc backup / restore:
+#   docker compose run --rm backup
+#   docker compose run --rm cli restore --key backups/eventcentral-<ts>.dump
+#
+# Secrets are provided as files under ./secrets (dev placeholders included).
+# In production, supply them via your orchestrator's secret store (the app
+# reads any setting from /run/secrets/<field_name>).
+
+name: event-central-dev
+
+# Only non-sensitive configuration lives here; secrets are mounted as files.
+x-app-env: &app-env
+  ENVIRONMENT: development
+  LOG_LEVEL: INFO
+  LOG_FORMAT: json
+  S3_PRIMARY_ENDPOINT: http://minio:9000
+  S3_PRIMARY_ACCESS_KEY: minioadmin
+  S3_PRIMARY_BUCKET: event-central
+  # OpenObserve log shipping (optional). Uncomment to enable; otherwise logs
+  # are emitted as JSON on stdout for a collector to ship.
+  # OPENOBSERVE_URL: http://openobserve:5080
+  # OPENOBSERVE_ORGANIZATION: default
+  # OPENOBSERVE_STREAM: event_central
+  # OPENOBSERVE_TOKEN: <base64 user:password>
+
+x-app-secrets: &app-secrets
+  - jwt_secret
+  - signed_url_secret
+  - s3_primary_secret_key
+  - database_url
+
+secrets:
+  db_password:
+    file: ./secrets/db_password
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: event_central
+      POSTGRES_DB: event_central
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - 53542:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eventcentral"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  db-data:
