@@ -1,0 +1,27 @@
+# --- Web / API layer -------------------------------------------------------
+fastapi==0.136.3
+uvicorn[standard]==0.49.0
+
+# --- Persistence -----------------------------------------------------------
+SQLAlchemy==2.0.50
+alembic==1.18.4
+psycopg[binary]==3.3.4
+
+# --- Config / validation ---------------------------------------------------
+pydantic==2.13.4
+pydantic-settings==2.14.1
+email-validator==2.3.0
+
+# --- Auth ------------------------------------------------------------------
+PyJWT==2.13.0
+argon2-cffi==25.1.0
+
+# --- Object storage (S3 compatible: MinIO in dev, dual S3 in prod) ---------
+boto3==1.43.26
+
+# --- Document generation ------------------------
+# Requires system libraries (pango, cairo, etc.) installed in the Docker image.
+weasyprint==66.0
+
+# --- Spreadsheet export  -----------------------
+openpyxl==3.1.5

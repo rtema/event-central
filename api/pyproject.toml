@@ -1,0 +1,33 @@
+[project]
+name = "event-central"
+version = "1.0.0"
+description = "Centralized API to generate e-invoices (E-Rechnungen) for events"
+requires-python = ">=3.12"
+license = { text = "Proprietary" }
+
+# Runtime dependencies are pinned in requirements.txt so the Docker build can
+# install them without a build backend. This section exists for tooling only.
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["app"]
+exclude = [".venv", "migrations/versions"]
+
+[tool.ruff.lint]
+# A small, sensible default set. Expand in later steps if needed.
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort (import sorting)
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # comprehensions
+    "SIM", # flake8-simplify
+]
+ignore = [
+    "B008", # function calls in argument defaults — required by FastAPI's Depends()
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
