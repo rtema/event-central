@@ -36,7 +36,7 @@ def _user_snapshot(user: User) -> dict[str, Any]:
 
 
 def _record_history(db: Session, user: User, actor: str | None) -> None:
-    db.add(UserHistory(user_id=user.id, changed_by=actor, new_state=_user_snapshot(user)))
+    db.add(UserHistory(user_id=user.id, created_by=actor, new_state=_user_snapshot(user)))
 
 
 # --------------------------------------------------------------------------- #
@@ -266,7 +266,7 @@ def set_user_data(
     db: Session, user_id: uuid.UUID, *, data: dict[str, Any], actor: str | None
 ) -> UserData:
     get_user(db, user_id)
-    record = UserData(user_id=user_id, data=data, changed_by=actor)
+    record = UserData(user_id=user_id, data=data, created_by=actor)
     db.add(record)
     db.flush()
     return record

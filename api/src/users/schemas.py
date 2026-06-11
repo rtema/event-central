@@ -59,7 +59,7 @@ class UserHistoryItem(CamelModel):
     id: uuid.UUID
     user_id: uuid.UUID
     created_at: dt.datetime
-    changed_by: str | None = None
+    created_by: str | None = None
     new_state: dict[str, Any]
 
 
