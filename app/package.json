@@ -47,6 +47,8 @@
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
     "axios-mock-adapter": "^2.1.0",
+    "deepl-node": "^1.27.0",
+    "gettext-parser": "^9.0.2",
     "happy-dom": "^15.11.7",
     "jsdom": "^25.0.1",
     "typescript": "^5.9.3",
