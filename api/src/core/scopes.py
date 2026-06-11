@@ -11,6 +11,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 # --------------------------------------------------------------------------- #
+# IMPORTANT:
+# Prevent any event name that is reserved and may lead to the expansion of access rights:
+# There fore the scope qualifiers are reserved labels that can NEVER be uses as event ids
+# --------------------------------------------------------------------------- #
+RESERVED_LABELS = {"all", "own", "read"}
+
+# --------------------------------------------------------------------------- #
 # Scope constants
 # --------------------------------------------------------------------------- #
 # Users

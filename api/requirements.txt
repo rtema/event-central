@@ -25,3 +25,6 @@ weasyprint==66.0
 
 # --- Spreadsheet export  -----------------------
 openpyxl==3.1.5
+
+# --- Smoke testing -----------------------------
+httpx2==2.4.0

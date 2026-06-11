@@ -65,6 +65,12 @@ def _run_seed(email: str | None, password: str | None) -> None:
 #     restore.run(key or os.getenv("RESTORE_KEY", ""))
 
 
+def _run_smoke_tests() -> None:
+    from src.services import smoke_test
+
+    sys.exit(smoke_test.run())
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="event-central")
     mode_parser = parser.add_subparsers(dest="mode")
@@ -97,6 +103,10 @@ def build_parser() -> argparse.ArgumentParser:
     restore_parser.add_argument(
         "--key", help="Object storage key of the backup to restore")
 
+    # Mode: smoke_test
+    mode_parser.add_parser(
+        "smoke_test", help="Test the app")
+
     return parser
 
 
@@ -109,6 +119,7 @@ def main(argv: list[str] | None = None) -> None:
     # handler without args
     dispatch = {
         "web": _run_web,
+        "smoke_test": _run_smoke_tests,
         # "queue": _run_queue,
         # "migrate": _run_migrate,
         # "backup": _run_backup,
