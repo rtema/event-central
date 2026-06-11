@@ -1,5 +1,5 @@
-import { Button, Center, Stack, Text, Title } from "@mantine/core";
 import { Trans } from "@lingui/react/macro";
+import { Button, Center, Stack, Text, Title } from "@mantine/core";
 import { Link } from "react-router";
 
 export function NotFoundPage() {
@@ -15,8 +15,8 @@ export function NotFoundPage() {
         <Text c="dimmed" size="sm">
           <Trans>The page you are looking for doesn't exist.</Trans>
         </Text>
-        <Button component={Link} to="/users" mt="sm">
-          <Trans>Go to users</Trans>
+        <Button component={Link} to={"/"} mt="sm">
+          <Trans>Go to home page</Trans>
         </Button>
       </Stack>
     </Center>

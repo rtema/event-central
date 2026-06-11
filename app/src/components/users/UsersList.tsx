@@ -28,7 +28,7 @@ function CreateUserModal({
   opened: boolean;
   onClose: () => void;
 }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const navigate = useNavigate();
   const { revalidateUser } = useUserMutations("");
   const [saving, setSaving] = useState(false);
@@ -67,7 +67,7 @@ function CreateUserModal({
       });
       form.reset();
       onClose();
-      navigate(`/users/${created.id}`);
+      navigate(`/${i18n.locale}/users/${created.id}`);
     } catch (err) {
       notifications.show({
         color: "red",
@@ -123,7 +123,7 @@ function CreateUserModal({
   );
 }
 
-export function UsersListPage() {
+export function UsersList() {
   const { data, error, isLoading } = useUsers();
   const [open, setOpen] = useState(false);
 

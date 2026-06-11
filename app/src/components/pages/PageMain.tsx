@@ -10,16 +10,29 @@ import {
   Routes,
 } from "react-router";
 import { SWRConfig } from "swr";
-import { useTranslations } from "../utils/useTranslations";
-import { AppLayout } from "../ui/AppLayout";
 import { AuthProvider } from "../auth/AuthProvider";
+import { Login } from "../auth/Login";
+import { PasswordReset } from "../auth/PasswordReset";
+import { DocumentTemplateDetail } from "../document-templates/DocumentTemplateDetail";
+import { DocumentTemplatesList } from "../document-templates/DocumentTemplatesList";
+import { PublicDocumentTemplateEditor } from "../document-templates/PublicDocumentTemplateEditor";
+import { EventDetail } from "../events/EventDetail";
+import { EventsList } from "../events/EventsList";
+import { InvoiceCreate } from "../invoices/InvoiceCreate";
+import { InvoiceDetail } from "../invoices/InvoiceDetail";
+import { InvoicesList } from "../invoices/InvoicesList";
+import { OrderDetail } from "../orders/OrderDetail";
+import { OrdersList } from "../orders/OrdersList";
+import { PaymentsList } from "../payments/PaymentsList";
+import { TaxesList } from "../taxes/TaxesList";
+import { AppLayout } from "../ui/AppLayout";
 import { ProtectedRoute } from "../ui/ProtectedRoute";
 import { theme } from "../ui/theme";
-import { LoginPage } from "./LoginPage";
+import { UserDetail } from "../users/UserDetail";
+import { UsersList } from "../users/UsersList";
+import { useTranslations } from "../utils/useTranslations";
 import { NotFoundPage } from "./NotFoundPage";
-import { PasswordResetPage } from "./PasswordResetPage";
-import { UserDetailPage } from "./UserDetailPage";
-import { UsersListPage } from "./UsersListPage";
+import { PageHome } from "./PageHome";
 
 export function PageMain() {
   // Load the correct translations
@@ -41,15 +54,43 @@ export function PageMain() {
             <AuthProvider>
               <ModalsProvider>
                 <Routes>
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/reset" element={<PasswordResetPage />} />
-                  <Route element={<ProtectedRoute />}>
-                    <Route element={<AppLayout />}>
-                      <Route path="/users" element={<UsersListPage />} />
-                      <Route path="/users/:userId" element={<UserDetailPage />} />
+                  <Route path="/:lang">
+                    <Route path="login" element={<Login />} />
+                    <Route path="reset" element={<PasswordReset />} />
+                    <Route element={<ProtectedRoute />}>
+                      <Route element={<AppLayout />}>
+                        <Route path="home" element={<PageHome />} />
+                        <Route path="users" element={<UsersList />} />
+                        <Route path="users/:userId" element={<UserDetail />} />
+
+                        <Route path="invoices" element={<InvoicesList />} />
+                        <Route path="invoices/new" element={<InvoiceCreate />} />
+                        <Route path="invoices/:invoiceId" element={<InvoiceDetail />} />
+
+                        <Route path="events" element={<EventsList />} />
+                        <Route path="events/:eventId" element={<EventDetail />} />
+
+                        <Route path="orders" element={<OrdersList />} />
+                        <Route path="orders/:orderId" element={<OrderDetail />} />
+
+                        <Route path="payments" element={<PaymentsList />} />
+
+                        <Route path="taxes" element={<TaxesList />} />
+
+                        <Route path="document-templates" element={<DocumentTemplatesList />} />
+                        <Route
+                          path="document-templates/public/:templateId"
+                          element={<PublicDocumentTemplateEditor />}
+                        />
+                        <Route
+                          path="document-templates/rendered/:templateId"
+                          element={<DocumentTemplateDetail />}
+                        />
+                      </Route>
                     </Route>
                   </Route>
-                  <Route path="/" element={<Navigate to="/users" replace />} />
+
+                  <Route path="/" element={<Navigate to="/de/home" replace />} />
                   <Route path="*" element={<NotFoundPage />} />
                 </Routes>
               </ModalsProvider>

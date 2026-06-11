@@ -1,3 +1,4 @@
+import { Trans, useLingui } from "@lingui/react/macro";
 import {
   Anchor,
   Badge,
@@ -21,21 +22,20 @@ import {
   IconTrash,
   IconUser,
 } from "@tabler/icons-react";
-import { Trans, useLingui } from "@lingui/react/macro";
 import { Link, useParams } from "react-router";
-import { usersApi } from "../../api/users";
 import { toRequestError } from "../../api/client";
-import { useUser, useUserMutations } from "../users/userHooks";
+import { usersApi } from "../../api/users";
 import { QueryState } from "../ui/QueryState";
+import { useUser, useUserMutations } from "../users/userHooks";
 import { formatDateTime } from "../utils/datetime";
-import { ProfileTab } from "./user-detail/ProfileTab";
-import { AuthMethodsTab } from "./user-detail/AuthMethodsTab";
-import { ScopesTab } from "./user-detail/ScopesTab";
-import { DataTab } from "./user-detail/DataTab";
-import { HistoryTab } from "./user-detail/HistoryTab";
+import { UserAuthMethodsTab } from "./UserAuthMethodsTab";
+import { UserDataTab } from "./UserDataTab";
+import { UserHistoryTab } from "./UserHistoryTab";
+import { UserProfileTab } from "./UserProfileTab";
+import { UserScopesTab } from "./UserScopesTab";
 
-export function UserDetailPage() {
-  const { t } = useLingui();
+export function UserDetail() {
+  const { t, i18n } = useLingui();
   const { userId = "" } = useParams();
   const { data: user, error, isLoading } = useUser(userId);
   const { revalidateUser } = useUserMutations(userId);
@@ -97,7 +97,7 @@ export function UserDetailPage() {
 
   return (
     <Stack>
-      <Anchor component={Link} to="/users" size="sm">
+      <Anchor component={Link} to={`/${i18n.locale}/users`} size="sm">
         <Group gap={4}>
           <IconArrowLeft size={14} />
           <Trans>Back to users</Trans>
@@ -185,19 +185,19 @@ export function UserDetailPage() {
               </Tabs.List>
 
               <Tabs.Panel value="profile" pt="lg">
-                <ProfileTab user={user} />
+                <UserProfileTab user={user} />
               </Tabs.Panel>
               <Tabs.Panel value="auth" pt="lg">
-                <AuthMethodsTab userId={userId} />
+                <UserAuthMethodsTab userId={userId} />
               </Tabs.Panel>
               <Tabs.Panel value="scopes" pt="lg">
-                <ScopesTab userId={userId} disabled={deleted} />
+                <UserScopesTab userId={userId} disabled={deleted} />
               </Tabs.Panel>
               <Tabs.Panel value="data" pt="lg">
-                <DataTab userId={userId} disabled={deleted} />
+                <UserDataTab userId={userId} disabled={deleted} />
               </Tabs.Panel>
               <Tabs.Panel value="history" pt="lg">
-                <HistoryTab userId={userId} />
+                <UserHistoryTab userId={userId} />
               </Tabs.Panel>
             </Tabs>
           </>

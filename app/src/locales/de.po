@@ -6,559 +6,1498 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
 "Language: de\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:272
+#: src/components/ui/Pager.tsx:41
+msgid "{from}–{to}"
+msgstr "{von}–{bis}"
+
+#: src/components/ui/Pager.tsx:37
+msgid "{from}–{to} of {total}"
+msgstr "{von}–{bis} von {insgesamt}"
+
+#: src/components/users/UserAuthMethodsTab.tsx:272
 msgid "A secret will be generated and shown once after creation."
 msgstr "Ein Geheimnis wird erzeugt und nach dem Erstellen einmalig angezeigt."
 
-#: src/pages/user-detail/ScopesTab.tsx:66
+#: src/components/users/UserScopesTab.tsx:66
 msgid "Access has been updated for this user."
 msgstr "Die Zugriffsrechte für diesen Benutzer wurden aktualisiert."
 
-#: src/components/AppLayout.tsx:75
+#: src/components/ui/AppLayout.tsx:81
 msgid "Account menu"
 msgstr "Kontomenü"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:190
-#: src/pages/UserDetailPage.tsx:122
-#: src/tables/UsersTable.tsx:84
+#: src/components/invoices/InvoiceDetail.tsx:122
+#: src/components/invoices/InvoicesList.tsx:77
+msgid "Accounting entity"
+msgstr "Rechnungslegungsunternehmen"
+
+#: src/components/invoices/InvoiceCreate.tsx:420
+msgid "Accounting entity (invoice numbering)"
+msgstr "Buchungskreis (Rechnungsnummerierung)"
+
+#: src/components/invoices/InvoiceDetail.tsx:124
+msgid "Accounting number"
+msgstr "Buchungsnummer"
+
+#: src/components/invoices/InvoiceCreate.tsx:231
+msgid "Accounting prefix is required"
+msgstr "Ein Buchhaltungspräfix ist erforderlich"
+
+#: src/components/users/UserAuthMethodsTab.tsx:190
+#: src/components/users/UserDetail.tsx:121
+#: src/components/users/UsersTable.tsx:83
 msgid "Active"
 msgstr "Aktiv"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:243
+#: src/components/users/UserAuthMethodsTab.tsx:243
 msgid "Add auth method"
 msgstr "Anmeldemethode hinzufügen"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:146
+#: src/components/invoices/InvoiceCreate.tsx:525
+msgid "Add email and press Enter"
+msgstr "E-Mail-Adresse eingeben und die Eingabetaste drücken"
+
+#: src/components/invoices/TemplateAssetsFields.tsx:208
+msgid "Add font"
+msgstr "Schriftart hinzufügen"
+
+#: src/components/invoices/TemplateAssetsFields.tsx:144
+msgid "Add image"
+msgstr "Bild hinzufügen"
+
+#: src/components/invoices/InvoiceCreate.tsx:725
+msgid "Add line item"
+msgstr "Einzelposten hinzufügen"
+
+#: src/components/users/UserAuthMethodsTab.tsx:146
 msgid "Add method"
 msgstr "Methode hinzufügen"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:86
+#: src/components/invoices/InvoiceCreate.tsx:640
+msgid "Add tax rate"
+msgstr "Steuersatz hinzufügen"
+
+#: src/components/invoices/InvoiceDetail.tsx:166
+#: src/components/invoices/InvoiceDetail.tsx:194
+msgid "Address"
+msgstr "Adresse"
+
+#: src/components/invoices/InvoiceCreate.tsx:469
+#: src/components/invoices/InvoiceCreate.tsx:529
+msgid "Address line 1"
+msgstr "Adresszeile 1"
+
+#: src/components/invoices/InvoiceCreate.tsx:473
+#: src/components/invoices/InvoiceCreate.tsx:533
+msgid "Address line 2"
+msgstr "Adresszeile 2"
+
+#: src/components/payments/PaymentsList.tsx:91
+msgid "All payments and refunds recorded across orders."
+msgstr "Alle Zahlungen und Rückerstattungen, die im Zusammenhang mit Bestellungen erfasst wurden."
+
+#: src/components/orders/OrderDetail.tsx:368
+#: src/components/payments/PaymentsList.tsx:73
+msgid "Amount"
+msgstr "Betrag"
+
+#: src/components/orders/OrderDetail.tsx:131
+msgid "Amount (EUR)"
+msgstr "Betrag (EUR)"
+
+#: src/components/invoices/InvoiceDetail.tsx:286
+msgid "Applied tax rates"
+msgstr "Angewandte Steuersätze"
+
+#: src/components/users/UserAuthMethodsTab.tsx:86
 msgid "Auth method added"
 msgstr "Anmeldemethode hinzugefügt"
 
-#: src/pages/UserDetailPage.tsx:166
+#: src/components/users/UserDetail.tsx:165
 msgid "Auth methods"
 msgstr "Anmeldemethoden"
 
-#: src/pages/PasswordResetPage.tsx:153
+#: src/components/events/EventDetail.tsx:63
+msgid "Back to events"
+msgstr "Zurück zu den Veranstaltungen"
+
+#: src/components/invoices/InvoiceCreate.tsx:350
+#: src/components/invoices/InvoiceDetail.tsx:68
+msgid "Back to invoices"
+msgstr "Zurück zu den Rechnungen"
+
+#: src/components/orders/OrderDetail.tsx:211
+msgid "Back to orders"
+msgstr "Zurück zu den Bestellungen"
+
+#: src/components/auth/PasswordReset.tsx:153
 msgid "Back to sign in"
 msgstr "Zurück zur Anmeldung"
 
-#: src/pages/UserDetailPage.tsx:104
+#: src/components/document-templates/DocumentTemplateDetail.tsx:28
+#: src/components/document-templates/PublicDocumentTemplateEditor.tsx:84
+msgid "Back to templates"
+msgstr "Zurück zu den Vorlagen"
+
+#: src/components/users/UserDetail.tsx:103
 msgid "Back to users"
 msgstr "Zurück zu den Benutzern"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:112
-#: src/pages/user-detail/AuthMethodsTab.tsx:279
-#: src/pages/UserDetailPage.tsx:60
-#: src/pages/UsersListPage.tsx:115
+#: src/components/invoices/InvoicesList.tsx:172
+msgid "Browse issued invoices, generate new ones and export."
+msgstr "Ausgestellte Rechnungen anzeigen, neue Rechnungen erstellen und exportieren."
+
+#: src/components/document-templates/DocumentTemplatesList.tsx:110
+#: src/components/invoices/InvoiceCreate.tsx:764
+#: src/components/invoices/InvoicesList.tsx:84
+#: src/components/orders/OrderDetail.tsx:149
+#: src/components/users/UserAuthMethodsTab.tsx:112
+#: src/components/users/UserAuthMethodsTab.tsx:279
+#: src/components/users/UserDetail.tsx:59
+#: src/components/users/UsersList.tsx:115
 msgid "Cancel"
 msgstr "Abbrechen"
 
-#: src/components/LanguageSwitcher.tsx:27
+#: src/components/orders/OrderDetail.tsx:175
+#: src/components/orders/OrderDetail.tsx:184
+#: src/components/orders/OrderDetail.tsx:242
+msgid "Cancel order"
+msgstr "Bestellung stornieren"
+
+#: src/components/ui/StatusBadge.tsx:29
+msgid "Cancellation"
+msgstr "Stornierung"
+
+#: src/components/ui/StatusBadge.tsx:15
+msgid "Cancelled"
+msgstr "Abgesagt"
+
+#: src/components/invoices/InvoiceCreate.tsx:524
+msgid "CC emails"
+msgstr "E-Mails mit Kopie"
+
+#: src/components/ui/LanguageSwitcher.tsx:63
 msgid "Change language"
 msgstr "Sprache ändern"
 
-#: src/pages/LoginPage.tsx:101
-#: src/pages/PasswordResetPage.tsx:66
+#: src/components/invoices/InvoiceCreate.tsx:269
+msgid "Check the form"
+msgstr "Überprüfen Sie das Formular"
+
+#: src/components/auth/Login.tsx:100
+#: src/components/auth/PasswordReset.tsx:66
 msgid "Check your inbox"
 msgstr "Prüfen Sie Ihren Posteingang"
 
-#: src/pages/PasswordResetPage.tsx:107
+#: src/components/auth/PasswordReset.tsx:107
 msgid "Choose a new password"
 msgstr "Wählen Sie ein neues Passwort"
 
-#: src/pages/PasswordResetPage.tsx:134
+#: src/components/invoices/InvoiceCreate.tsx:481
+#: src/components/invoices/InvoiceCreate.tsx:541
+msgid "City"
+msgstr "Stadt"
+
+#: src/components/invoices/InvoiceCreate.tsx:457
+msgid "Commercial register"
+msgstr "Handelsregister"
+
+#: src/components/auth/PasswordReset.tsx:134
 msgid "Confirm password"
 msgstr "Passwort bestätigen"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:310
+#: src/components/invoices/InvoiceDetail.tsx:178
+#: src/components/invoices/InvoiceDetail.tsx:190
+msgid "Contact"
+msgstr "Kontakt"
+
+#: src/components/invoices/InvoiceCreate.tsx:493
+#: src/components/invoices/InvoiceCreate.tsx:516
+msgid "Contact email"
+msgstr "E-Mail-Adresse"
+
+#: src/components/invoices/InvoiceCreate.tsx:489
+#: src/components/invoices/InvoiceCreate.tsx:511
+msgid "Contact name"
+msgstr "Ansprechpartner"
+
+#: src/components/invoices/InvoiceCreate.tsx:497
+#: src/components/invoices/InvoiceCreate.tsx:520
+msgid "Contact phone"
+msgstr "Kontaktnummer"
+
+#: src/components/users/UserAuthMethodsTab.tsx:310
 msgid "Copied"
 msgstr "Kopiert"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:310
-#: src/pages/user-detail/AuthMethodsTab.tsx:315
+#: src/components/users/UserAuthMethodsTab.tsx:310
+#: src/components/users/UserAuthMethodsTab.tsx:315
 msgid "Copy"
 msgstr "Kopieren"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:291
+#: src/components/users/UserAuthMethodsTab.tsx:291
 msgid "Copy this secret now"
 msgstr "Kopieren Sie dieses Geheimnis jetzt"
 
-#: src/components/QueryState.tsx:44
+#: src/components/ui/QueryState.tsx:44
 msgid "Correlation ID"
 msgstr "Korrelations-ID"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:93
+#: src/components/users/UserAuthMethodsTab.tsx:93
 msgid "Could not add auth method"
 msgstr "Anmeldemethode konnte nicht hinzugefügt werden"
 
-#: src/pages/PasswordResetPage.tsx:51
+#: src/components/orders/OrderDetail.tsx:199
+msgid "Could not cancel order"
+msgstr "Die Bestellung konnte nicht storniert werden"
+
+#: src/components/auth/PasswordReset.tsx:51
 msgid "Could not complete request"
 msgstr "Anfrage konnte nicht abgeschlossen werden"
 
-#: src/pages/UsersListPage.tsx:74
+#: src/components/invoices/InvoiceDetail.tsx:55
+msgid "Could not create download link"
+msgstr "Der Download-Link konnte nicht erstellt werden"
+
+#: src/components/invoices/InvoiceCreate.tsx:337
+msgid "Could not create invoice"
+msgstr "Rechnung konnte nicht erstellt werden"
+
+#: src/components/document-templates/DocumentTemplatesList.tsx:84
+msgid "Could not create template"
+msgstr "Vorlage konnte nicht erstellt werden"
+
+#: src/components/users/UsersList.tsx:74
 msgid "Could not create user"
 msgstr "Benutzer konnte nicht erstellt werden"
 
-#: src/pages/UserDetailPage.tsx:74
+#: src/components/users/UserDetail.tsx:73
 msgid "Could not delete"
 msgstr "Löschen nicht möglich"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:126
+#: src/components/users/UserAuthMethodsTab.tsx:126
 msgid "Could not disable"
 msgstr "Deaktivieren nicht möglich"
 
-#: src/pages/UserDetailPage.tsx:93
+#: src/components/orders/OrderDetail.tsx:109
+msgid "Could not record payment"
+msgstr "Die Zahlung konnte nicht verbucht werden"
+
+#: src/components/users/UserDetail.tsx:92
 msgid "Could not restore"
 msgstr "Wiederherstellen nicht möglich"
 
-#: src/pages/user-detail/ProfileTab.tsx:73
+#: src/components/users/UserProfileTab.tsx:73
 msgid "Could not save"
 msgstr "Speichern nicht möglich"
 
-#: src/pages/user-detail/DataTab.tsx:75
+#: src/components/users/UserDataTab.tsx:75
 msgid "Could not save data"
 msgstr "Daten konnten nicht gespeichert werden"
 
-#: src/pages/user-detail/ScopesTab.tsx:71
+#: src/components/users/UserScopesTab.tsx:71
 msgid "Could not update scopes"
 msgstr "Berechtigungen konnten nicht aktualisiert werden"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:282
+#: src/components/document-templates/PublicDocumentTemplateEditor.tsx:71
+msgid "Could not update template"
+msgstr "Die Vorlage konnte nicht aktualisiert werden"
+
+#: src/components/invoices/InvoiceCreate.tsx:485
+#: src/components/invoices/InvoiceCreate.tsx:545
+msgid "Country (ISO 2-letter)"
+msgstr "Land (ISO-2-Buchstaben-Code)"
+
+#: src/components/users/UserAuthMethodsTab.tsx:282
 msgid "Create"
 msgstr "Erstellen"
 
-#: src/pages/UsersListPage.tsx:118
+#: src/components/invoices/InvoiceCreate.tsx:771
+msgid "Create invoice"
+msgstr "Rechnung erstellen"
+
+#: src/components/document-templates/DocumentTemplatesList.tsx:113
+msgid "Create template"
+msgstr "Vorlage erstellen"
+
+#: src/components/users/UsersList.tsx:118
 msgid "Create user"
 msgstr "Benutzer erstellen"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:166
-#: src/pages/UserDetailPage.tsx:130
-#: src/tables/UsersTable.tsx:67
+#: src/components/document-templates/DocumentTemplateDetail.tsx:43
+#: src/components/document-templates/DocumentTemplatesList.tsx:234
+#: src/components/events/EventDetail.tsx:49
+#: src/components/events/EventDetail.tsx:80
+#: src/components/orders/OrderDetail.tsx:253
+#: src/components/orders/OrdersList.tsx:57
+#: src/components/users/UserAuthMethodsTab.tsx:166
+#: src/components/users/UserDetail.tsx:129
+#: src/components/users/UsersTable.tsx:66
 msgid "Created"
 msgstr "Erstellt"
 
-#: src/components/ColorSchemeToggle.tsx:11
+#: src/components/document-templates/DocumentTemplateDetail.tsx:44
+#: src/components/invoices/InvoiceDetail.tsx:133
+msgid "Created by"
+msgstr "Erstellt von"
+
+#: src/components/document-templates/DocumentTemplateDetail.tsx:70
+#: src/components/invoices/TemplateAssetsFields.tsx:62
+msgid "CSS"
+msgstr "CSS"
+
+#: src/components/invoices/InvoiceDetail.tsx:132
+msgid "Currency"
+msgstr "Währung"
+
+#: src/components/ui/ColorSchemeToggle.tsx:11
 msgid "Dark mode"
 msgstr "Dunkler Modus"
 
-#: src/pages/UserDetailPage.tsx:178
+#: src/components/users/UserDetail.tsx:177
 msgid "Data"
 msgstr "Daten"
 
-#: src/pages/user-detail/DataTab.tsx:69
+#: src/components/users/UserDataTab.tsx:69
 msgid "Data saved"
 msgstr "Daten gespeichert"
 
-#: src/pages/UserDetailPage.tsx:60
-#: src/pages/UserDetailPage.tsx:154
+#: src/components/users/UserDetail.tsx:59
+#: src/components/users/UserDetail.tsx:153
 msgid "Delete"
 msgstr "Löschen"
 
-#: src/pages/UserDetailPage.tsx:51
+#: src/components/users/UserDetail.tsx:50
 msgid "Delete user"
 msgstr "Benutzer löschen"
 
-#: src/pages/UserDetailPage.tsx:118
-#: src/pages/UserDetailPage.tsx:134
-#: src/tables/UsersTable.tsx:80
+#: src/components/users/UserDetail.tsx:117
+#: src/components/users/UserDetail.tsx:133
+#: src/components/users/UsersTable.tsx:79
 msgid "Deleted"
 msgstr "Gelöscht"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:169
+#: src/components/invoices/InvoiceCreate.tsx:658
+#: src/components/invoices/InvoiceDetail.tsx:224
+msgid "Description"
+msgstr "Beschreibung"
+
+#: src/components/document-templates/DocumentTemplatesList.tsx:269
+msgid "Design the documents generated for invoices."
+msgstr "Gestalten Sie die für Rechnungen erstellten Dokumente."
+
+#: src/components/users/UserAuthMethodsTab.tsx:169
 msgid "Detail"
 msgstr "Detail"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:112
-#: src/pages/user-detail/AuthMethodsTab.tsx:219
-#: src/pages/user-detail/AuthMethodsTab.tsx:224
+#: src/components/users/UserAuthMethodsTab.tsx:112
+#: src/components/users/UserAuthMethodsTab.tsx:219
+#: src/components/users/UserAuthMethodsTab.tsx:224
 msgid "Disable"
 msgstr "Deaktivieren"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:103
+#: src/components/users/UserAuthMethodsTab.tsx:103
 msgid "Disable auth method"
 msgstr "Anmeldemethode deaktivieren"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:120
-#: src/pages/user-detail/AuthMethodsTab.tsx:194
+#: src/components/users/UserAuthMethodsTab.tsx:120
+#: src/components/users/UserAuthMethodsTab.tsx:194
 msgid "Disabled"
 msgstr "Deaktiviert"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:330
+#: src/components/document-templates/DocumentTemplatesList.tsx:266
+msgid "Document templates"
+msgstr "Dokumentvorlagen"
+
+#: src/components/invoices/InvoicesList.tsx:71
+msgid "Documents archive (.zip)"
+msgstr "Dokumentenarchiv (.zip)"
+
+#: src/components/users/UserAuthMethodsTab.tsx:330
 msgid "Done"
 msgstr "Fertig"
 
-#: src/pages/user-detail/ProfileTab.tsx:92
-#: src/pages/UsersListPage.tsx:93
+#: src/components/invoices/InvoiceDetail.tsx:100
+msgid "Download"
+msgstr "Herunterladen"
+
+#: src/components/invoices/InvoiceCreate.tsx:140
+msgid "Download PDF"
+msgstr "PDF herunterladen"
+
+#: src/components/invoices/InvoiceCreate.tsx:151
+msgid "Download XRechnung"
+msgstr "XRechnung herunterladen"
+
+#: src/components/invoices/InvoiceDetail.tsx:89
+#: src/components/invoices/InvoicesList.tsx:146
+msgid "Due"
+msgstr "Fällig"
+
+#: src/components/invoices/InvoiceCreate.tsx:414
+msgid "Due date"
+msgstr "Fälligkeitsdatum"
+
+#: src/components/ui/AppLayout.tsx:71
+msgid "E-invoicing console"
+msgstr "Konsole für die elektronische Rechnungsstellung"
+
+#: src/components/users/UserProfileTab.tsx:92
+#: src/components/users/UsersList.tsx:93
 msgid "e.g. Dr."
 msgstr "z. B. Dr."
 
-#: src/pages/user-detail/ProfileTab.tsx:86
-#: src/pages/UsersListPage.tsx:88
+#: src/components/users/UserProfileTab.tsx:86
+#: src/components/users/UsersList.tsx:88
 msgid "e.g. Mr, Ms"
 msgstr "z. B. Herr, Frau"
 
-#: src/pages/LoginPage.tsx:188
-#: src/pages/PasswordResetPage.tsx:120
-#: src/pages/user-detail/HistoryTab.tsx:26
-#: src/pages/user-detail/ProfileTab.tsx:110
-#: src/pages/UsersListPage.tsx:108
-#: src/tables/UsersTable.tsx:58
+#: src/components/auth/Login.tsx:187
+#: src/components/auth/PasswordReset.tsx:120
+#: src/components/invoices/InvoiceDetail.tsx:179
+#: src/components/invoices/InvoiceDetail.tsx:191
+#: src/components/orders/OrderDetail.tsx:251
+#: src/components/users/UserHistoryTab.tsx:26
+#: src/components/users/UserProfileTab.tsx:110
+#: src/components/users/UsersList.tsx:108
+#: src/components/users/UsersTable.tsx:57
 msgid "Email"
 msgstr "E-Mail"
 
-#: src/pages/LoginPage.tsx:183
+#: src/components/auth/Login.tsx:182
 msgid "Email code"
 msgstr "Code per E-Mail"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:264
+#: src/components/users/UserAuthMethodsTab.tsx:264
 msgid "Email or phone number"
 msgstr "E-Mail oder Telefonnummer"
 
-#: src/pages/LoginPage.tsx:55
-#: src/pages/PasswordResetPage.tsx:36
-#: src/pages/user-detail/ProfileTab.tsx:33
-#: src/pages/UsersListPage.tsx:45
+#: src/components/invoices/TemplateAssetsFields.tsx:128
+msgid "Embedded upload attached."
+msgstr "Der Upload ist im Anhang beigefügt."
+
+#: src/components/events/EventDetail.tsx:79
+#: src/components/events/EventsList.tsx:53
+msgid "Ends"
+msgstr "Ende"
+
+#: src/components/invoices/InvoiceCreate.tsx:408
+msgid "English"
+msgstr "Deutsch"
+
+#: src/components/auth/Login.tsx:54
+#: src/components/auth/PasswordReset.tsx:36
+#: src/components/users/UserProfileTab.tsx:33
+#: src/components/users/UsersList.tsx:45
 msgid "Enter a valid email"
 msgstr "Geben Sie eine gültige E-Mail-Adresse ein"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:62
+#: src/components/orders/OrderDetail.tsx:81
+msgid "Enter an amount greater than zero"
+msgstr "Geben Sie einen Wert größer als Null ein"
+
+#: src/components/users/UserAuthMethodsTab.tsx:62
 msgid "Enter an email or phone number"
 msgstr "Geben Sie eine E-Mail-Adresse oder Telefonnummer ein"
 
-#: src/pages/LoginPage.tsx:59
+#: src/components/auth/Login.tsx:58
 msgid "Enter the code"
 msgstr "Geben Sie den Code ein"
 
-#: src/pages/LoginPage.tsx:220
+#: src/components/auth/Login.tsx:219
 msgid "Enter the code we emailed you."
 msgstr "Geben Sie den Code ein, den wir Ihnen per E-Mail gesendet haben."
 
-#: src/pages/user-detail/HistoryTab.tsx:24
-#: src/pages/user-detail/ProfileTab.tsx:97
-#: src/pages/UsersListPage.tsx:97
+#: src/components/events/EventsList.tsx:31
+#: src/components/orders/OrdersList.tsx:40
+msgid "Event"
+msgstr "Veranstaltung"
+
+#: src/components/invoices/InvoiceCreate.tsx:374
+msgid "Event & basics"
+msgstr "Veranstaltung & Grundlagen"
+
+#: src/components/invoices/InvoiceCreate.tsx:395
+msgid "Event end"
+msgstr "Veranstaltung beendet"
+
+#: src/components/invoices/InvoiceCreate.tsx:380
+msgid "Event ID"
+msgstr "Ereignis-ID"
+
+#: src/components/invoices/InvoiceCreate.tsx:227
+msgid "Event ID is required"
+msgstr "Die Ereignis-ID ist erforderlich"
+
+#: src/components/invoices/InvoiceCreate.tsx:386
+msgid "Event name"
+msgstr "Name der Veranstaltung"
+
+#: src/components/invoices/InvoiceCreate.tsx:390
+msgid "Event start"
+msgstr "Veranstaltungsbeginn"
+
+#: src/components/events/EventsList.tsx:76
+#: src/components/ui/AppLayout.tsx:131
+msgid "Events"
+msgstr "Veranstaltungen"
+
+#: src/components/events/EventsList.tsx:79
+msgid "Every event with invoices or orders on the platform."
+msgstr "Jedes Ereignis mit Rechnungen oder Bestellungen auf der Plattform."
+
+#: src/components/taxes/TaxesList.tsx:80
+msgid "Every tax rate referenced by an invoice line."
+msgstr "Jeder Steuersatz, auf den in einer Rechnungsposition Bezug genommen wird."
+
+#: src/components/invoices/InvoiceCreate.tsx:595
+#: src/components/taxes/TaxesList.tsx:46
+msgid "Exempt (Verein)"
+msgstr "Befreit (Verein)"
+
+#: src/components/invoices/InvoiceDetail.tsx:301
+#: src/components/taxes/TaxesList.tsx:65
+msgid "Exemption reason"
+msgstr "Grund für die Befreiung"
+
+#: src/components/invoices/InvoicesList.tsx:181
+msgid "Export"
+msgstr "Exportieren"
+
+#: src/components/invoices/InvoicesList.tsx:56
+msgid "Export failed"
+msgstr "Der Export ist fehlgeschlagen"
+
+#: src/components/invoices/InvoicesList.tsx:65
+msgid "Export invoices"
+msgstr "Exportrechnungen"
+
+#: src/components/invoices/InvoicesList.tsx:49
+msgid "Export ready"
+msgstr "Bereit zum Exportieren"
+
+#: src/components/orders/OrderDetail.tsx:143
+msgid "External ID"
+msgstr "Externe ID"
+
+#: src/components/invoices/InvoiceCreate.tsx:400
+msgid "External order ID"
+msgstr "Externe Bestellnummer"
+
+#: src/components/users/UserHistoryTab.tsx:24
+#: src/components/users/UserProfileTab.tsx:97
+#: src/components/users/UsersList.tsx:97
 msgid "First name"
 msgstr "Vorname"
 
-#: src/pages/user-detail/ProfileTab.tsx:34
-#: src/pages/UsersListPage.tsx:46
+#: src/components/users/UserProfileTab.tsx:34
+#: src/components/users/UsersList.tsx:46
 msgid "First name is required"
 msgstr "Vorname ist erforderlich"
 
-#: src/pages/LoginPage.tsx:206
+#: src/components/invoices/InvoiceCreate.tsx:431
+msgid "First number"
+msgstr "Erste Zahl"
+
+#: src/components/invoices/TemplateAssetsFields.tsx:158
+msgid "Font name (as used in CSS)"
+msgstr "Schriftartname (wie in CSS verwendet)"
+
+#: src/components/document-templates/DocumentTemplateDetail.tsx:46
+#: src/components/invoices/TemplateAssetsFields.tsx:151
+msgid "Fonts"
+msgstr "Schriftarten"
+
+#: src/components/auth/Login.tsx:205
 msgid "Forgot your password?"
 msgstr "Passwort vergessen?"
 
-#: src/pages/NotFoundPage.tsx:19
+#: src/components/invoices/InvoicesList.tsx:68
+msgid "Format"
+msgstr "Format"
+
+#: src/components/invoices/InvoiceCreate.tsx:360
+msgid "Generate an invoice and its e-invoice documents in one step."
+msgstr "Erstellen Sie eine Rechnung und die dazugehörigen E-Rechnungsdokumente in einem Schritt."
+
+#: src/components/invoices/InvoiceCreate.tsx:407
+msgid "German"
+msgstr "Deutsch"
+
+#: src/components/pages/NotFoundPage.tsx:19
 msgid "Go to users"
 msgstr "Zu den Benutzern"
 
-#: src/pages/user-detail/ScopesTab.tsx:89
+#: src/components/users/UserScopesTab.tsx:89
 msgid "Granted scopes"
 msgstr "Erteilte Berechtigungen"
 
-#: src/pages/UserDetailPage.tsx:184
+#: src/components/invoices/InvoiceDetail.tsx:239
+#: src/components/invoices/InvoicesList.tsx:153
+#: src/components/orders/OrderDetail.tsx:302
+msgid "Gross"
+msgstr "Brutto"
+
+#: src/components/invoices/InvoiceDetail.tsx:145
+msgid "Gross total"
+msgstr "Gesamtsumme"
+
+#: src/components/users/UserDetail.tsx:183
 msgid "History"
 msgstr "Verlauf"
 
-#: src/pages/PasswordResetPage.tsx:67
+#: src/components/document-templates/DocumentTemplateDetail.tsx:60
+msgid "HTML"
+msgstr "HTML"
+
+#: src/components/invoices/TemplateAssetsFields.tsx:53
+msgid "HTML template"
+msgstr "HTML-Vorlage"
+
+#: src/components/invoices/InvoiceCreate.tsx:465
+#: src/components/invoices/InvoiceDetail.tsx:164
+msgid "IBAN"
+msgstr "IBAN"
+
+#: src/components/document-templates/DocumentTemplatesList.tsx:161
+#: src/components/document-templates/DocumentTemplatesList.tsx:228
+msgid "ID"
+msgstr "ID"
+
+#: src/components/auth/PasswordReset.tsx:67
 msgid "If the address exists, a reset link is on its way."
 msgstr "Falls die Adresse existiert, ist ein Link zum Zurücksetzen unterwegs."
 
-#: src/pages/user-detail/DataTab.tsx:55
+#: src/components/document-templates/DocumentTemplateDetail.tsx:50
+#: src/components/invoices/TemplateAssetsFields.tsx:72
+msgid "Images"
+msgstr "Bilder"
+
+#: src/components/users/UserDataTab.tsx:55
 msgid "Invalid JSON — please fix the syntax."
 msgstr "Ungültiges JSON – bitte korrigieren Sie die Syntax."
 
-#: src/components/LanguageSwitcher.tsx:26
+#: src/components/ui/StatusBadge.tsx:34
+msgid "Invoice"
+msgstr "Rechnung"
+
+#: src/components/invoices/InvoiceCreate.tsx:129
+msgid "Invoice {number} was generated successfully."
+msgstr "Die Rechnung {Nummer} wurde erfolgreich erstellt."
+
+#: src/components/invoices/InvoiceCreate.tsx:325
+#: src/components/invoices/InvoiceCreate.tsx:330
+msgid "Invoice created"
+msgstr "Rechnung erstellt"
+
+#: src/components/invoices/InvoicesList.tsx:169
+#: src/components/orders/OrderDetail.tsx:280
+#: src/components/ui/AppLayout.tsx:115
+msgid "Invoices"
+msgstr "Rechnungen"
+
+#: src/components/invoices/InvoiceDetail.tsx:85
+#: src/components/invoices/InvoicesList.tsx:139
+#: src/components/orders/OrderDetail.tsx:299
+msgid "Issued"
+msgstr "Ausgestellt"
+
+#: src/components/orders/OrderDetail.tsx:184
+msgid "Keep order"
+msgstr "Für Ordnung sorgen"
+
+#: src/components/document-templates/DocumentTemplatesList.tsx:164
+#: src/components/invoices/InvoiceCreate.tsx:586
+#: src/components/invoices/InvoiceDetail.tsx:292
+#: src/components/taxes/TaxesList.tsx:21
+msgid "Label"
+msgstr "Etikett"
+
+#: src/components/invoices/InvoiceCreate.tsx:405
+#: src/components/invoices/InvoiceDetail.tsx:131
+#: src/components/ui/LanguageSwitcher.tsx:61
 msgid "Language"
 msgstr "Sprache"
 
-#: src/pages/user-detail/HistoryTab.tsx:25
-#: src/pages/user-detail/ProfileTab.tsx:103
-#: src/pages/UsersListPage.tsx:102
+#: src/components/users/UserHistoryTab.tsx:25
+#: src/components/users/UserProfileTab.tsx:103
+#: src/components/users/UsersList.tsx:102
 msgid "Last name"
 msgstr "Nachname"
 
-#: src/pages/user-detail/ProfileTab.tsx:35
-#: src/pages/UsersListPage.tsx:47
+#: src/components/users/UserProfileTab.tsx:35
+#: src/components/users/UsersList.tsx:47
 msgid "Last name is required"
 msgstr "Nachname ist erforderlich"
 
-#: src/components/ColorSchemeToggle.tsx:11
+#: src/components/invoices/InvoiceCreate.tsx:753
+msgid "Leave blank to use the default invoice template."
+msgstr "Lassen Sie das Feld leer, um die Standard-Rechnungsvorlage zu verwenden."
+
+#: src/components/invoices/InvoiceCreate.tsx:453
+#: src/components/invoices/InvoiceDetail.tsx:162
+msgid "Legal name"
+msgstr "Offizieller Name"
+
+#: src/components/ui/ColorSchemeToggle.tsx:11
 msgid "Light mode"
 msgstr "Heller Modus"
 
-#: src/pages/LoginPage.tsx:151
+#: src/components/invoices/InvoiceCreate.tsx:649
+#: src/components/invoices/InvoiceDetail.tsx:217
+msgid "Line items"
+msgstr "Einzelposten"
+
+#: src/components/invoices/InvoiceCreate.tsx:705
+msgid "Line total"
+msgstr "Gesamtsumme"
+
+#: src/components/invoices/TemplateAssetsFields.tsx:86
+msgid "Link (https)"
+msgstr "Link (https)"
+
+#: src/components/invoices/InvoiceCreate.tsx:737
+msgid "Links & template"
+msgstr "Links & Vorlage"
+
+#: src/components/invoices/TemplateAssetsFields.tsx:80
+msgid "lowercase"
+msgstr "Kleinbuchstaben"
+
+#: src/components/auth/Login.tsx:150
 msgid "Manage accounts, sign-in methods and access scopes for the e-invoicing platform."
 msgstr "Verwalten Sie Konten, Anmeldemethoden und Zugriffsberechtigungen für die E-Rechnungs-Plattform."
 
-#: src/pages/UsersListPage.tsx:138
+#: src/components/users/UsersList.tsx:138
 msgid "Manage accounts, sign-in methods and access."
 msgstr "Verwalten Sie Konten, Anmeldemethoden und Zugriff."
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:160
-#: src/pages/user-detail/AuthMethodsTab.tsx:248
+#: src/components/orders/OrderDetail.tsx:140
+#: src/components/orders/OrderDetail.tsx:362
+#: src/components/payments/PaymentsList.tsx:42
+#: src/components/users/UserAuthMethodsTab.tsx:160
+#: src/components/users/UserAuthMethodsTab.tsx:248
 msgid "Method"
 msgstr "Methode"
 
-#: src/tables/UsersTable.tsx:48
+#: src/components/invoices/TemplateAssetsFields.tsx:79
+#: src/components/users/UsersTable.tsx:47
 msgid "Name"
 msgstr "Name"
 
-#: src/pages/PasswordResetPage.tsx:129
+#: src/components/invoices/InvoiceDetail.tsx:236
+msgid "Net"
+msgstr "Netto"
+
+#: src/components/invoices/InvoiceDetail.tsx:142
+msgid "Net total"
+msgstr "Gesamtbetrag"
+
+#: src/components/invoices/InvoiceCreate.tsx:357
+#: src/components/invoices/InvoicesList.tsx:187
+msgid "New invoice"
+msgstr "Neue Rechnung"
+
+#: src/components/auth/PasswordReset.tsx:129
 msgid "New password"
 msgstr "Neues Passwort"
 
-#: src/pages/UsersListPage.tsx:83
-#: src/pages/UsersListPage.tsx:142
+#: src/components/document-templates/DocumentTemplatesList.tsx:96
+msgid "New public template"
+msgstr "Neue öffentliche Vorlage"
+
+#: src/components/document-templates/DocumentTemplatesList.tsx:140
+msgid "New template"
+msgstr "Neue Vorlage"
+
+#: src/components/users/UsersList.tsx:83
+#: src/components/users/UsersList.tsx:142
 msgid "New user"
 msgstr "Neuer Benutzer"
 
-#: src/pages/user-detail/DataTab.tsx:110
+#: src/components/ui/Pager.tsx:63
+msgid "Next"
+msgstr "Weiter"
+
+#: src/components/users/UserDataTab.tsx:110
 msgid "No data has been stored for this user yet."
 msgstr "Für diesen Benutzer wurden noch keine Daten gespeichert."
 
-#: src/pages/user-detail/ScopesTab.tsx:96
+#: src/components/events/EventsList.tsx:92
+msgid "No events yet."
+msgstr "Noch keine Veranstaltungen."
+
+#: src/components/orders/OrderDetail.tsx:331
+msgid "No invoices for this order yet."
+msgstr "Zu dieser Bestellung liegen noch keine Rechnungen vor."
+
+#: src/components/invoices/InvoicesList.tsx:201
+msgid "No invoices yet. Create the first one."
+msgstr "Noch keine Rechnungen. Erstellen Sie die erste."
+
+#: src/components/invoices/InvoiceDetail.tsx:273
+msgid "No line items."
+msgstr "Keine Einzelposten."
+
+#: src/components/users/UserScopesTab.tsx:96
 msgid "No matching scope"
 msgstr "Keine passende Berechtigung"
 
-#: src/pages/user-detail/ScopesTab.tsx:90
+#: src/components/events/EventDetail.tsx:93
+msgid "No orders for this event."
+msgstr "Für diese Veranstaltung liegen keine Bestellungen vor."
+
+#: src/components/orders/OrdersList.tsx:86
+msgid "No orders yet."
+msgstr "Noch keine Bestellungen."
+
+#: src/components/orders/OrderDetail.tsx:390
+msgid "No payments recorded yet."
+msgstr "Es wurden noch keine Zahlungen erfasst."
+
+#: src/components/payments/PaymentsList.tsx:104
+msgid "No payments yet."
+msgstr "Bisher keine Zahlungen."
+
+#: src/components/document-templates/DocumentTemplatesList.tsx:152
+msgid "No public templates yet."
+msgstr "Es gibt noch keine öffentlichen Vorlagen."
+
+#: src/components/document-templates/DocumentTemplatesList.tsx:219
+msgid "No rendered templates yet."
+msgstr "Es sind noch keine gerenderten Vorlagen vorhanden."
+
+#: src/components/users/UserScopesTab.tsx:90
 msgid "No scopes granted"
 msgstr "Keine Berechtigungen erteilt"
 
-#: src/tables/UsersTable.tsx:187
+#: src/components/taxes/TaxesList.tsx:93
+msgid "No tax rates yet."
+msgstr "Es liegen noch keine Steuersätze vor."
+
+#: src/components/users/UsersTable.tsx:186
 msgid "No users match your search."
 msgstr "Keine Benutzer entsprechen Ihrer Suche."
 
-#: src/pages/UsersListPage.tsx:155
+#: src/components/users/UsersList.tsx:155
 msgid "No users yet. Create the first one."
 msgstr "Noch keine Benutzer. Erstellen Sie den ersten."
 
-#: src/components/QueryState.tsx:59
+#: src/components/ui/QueryState.tsx:59
 msgid "Nothing here yet"
 msgstr "Noch nichts vorhanden"
 
-#: src/pages/NotFoundPage.tsx:13
+#: src/components/ui/DataTable.tsx:146
+msgid "Nothing to show."
+msgstr "Es gibt nichts zu zeigen."
+
+#: src/components/invoices/InvoicesList.tsx:115
+#: src/components/orders/OrderDetail.tsx:293
+msgid "Number"
+msgstr "Zahl"
+
+#: src/components/orders/OrderDetail.tsx:258
+#: src/components/orders/OrderDetail.tsx:266
+#: src/components/ui/StatusBadge.tsx:20
+msgid "Open"
+msgstr "Öffnen"
+
+#: src/components/invoices/InvoicesList.tsx:78
+msgid "Optional. Restrict the export to one accounting entity (prefix)."
+msgstr "Optional. Beschränken Sie den Export auf eine Buchhaltungseinheit (Präfix)."
+
+#: src/components/events/EventDetail.tsx:28
+#: src/components/invoices/InvoiceDetail.tsx:135
+#: src/components/orders/OrdersList.tsx:31
+#: src/components/payments/PaymentsList.tsx:47
+msgid "Order"
+msgstr "Bestellung"
+
+#: src/components/orders/OrderDetail.tsx:192
+msgid "Order cancelled"
+msgstr "Bestellung storniert"
+
+#: src/components/invoices/InvoiceCreate.tsx:747
+#: src/components/orders/OrderDetail.tsx:263
+msgid "Order link"
+msgstr "Bestell-Link"
+
+#: src/components/events/EventDetail.tsx:87
+#: src/components/orders/OrdersList.tsx:70
+#: src/components/ui/AppLayout.tsx:123
+msgid "Orders"
+msgstr "Bestellungen"
+
+#: src/components/invoices/InvoiceCreate.tsx:436
+msgid "Pad digits"
+msgstr "Ziffern im Pad"
+
+#: src/components/pages/NotFoundPage.tsx:13
 msgid "Page not found"
 msgstr "Seite nicht gefunden"
 
-#: src/pages/LoginPage.tsx:182
-#: src/pages/LoginPage.tsx:197
-#: src/pages/user-detail/AuthMethodsTab.tsx:263
+#: src/components/ui/StatusBadge.tsx:9
+msgid "Paid"
+msgstr "Bezahlt"
+
+#: src/components/auth/Login.tsx:181
+#: src/components/auth/Login.tsx:196
+#: src/components/users/UserAuthMethodsTab.tsx:263
 msgid "Password"
 msgstr "Passwort"
 
-#: src/pages/LoginPage.tsx:57
+#: src/components/auth/Login.tsx:56
 msgid "Password is required"
 msgstr "Passwort ist erforderlich"
 
-#: src/pages/PasswordResetPage.tsx:87
+#: src/components/auth/PasswordReset.tsx:87
 msgid "Password updated"
 msgstr "Passwort aktualisiert"
 
-#: src/pages/PasswordResetPage.tsx:43
+#: src/components/auth/PasswordReset.tsx:43
 msgid "Passwords do not match"
 msgstr "Passwörter stimmen nicht überein"
 
-#: src/pages/UserDetailPage.tsx:163
+#: src/components/orders/OrderDetail.tsx:124
+#: src/components/ui/StatusBadge.tsx:48
+msgid "Payment"
+msgstr "Zahlung"
+
+#: src/components/invoices/InvoiceCreate.tsx:743
+#: src/components/orders/OrderDetail.tsx:255
+msgid "Payment link"
+msgstr "Zahlungslink"
+
+#: src/components/orders/OrderDetail.tsx:101
+msgid "Payment recorded"
+msgstr "Zahlung verbucht"
+
+#: src/components/orders/OrderDetail.tsx:283
+#: src/components/payments/PaymentsList.tsx:88
+#: src/components/ui/AppLayout.tsx:139
+msgid "Payments"
+msgstr "Zahlungen"
+
+#: src/components/invoices/InvoiceDetail.tsx:105
+msgid "PDF (ZUGFeRD)"
+msgstr "PDF (ZUGFeRD)"
+
+#: src/components/invoices/InvoiceCreate.tsx:238
+msgid "Pick a tax rate"
+msgstr "Wählen Sie einen Steuersatz"
+
+#: src/components/invoices/InvoiceDetail.tsx:207
+msgid "PO reference"
+msgstr "Bestellnummer"
+
+#: src/components/invoices/InvoiceCreate.tsx:425
+msgid "Prefix"
+msgstr "Präfix"
+
+#: src/components/ui/Pager.tsx:54
+msgid "Previous"
+msgstr "Zurück"
+
+#: src/components/users/UserDetail.tsx:162
 msgid "Profile"
 msgstr "Profil"
 
-#: src/pages/user-detail/HistoryTab.tsx:53
+#: src/components/users/UserHistoryTab.tsx:53
 msgid "Profile updated"
 msgstr "Profil aktualisiert"
 
-#: src/pages/user-detail/ProfileTab.tsx:68
+#: src/components/users/UserProfileTab.tsx:68
 msgid "Profile updated successfully."
 msgstr "Profil erfolgreich aktualisiert."
 
-#: src/pages/LoginPage.tsx:235
+#: src/components/orders/OrderDetail.tsx:139
+#: src/components/orders/OrderDetail.tsx:359
+#: src/components/payments/PaymentsList.tsx:37
+msgid "Provider"
+msgstr "Anbieter"
+
+#: src/components/document-templates/DocumentTemplateDetail.tsx:42
+#: src/components/document-templates/DocumentTemplatesList.tsx:231
+msgid "Public ID"
+msgstr "Öffentliche ID"
+
+#: src/components/document-templates/DocumentTemplatesList.tsx:276
+msgid "Public templates"
+msgstr "Öffentliche Vorlagen"
+
+#: src/components/document-templates/DocumentTemplatesList.tsx:131
+msgid "Public templates can be referenced by ID when creating invoices."
+msgstr "Bei der Rechnungserstellung kann auf öffentliche Vorlagen anhand ihrer ID verwiesen werden."
+
+#: src/components/invoices/InvoiceCreate.tsx:553
+msgid "Purchase order reference"
+msgstr "Bestellnummer"
+
+#: src/components/invoices/InvoiceCreate.tsx:664
+#: src/components/invoices/InvoiceDetail.tsx:227
+msgid "Qty"
+msgstr "Anzahl"
+
+#: src/components/invoices/InvoiceDetail.tsx:295
+#: src/components/taxes/TaxesList.tsx:31
+msgid "Rate"
+msgstr "Bewertung"
+
+#: src/components/invoices/InvoiceCreate.tsx:577
+msgid "Rate %"
+msgstr "Prozentsatz"
+
+#: src/components/events/EventDetail.tsx:37
+#: src/components/invoices/InvoiceCreate.tsx:506
+#: src/components/invoices/InvoiceDetail.tsx:185
+#: src/components/invoices/InvoicesList.tsx:131
+#: src/components/orders/OrderDetail.tsx:250
+#: src/components/orders/OrdersList.tsx:45
+msgid "Recipient"
+msgstr "Empfänger"
+
+#: src/components/invoices/InvoiceCreate.tsx:229
+msgid "Recipient name is required"
+msgstr "Der Name des Empfängers ist erforderlich"
+
+#: src/components/orders/OrderDetail.tsx:118
+#: src/components/orders/OrderDetail.tsx:152
+#: src/components/orders/OrderDetail.tsx:349
+msgid "Record payment"
+msgstr "Zahlung verbuchen"
+
+#: src/components/orders/OrderDetail.tsx:365
+#: src/components/payments/PaymentsList.tsx:66
+msgid "Recorded"
+msgstr "Aufgezeichnet"
+
+#: src/components/invoices/InvoiceCreate.tsx:571
+#: src/components/taxes/TaxesList.tsx:56
+msgid "Reference ID"
+msgstr "Referenz-ID"
+
+#: src/components/document-templates/DocumentTemplatesList.tsx:103
+msgid "Referenced when generating invoices by template."
+msgstr "Wird bei der Rechnungserstellung anhand einer Vorlage herangezogen."
+
+#: src/components/orders/OrderDetail.tsx:125
+#: src/components/ui/StatusBadge.tsx:43
+msgid "Refund"
+msgstr "Rückerstattung"
+
+#: src/components/invoices/TemplateAssetsFields.tsx:191
+msgid "Remove font"
+msgstr "Schriftart entfernen"
+
+#: src/components/invoices/TemplateAssetsFields.tsx:120
+msgid "Remove image"
+msgstr "Bild entfernen"
+
+#: src/components/invoices/InvoiceCreate.tsx:692
+msgid "Remove line item"
+msgstr "Einzelposten entfernen"
+
+#: src/components/invoices/InvoiceCreate.tsx:607
+msgid "Remove tax rate"
+msgstr "Steuersatz entfernen"
+
+#: src/components/document-templates/DocumentTemplatesList.tsx:279
+msgid "Rendered templates"
+msgstr "Gerenderte Vorlagen"
+
+#: src/components/invoices/TemplateAssetsFields.tsx:54
+msgid "Rendered with WeasyPrint; use {{ }} for Jinja variables."
+msgstr "Erstellt mit WeasyPrint; verwende {{ }} für Jinja-Variablen."
+
+#: src/components/invoices/TemplateAssetsFields.tsx:110
+#: src/components/invoices/TemplateAssetsFields.tsx:181
+msgid "Replace"
+msgstr "Ersetzen"
+
+#: src/components/invoices/InvoiceCreate.tsx:233
+#: src/components/invoices/InvoiceCreate.tsx:234
+#: src/components/invoices/InvoiceCreate.tsx:237
+msgid "Required"
+msgstr "Erforderlich"
+
+#: src/components/auth/Login.tsx:234
 msgid "Resend code"
 msgstr "Code erneut senden"
 
-#: src/pages/PasswordResetPage.tsx:105
+#: src/components/auth/PasswordReset.tsx:105
 msgid "Reset password"
 msgstr "Passwort zurücksetzen"
 
-#: src/pages/UserDetailPage.tsx:145
+#: src/components/users/UserDetail.tsx:144
 msgid "Restore"
 msgstr "Wiederherstellen"
 
-#: src/pages/user-detail/HistoryTab.tsx:22
-#: src/pages/user-detail/ProfileTab.tsx:85
-#: src/pages/UsersListPage.tsx:87
+#: src/components/users/UserHistoryTab.tsx:22
+#: src/components/users/UserProfileTab.tsx:85
+#: src/components/users/UsersList.tsx:87
 msgid "Salutation"
 msgstr "Anrede"
 
-#: src/pages/user-detail/ProfileTab.tsx:122
+#: src/components/users/UserProfileTab.tsx:122
 msgid "Save changes"
 msgstr "Änderungen speichern"
 
-#: src/pages/user-detail/DataTab.tsx:133
+#: src/components/users/UserDataTab.tsx:133
 msgid "Save data"
 msgstr "Daten speichern"
 
-#: src/pages/user-detail/ScopesTab.tsx:109
+#: src/components/users/UserScopesTab.tsx:109
 msgid "Save scopes"
 msgstr "Berechtigungen speichern"
 
-#: src/pages/user-detail/ProfileTab.tsx:67
+#: src/components/document-templates/PublicDocumentTemplateEditor.tsx:113
+msgid "Save template"
+msgstr "Vorlage speichern"
+
+#: src/components/users/UserProfileTab.tsx:67
 msgid "Saved"
 msgstr "Gespeichert"
 
-#: src/pages/user-detail/DataTab.tsx:95
+#: src/components/document-templates/PublicDocumentTemplateEditor.tsx:100
+msgid "Saving publishes a new rendered version for this public template. Uploaded fonts and images are only re-sent if you attach them again."
+msgstr "Durch das Speichern wird eine neu gerenderte Version dieser öffentlichen Vorlage veröffentlicht. Hochgeladene Schriftarten und Bilder werden nur dann erneut gesendet, wenn Sie sie erneut anhängen."
+
+#: src/components/users/UserDataTab.tsx:95
 msgid "Schemaless data used by apps. Saving replaces the whole object — no server-side merge is performed."
 msgstr "Schemalose Daten, die von Apps genutzt werden. Beim Speichern wird das gesamte Objekt ersetzt – serverseitig wird nichts zusammengeführt."
 
-#: src/pages/UserDetailPage.tsx:172
+#: src/components/users/UserDetail.tsx:171
 msgid "Scopes"
 msgstr "Berechtigungen"
 
-#: src/pages/user-detail/ScopesTab.tsx:65
+#: src/components/users/UserScopesTab.tsx:65
 msgid "Scopes updated"
 msgstr "Berechtigungen aktualisiert"
 
-#: src/tables/UsersTable.tsx:120
+#: src/components/ui/DataTable.tsx:74
+msgid "Search"
+msgstr "Suchen"
+
+#: src/components/events/EventsList.tsx:101
+msgid "Search events"
+msgstr "Veranstaltungen suchen"
+
+#: src/components/users/UsersTable.tsx:119
 msgid "Search name or email"
 msgstr "Name oder E-Mail suchen"
 
-#: src/pages/user-detail/ScopesTab.tsx:83
+#: src/components/invoices/InvoicesList.tsx:210
+msgid "Search number or recipient"
+msgstr "Nummer oder Empfänger suchen"
+
+#: src/components/orders/OrdersList.tsx:95
+msgid "Search orders"
+msgstr "Durchsuchungsbefehle"
+
+#: src/components/taxes/TaxesList.tsx:102
+msgid "Search tax rates"
+msgstr "Steuersätze suchen"
+
+#: src/components/users/UserScopesTab.tsx:83
 msgid "Select every scope this user should have. Removing a scope here revokes it; the change history is kept on the server."
 msgstr "Wählen Sie alle Berechtigungen aus, die dieser Benutzer haben soll. Das Entfernen einer Berechtigung widerruft sie; der Änderungsverlauf bleibt auf dem Server erhalten."
 
-#: src/pages/LoginPage.tsx:215
+#: src/components/auth/Login.tsx:214
 msgid "Send code"
 msgstr "Code senden"
 
-#: src/pages/PasswordResetPage.tsx:146
+#: src/components/auth/PasswordReset.tsx:146
 msgid "Send reset link"
 msgstr "Link zum Zurücksetzen senden"
 
-#: src/pages/PasswordResetPage.tsx:114
+#: src/components/auth/PasswordReset.tsx:114
 msgid "Set a new password for your account."
 msgstr "Legen Sie ein neues Passwort für Ihr Konto fest."
 
-#: src/pages/LoginPage.tsx:167
-#: src/pages/LoginPage.tsx:203
+#: src/components/auth/Login.tsx:166
+#: src/components/auth/Login.tsx:202
 msgid "Sign in"
 msgstr "Anmelden"
 
-#: src/pages/LoginPage.tsx:67
+#: src/components/auth/Login.tsx:66
 msgid "Sign in failed"
 msgstr "Anmeldung fehlgeschlagen"
 
-#: src/components/AppLayout.tsx:96
+#: src/components/ui/AppLayout.tsx:102
 msgid "Sign out"
 msgstr "Abmelden"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:139
+#: src/components/users/UserAuthMethodsTab.tsx:139
 msgid "Sign-in methods configured for this user."
 msgstr "Für diesen Benutzer konfigurierte Anmeldemethoden."
 
-#: src/components/AppLayout.tsx:85
+#: src/components/ui/AppLayout.tsx:91
 msgid "Signed in"
 msgstr "Angemeldet"
 
-#: src/components/QueryState.tsx:38
+#: src/components/invoices/InvoiceCreate.tsx:270
+msgid "Some required fields are missing or invalid."
+msgstr "Einige Pflichtfelder fehlen oder sind ungültig."
+
+#: src/components/ui/QueryState.tsx:38
 msgid "Something went wrong"
 msgstr "Etwas ist schiefgelaufen"
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:163
-#: src/tables/UsersTable.tsx:74
+#: src/components/invoices/InvoicesList.tsx:70
+msgid "Spreadsheet (.xlsx)"
+msgstr "Tabellenkalkulation (.xlsx)"
+
+#: src/components/taxes/TaxesList.tsx:50
+msgid "Standard"
+msgstr "Standard"
+
+#: src/components/invoices/InvoiceCreate.tsx:594
+msgid "Standard VAT"
+msgstr "Standard-Mehrwertsteuer"
+
+#: src/components/invoices/InvoicesList.tsx:91
+msgid "Start export"
+msgstr "Export starten"
+
+#: src/components/events/EventDetail.tsx:78
+#: src/components/events/EventsList.tsx:46
+msgid "Starts"
+msgstr "Beginnt"
+
+#: src/components/events/EventDetail.tsx:43
+#: src/components/orders/OrdersList.tsx:51
+#: src/components/users/UserAuthMethodsTab.tsx:163
+#: src/components/users/UsersTable.tsx:73
 msgid "Status"
 msgstr "Status"
 
-#: src/pages/NotFoundPage.tsx:16
+#: src/components/invoices/InvoiceDetail.tsx:117
+msgid "Summary"
+msgstr "Zusammenfassung"
+
+#: src/components/invoices/InvoiceCreate.tsx:448
+#: src/components/invoices/InvoiceDetail.tsx:157
+msgid "Supplier"
+msgstr "Lieferant"
+
+#: src/components/invoices/InvoiceCreate.tsx:680
+#: src/components/invoices/InvoiceDetail.tsx:233
+msgid "Tax"
+msgstr "Steuern"
+
+#: src/components/invoices/InvoiceCreate.tsx:615
+msgid "Tax exemption reason"
+msgstr "Grund für die Steuerbefreiung"
+
+#: src/components/invoices/InvoiceCreate.tsx:562
+#: src/components/taxes/TaxesList.tsx:77
+#: src/components/ui/AppLayout.tsx:155
+msgid "Tax rates"
+msgstr "Steuersätze"
+
+#: src/components/invoices/InvoiceDetail.tsx:143
+msgid "Tax total"
+msgstr "Steuergesamtbetrag"
+
+#: src/components/document-templates/DocumentTemplatesList.tsx:76
+msgid "Template created"
+msgstr "Vorlage erstellt"
+
+#: src/components/document-templates/DocumentTemplatesList.tsx:101
+msgid "Template ID"
+msgstr "Vorlagen-ID"
+
+#: src/components/invoices/InvoiceCreate.tsx:752
+msgid "Template name"
+msgstr "Vorlagenname"
+
+#: src/components/document-templates/PublicDocumentTemplateEditor.tsx:65
+msgid "Template updated"
+msgstr "Vorlage aktualisiert"
+
+#: src/components/ui/AppLayout.tsx:147
+msgid "Templates"
+msgstr "Vorlagen"
+
+#: src/components/pages/NotFoundPage.tsx:16
 msgid "The page you are looking for doesn't exist."
 msgstr "Die gesuchte Seite existiert nicht."
 
-#: src/pages/user-detail/DataTab.tsx:59
+#: src/components/users/UserDataTab.tsx:59
 msgid "The top level must be a JSON object."
 msgstr "Die oberste Ebene muss ein JSON-Objekt sein."
 
+#: src/components/document-templates/DocumentTemplatesList.tsx:207
+msgid "The underlying rendered templates. Each version is immutable."
+msgstr "Die zugrunde liegenden gerenderten Vorlagen. Jede Version ist unveränderlich."
+
 #. placeholder {0}: METHOD_LABELS[item.method]
-#: src/pages/user-detail/AuthMethodsTab.tsx:106
+#: src/components/users/UserAuthMethodsTab.tsx:106
 msgid "This disables the {0} method. Auth methods cannot be edited — disabling keeps the history intact."
 msgstr "Dies deaktiviert die Methode {0}. Anmeldemethoden können nicht bearbeitet werden – durch das Deaktivieren bleibt der Verlauf erhalten."
 
+#: src/components/orders/OrderDetail.tsx:178
+msgid "This issues the cancellation invoices needed to bring the order balance to zero. This cannot be undone."
+msgstr "Dadurch werden die Stornorechnungen ausgestellt, die erforderlich sind, um den Auftragssaldo auf Null zu bringen. Dieser Vorgang kann nicht rückgängig gemacht werden."
+
 #. placeholder {0}: fullName || user?.email
-#: src/pages/UserDetailPage.tsx:54
+#: src/components/users/UserDetail.tsx:53
 msgid "This soft-deletes {0}. They can be restored later."
 msgstr "Dies löscht {0} vorläufig. Der Benutzer kann später wiederhergestellt werden."
 
-#: src/pages/user-detail/AuthMethodsTab.tsx:296
+#: src/components/document-templates/DocumentTemplateDetail.tsx:79
+msgid "This template has no inline HTML or CSS."
+msgstr "Diese Vorlage enthält kein Inline-HTML oder Inline-CSS."
+
+#: src/components/users/UserAuthMethodsTab.tsx:296
 msgid "This value is shown only once and cannot be retrieved later."
 msgstr "Dieser Wert wird nur einmal angezeigt und kann später nicht abgerufen werden."
 
-#: src/pages/user-detail/HistoryTab.tsx:23
-#: src/pages/user-detail/ProfileTab.tsx:91
-#: src/pages/UsersListPage.tsx:92
+#: src/components/invoices/InvoiceCreate.tsx:699
+msgid "Ticket option label (optional)"
+msgstr "Bezeichnung der Ticketoption (optional)"
+
+#: src/components/users/UserHistoryTab.tsx:23
+#: src/components/users/UserProfileTab.tsx:91
+#: src/components/users/UsersList.tsx:92
 msgid "Title"
 msgstr "Titel"
 
-#: src/components/ColorSchemeToggle.tsx:16
+#: src/components/ui/ColorSchemeToggle.tsx:16
 msgid "Toggle color scheme"
 msgstr "Farbschema umschalten"
 
-#: src/pages/PasswordResetPage.tsx:148
+#: src/components/invoices/InvoiceCreate.tsx:728
+msgid "Total (gross)"
+msgstr "Gesamt (brutto)"
+
+#: src/components/orders/OrdersList.tsx:73
+msgid "Track order status, payments and invoices."
+msgstr "Verfolgen Sie den Bestellstatus, Zahlungen und Rechnungen."
+
+#: src/components/invoices/InvoiceCreate.tsx:592
+#: src/components/invoices/InvoiceDetail.tsx:298
+#: src/components/invoices/InvoicesList.tsx:124
+#: src/components/orders/OrderDetail.tsx:122
+#: src/components/orders/OrderDetail.tsx:296
+#: src/components/orders/OrderDetail.tsx:356
+#: src/components/payments/PaymentsList.tsx:31
+#: src/components/taxes/TaxesList.tsx:41
+msgid "Type"
+msgstr "Typ"
+
+#: src/components/invoices/InvoiceDetail.tsx:130
+msgid "Type code"
+msgstr "Typcode"
+
+#: src/components/invoices/InvoiceCreate.tsx:401
+#: src/components/orders/OrderDetail.tsx:144
+msgid "Unique per event"
+msgstr "Einzigartig pro Veranstaltung"
+
+#: src/components/invoices/InvoiceCreate.tsx:672
+#: src/components/invoices/InvoiceDetail.tsx:230
+msgid "Unit price"
+msgstr "Stückpreis"
+
+#: src/components/auth/PasswordReset.tsx:148
 msgid "Update password"
 msgstr "Passwort aktualisieren"
 
-#: src/pages/user-detail/DataTab.tsx:102
+#: src/components/document-templates/DocumentTemplatesList.tsx:167
+#: src/components/users/UserDataTab.tsx:102
 msgid "Updated"
 msgstr "Aktualisiert"
 
-#: src/pages/PasswordResetPage.tsx:39
-#: src/pages/user-detail/AuthMethodsTab.tsx:60
+#: src/components/invoices/TemplateAssetsFields.tsx:110
+#: src/components/invoices/TemplateAssetsFields.tsx:181
+msgid "Upload"
+msgstr "Hochladen"
+
+#: src/components/auth/PasswordReset.tsx:39
+#: src/components/users/UserAuthMethodsTab.tsx:60
 msgid "Use at least 8 characters"
 msgstr "Verwenden Sie mindestens 8 Zeichen"
 
-#: src/pages/LoginPage.tsx:170
+#: src/components/document-templates/DocumentTemplatesList.tsx:61
+msgid "Use lowercase letters, numbers, '-' and '_' only"
+msgstr "Verwende ausschließlich Kleinbuchstaben, Zahlen, „-“ und „_“"
+
+#: src/components/auth/Login.tsx:169
 msgid "Use your Event Central credentials."
 msgstr "Verwenden Sie Ihre Event-Central-Anmeldedaten."
 
-#: src/components/AppLayout.tsx:65
-#: src/pages/LoginPage.tsx:148
+#: src/components/auth/Login.tsx:147
 msgid "User administration"
 msgstr "Benutzerverwaltung"
 
-#: src/pages/user-detail/HistoryTab.tsx:51
-#: src/pages/UsersListPage.tsx:65
+#: src/components/users/UserHistoryTab.tsx:51
+#: src/components/users/UsersList.tsx:65
 msgid "User created"
 msgstr "Benutzer erstellt"
 
-#: src/pages/user-detail/DataTab.tsx:70
+#: src/components/users/UserDataTab.tsx:70
 msgid "User data has been replaced."
 msgstr "Die Benutzerdaten wurden ersetzt."
 
-#: src/pages/UserDetailPage.tsx:68
+#: src/components/users/UserDetail.tsx:67
 msgid "User deleted"
 msgstr "Benutzer gelöscht"
 
-#: src/pages/UserDetailPage.tsx:87
+#: src/components/users/UserDetail.tsx:86
 msgid "User restored"
 msgstr "Benutzer wiederhergestellt"
 
-#: src/components/AppLayout.tsx:109
-#: src/pages/UsersListPage.tsx:135
+#: src/components/ui/AppLayout.tsx:163
+#: src/components/users/UsersList.tsx:135
 msgid "Users"
 msgstr "Benutzer"
 
-#: src/pages/LoginPage.tsx:232
+#: src/components/invoices/InvoiceCreate.tsx:461
+#: src/components/invoices/InvoiceCreate.tsx:549
+#: src/components/invoices/InvoiceDetail.tsx:163
+#: src/components/invoices/InvoiceDetail.tsx:192
+#: src/components/orders/OrderDetail.tsx:252
+msgid "VAT ID"
+msgstr "Umsatzsteuer-Identifikationsnummer"
+
+#: src/components/auth/Login.tsx:231
 msgid "Verify and sign in"
 msgstr "Bestätigen und anmelden"
 
+#: src/components/payments/PaymentsList.tsx:58
+msgid "View order"
+msgstr "Bestellung anzeigen"
+
 #. placeholder {0}: form.values.email
-#: src/pages/LoginPage.tsx:102
+#: src/components/auth/Login.tsx:101
 msgid "We sent a one-time code to {0}."
 msgstr "Wir haben einen Einmalcode an {0} gesendet."
 
-#: src/pages/PasswordResetPage.tsx:112
+#: src/components/auth/PasswordReset.tsx:112
 msgid "We'll email you a link to reset it."
 msgstr "Wir senden Ihnen einen Link zum Zurücksetzen per E-Mail."
 
-#: src/pages/PasswordResetPage.tsx:88
+#: src/components/invoices/InvoiceDetail.tsx:108
+msgid "XRechnung (XML)"
+msgstr "XRechnung (XML)"
+
+#: src/components/auth/PasswordReset.tsx:88
 msgid "You can now sign in with your new password."
 msgstr "Sie können sich jetzt mit Ihrem neuen Passwort anmelden."
+
+#: src/components/invoices/InvoicesList.tsx:50
+msgid "Your download should start in a new tab."
+msgstr "Der Download sollte in einem neuen Tab starten."
+
+#: src/components/invoices/InvoiceCreate.tsx:477
+#: src/components/invoices/InvoiceCreate.tsx:537
+msgid "ZIP code"
+msgstr "Postleitzahl"

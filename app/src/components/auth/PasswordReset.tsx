@@ -17,7 +17,7 @@ import { Link, useNavigate, useSearchParams } from "react-router";
 import { confirmPasswordReset, startPasswordReset } from "../../api/auth";
 import { toRequestError } from "../../api/client";
 
-export function PasswordResetPage() {
+export function PasswordReset() {
   const { t } = useLingui();
   const { i18n } = useLingui();
   const navigate = useNavigate();

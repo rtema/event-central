@@ -1,3 +1,4 @@
+import { Trans, useLingui } from "@lingui/react/macro";
 import {
   AppShell,
   Avatar,
@@ -14,22 +15,29 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
+  IconCalendarEvent,
+  IconCash,
+  IconFileInvoice,
   IconLogout,
+  IconPercentage,
   IconReceipt2,
+  IconShoppingCart,
+  IconTemplate,
   IconUsers,
 } from "@tabler/icons-react";
-import { Trans, useLingui } from "@lingui/react/macro";
-import { NavLink as RouterNavLink, Outlet, useLocation, useNavigate } from "react-router";
+import { Outlet, NavLink as RouterNavLink, useLocation, useNavigate } from "react-router";
 import { useAuth } from "../auth/useAuth";
 import { ColorSchemeToggle } from "./ColorSchemeToggle";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export function AppLayout() {
+
   const [opened, { toggle, close }] = useDisclosure();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useLingui();
+  const { i18n } = useLingui();
 
   const handleLogout = async () => {
     await logout();
@@ -62,7 +70,7 @@ export function AppLayout() {
                 Event Central
               </Title>
               <Text size="xs" c="dimmed" lh={1}>
-                <Trans>User administration</Trans>
+                <Trans>E-invoicing console</Trans>
               </Text>
             </Box>
           </Group>
@@ -105,10 +113,58 @@ export function AppLayout() {
         <AppShell.Section grow component={ScrollArea}>
           <NavLink
             component={RouterNavLink}
-            to="/users"
+            to={`/${i18n.locale}/invoices`}
+            label={<Trans>Invoices</Trans>}
+            leftSection={<IconFileInvoice size={18} />}
+            active={location.pathname.startsWith(`/${i18n.locale}/invoices`)}
+            onClick={close}
+          />
+          <NavLink
+            component={RouterNavLink}
+            to={`/${i18n.locale}/orders`}
+            label={<Trans>Orders</Trans>}
+            leftSection={<IconShoppingCart size={18} />}
+            active={location.pathname.startsWith(`/${i18n.locale}/orders`)}
+            onClick={close}
+          />
+          <NavLink
+            component={RouterNavLink}
+            to={`/${i18n.locale}/events`}
+            label={<Trans>Events</Trans>}
+            leftSection={<IconCalendarEvent size={18} />}
+            active={location.pathname.startsWith(`/${i18n.locale}/events`)}
+            onClick={close}
+          />
+          <NavLink
+            component={RouterNavLink}
+            to={`/${i18n.locale}/payments`}
+            label={<Trans>Payments</Trans>}
+            leftSection={<IconCash size={18} />}
+            active={location.pathname.startsWith(`/${i18n.locale}/payments`)}
+            onClick={close}
+          />
+          <NavLink
+            component={RouterNavLink}
+            to={`/${i18n.locale}/document-templates`}
+            label={<Trans>Templates</Trans>}
+            leftSection={<IconTemplate size={18} />}
+            active={location.pathname.startsWith(`/${i18n.locale}/templates`)}
+            onClick={close}
+          />
+          <NavLink
+            component={RouterNavLink}
+            to={`/${i18n.locale}/taxes`}
+            label={<Trans>Tax rates</Trans>}
+            leftSection={<IconPercentage size={18} />}
+            active={location.pathname.startsWith(`/${i18n.locale}/taxes`)}
+            onClick={close}
+          />
+          <NavLink
+            component={RouterNavLink}
+            to={`/${i18n.locale}/users`}
             label={<Trans>Users</Trans>}
             leftSection={<IconUsers size={18} />}
-            active={location.pathname.startsWith("/users")}
+            active={location.pathname.startsWith(`/${i18n.locale}/users`)}
             onClick={close}
           />
         </AppShell.Section>

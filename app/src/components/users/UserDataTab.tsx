@@ -10,10 +10,10 @@ import {
 import { notifications } from "@mantine/notifications";
 import { IconDeviceFloppy, IconInfoCircle } from "@tabler/icons-react";
 import { useEffect, useMemo, useState } from "react";
-import { toRequestError } from "../../../api/client";
-import { usersApi } from "../../../api/users";
-import { useUserData } from "../../users/userHooks";
-import { formatDateTime } from "../../utils/datetime";
+import { toRequestError } from "../../api/client";
+import { usersApi } from "../../api/users";
+import { formatDateTime } from "../utils/datetime";
+import { useUserData } from "./userHooks";
 
 function pretty(value: unknown): string {
   try {
@@ -23,7 +23,7 @@ function pretty(value: unknown): string {
   }
 }
 
-export function DataTab({
+export function UserDataTab({
   userId,
   disabled,
 }: {

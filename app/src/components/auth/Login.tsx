@@ -30,7 +30,7 @@ import { useAuth } from "../auth/useAuth";
 
 type Mode = "password" | "code";
 
-export function LoginPage() {
+export function Login() {
   const { t } = useLingui();
   const { i18n } = useLingui();
   const { status } = useAuth();

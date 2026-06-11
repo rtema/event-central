@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -8,98 +8,50 @@ import {
   type ColumnDef,
   type SortingState,
 } from "@tanstack/react-table";
-import {
-  Badge,
-  Group,
-  Table,
-  Text,
-  TextInput,
-  UnstyledButton,
-} from "@mantine/core";
+import { Table, Text, TextInput, UnstyledButton } from "@mantine/core";
 import {
   IconArrowsSort,
-  IconChevronRight,
   IconSearch,
   IconSortAscending,
   IconSortDescending,
 } from "@tabler/icons-react";
 import { Trans, useLingui } from "@lingui/react/macro";
-import { useNavigate } from "react-router";
-import type { User } from "../../api/types";
-import { formatDate } from "../utils/datetime";
 
-function displayName(u: User): string {
-  return [u.title, u.firstName, u.lastName].filter(Boolean).join(" ");
+interface DataTableProps<T> {
+  data: T[];
+  columns: ColumnDef<T>[];
+  /** Initial sort state. */
+  initialSorting?: SortingState;
+  /** Show a global search box. */
+  searchable?: boolean;
+  searchPlaceholder?: string;
+  /** Invoked when a row is clicked (makes rows look/behave clickable). */
+  onRowClick?: (row: T) => void;
+  minWidth?: number;
+  emptyMessage?: React.ReactNode;
 }
 
-export function UsersTable({ users }: { users: User[] }) {
-  const { t, i18n } = useLingui();
-  const navigate = useNavigate();
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "createdAt", desc: true },
-  ]);
+/**
+ * Thin, reusable wrapper around TanStack Table rendered with Mantine. Each list
+ * screen supplies its own columns; sorting, filtering and row interaction are
+ * handled here so the screens stay declarative.
+ */
+export function DataTable<T>({
+  data,
+  columns,
+  initialSorting = [],
+  searchable = false,
+  searchPlaceholder,
+  onRowClick,
+  minWidth = 640,
+  emptyMessage,
+}: DataTableProps<T>) {
+  const { t } = useLingui();
+  const [sorting, setSorting] = useState<SortingState>(initialSorting);
   const [globalFilter, setGlobalFilter] = useState("");
 
-  const columns = useMemo<ColumnDef<User>[]>(
-    () => [
-      {
-        id: "name",
-        header: t`Name`,
-        accessorFn: (u) => displayName(u),
-        cell: (info) => (
-          <Text fw={500} size="sm">
-            {info.getValue<string>() || "—"}
-          </Text>
-        ),
-      },
-      {
-        accessorKey: "email",
-        header: t`Email`,
-        cell: (info) => (
-          <Text size="sm" c="dimmed">
-            {info.getValue<string>()}
-          </Text>
-        ),
-      },
-      {
-        accessorKey: "createdAt",
-        header: t`Created`,
-        cell: (info) => (
-          <Text size="sm">{formatDate(info.getValue<string>())}</Text>
-        ),
-      },
-      {
-        id: "status",
-        header: t`Status`,
-        accessorFn: (u) => (u.deletedAt ? "deleted" : "active"),
-        enableSorting: false,
-        cell: (info) =>
-          info.getValue<string>() === "deleted" ? (
-            <Badge color="gray" variant="light">
-              <Trans>Deleted</Trans>
-            </Badge>
-          ) : (
-            <Badge color="pine" variant="light">
-              <Trans>Active</Trans>
-            </Badge>
-          ),
-      },
-      {
-        id: "go",
-        header: "",
-        enableSorting: false,
-        cell: () => (
-          <Group justify="flex-end">
-            <IconChevronRight size={16} opacity={0.5} />
-          </Group>
-        ),
-      },
-    ],
-    [t],
-  );
-
   const table = useReactTable({
-    data: users,
+    data,
     columns,
     state: { sorting, globalFilter },
     onSortingChange: setSorting,
@@ -110,18 +62,22 @@ export function UsersTable({ users }: { users: User[] }) {
     getFilteredRowModel: getFilteredRowModel(),
   });
 
+  const rows = table.getRowModel().rows;
+
   return (
     <>
-      <TextInput
-        mb="md"
-        maw={320}
-        leftSection={<IconSearch size={16} />}
-        placeholder={t`Search name or email`}
-        value={globalFilter}
-        onChange={(e) => setGlobalFilter(e.currentTarget.value)}
-      />
-      <Table.ScrollContainer minWidth={640}>
-        <Table highlightOnHover verticalSpacing="sm" stickyHeader>
+      {searchable && (
+        <TextInput
+          mb="md"
+          maw={320}
+          leftSection={<IconSearch size={16} />}
+          placeholder={searchPlaceholder ?? t`Search`}
+          value={globalFilter}
+          onChange={(e) => setGlobalFilter(e.currentTarget.value)}
+        />
+      )}
+      <Table.ScrollContainer minWidth={minWidth}>
+        <Table highlightOnHover={!!onRowClick} verticalSpacing="sm" stickyHeader>
           <Table.Thead>
             {table.getHeaderGroups().map((hg) => (
               <Table.Tr key={hg.id}>
@@ -133,7 +89,11 @@ export function UsersTable({ users }: { users: User[] }) {
                       {canSort ? (
                         <UnstyledButton
                           onClick={header.column.getToggleSortingHandler()}
-                          style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 4,
+                          }}
                         >
                           <Text size="xs" fw={600} tt="uppercase" c="dimmed">
                             {flexRender(
@@ -164,11 +124,11 @@ export function UsersTable({ users }: { users: User[] }) {
             ))}
           </Table.Thead>
           <Table.Tbody>
-            {table.getRowModel().rows.map((row) => (
+            {rows.map((row) => (
               <Table.Tr
                 key={row.id}
-                onClick={() => navigate(`/${i18n.locale}/users/${row.original.id}`)}
-                style={{ cursor: "pointer" }}
+                onClick={onRowClick ? () => onRowClick(row.original) : undefined}
+                style={onRowClick ? { cursor: "pointer" } : undefined}
               >
                 {row.getVisibleCells().map((cell) => (
                   <Table.Td key={cell.id}>
@@ -181,9 +141,9 @@ export function UsersTable({ users }: { users: User[] }) {
         </Table>
       </Table.ScrollContainer>
 
-      {table.getRowModel().rows.length === 0 && (
+      {rows.length === 0 && (
         <Text c="dimmed" ta="center" py="xl" size="sm">
-          <Trans>No users match your search.</Trans>
+          {emptyMessage ?? <Trans>Nothing to show.</Trans>}
         </Text>
       )}
     </>

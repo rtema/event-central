@@ -10,12 +10,12 @@ import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { IconDeviceFloppy } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-import { toRequestError } from "../../../api/client";
-import type { User } from "../../../api/types";
-import { usersApi } from "../../../api/users";
-import { useUserMutations } from "../../users/userHooks";
+import { toRequestError } from "../../api/client";
+import type { User } from "../../api/types";
+import { usersApi } from "../../api/users";
+import { useUserMutations } from "./userHooks";
 
-export function ProfileTab({ user }: { user: User }) {
+export function UserProfileTab({ user }: { user: User }) {
   const { t } = useLingui();
   const { revalidateUser } = useUserMutations(user.id);
   const [saving, setSaving] = useState(false);

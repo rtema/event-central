@@ -1,10 +1,10 @@
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Group, Stack, Text, Timeline } from "@mantine/core";
 import { IconPencil, IconUserPlus } from "@tabler/icons-react";
-import { Trans, useLingui } from "@lingui/react/macro";
-import { useUserHistory } from "../../users/userHooks";
-import { QueryState } from "../../ui/QueryState";
-import { formatDateTime } from "../../utils/datetime";
-import type { UserHistoryItem } from "../../../api/types";
+import type { UserHistoryItem } from "../../api/types";
+import { QueryState } from "../ui/QueryState";
+import { formatDateTime } from "../utils/datetime";
+import { useUserHistory } from "./userHooks";
 
 const FIELD_KEYS: (keyof UserHistoryItem["newState"])[] = [
   "salutation",
@@ -14,7 +14,7 @@ const FIELD_KEYS: (keyof UserHistoryItem["newState"])[] = [
   "email",
 ];
 
-export function HistoryTab({ userId }: { userId: string }) {
+export function UserHistoryTab({ userId }: { userId: string }) {
   const { t } = useLingui();
   const { data, error, isLoading } = useUserHistory(userId);
 

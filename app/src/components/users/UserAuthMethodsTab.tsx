@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Trans, useLingui } from "@lingui/react/macro";
 import {
   ActionIcon,
   Alert,
@@ -26,13 +26,13 @@ import {
   IconPlus,
   IconTrash,
 } from "@tabler/icons-react";
-import { Trans, useLingui } from "@lingui/react/macro";
-import { usersApi } from "../../../api/users";
-import { toRequestError } from "../../../api/client";
-import { useUserAuth } from "../../users/userHooks";
-import { QueryState } from "../../ui/QueryState";
-import { formatDateTime } from "../../utils/datetime";
-import type { UserAuth, UserAuthMethod } from "../../../api/types";
+import { useState } from "react";
+import { toRequestError } from "../../api/client";
+import type { UserAuth, UserAuthMethod } from "../../api/types";
+import { usersApi } from "../../api/users";
+import { QueryState } from "../ui/QueryState";
+import { formatDateTime } from "../utils/datetime";
+import { useUserAuth } from "./userHooks";
 
 const METHOD_LABELS: Record<UserAuthMethod, string> = {
   "api-token": "API token",
@@ -45,7 +45,7 @@ const METHOD_LABELS: Record<UserAuthMethod, string> = {
 /** Methods whose secret is shown exactly once after creation. */
 const ONE_TIME_SECRET: UserAuthMethod[] = ["api-token", "backup-code", "otp"];
 
-export function AuthMethodsTab({ userId }: { userId: string }) {
+export function UserAuthMethodsTab({ userId }: { userId: string }) {
   const { t } = useLingui();
   const { data, error, isLoading, mutate } = useUserAuth(userId);
   const [createOpen, setCreateOpen] = useState(false);

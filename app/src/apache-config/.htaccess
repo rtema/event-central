@@ -1,0 +1,12 @@
+RewriteEngine On
+
+# 1. Prevent looping for direct HTML requests
+RewriteCond %{REQUEST_URI} !\.html$
+
+# 2. Redirect root URL to /sign-in
+RewriteRule ^$ /index [R=302,L]
+
+# 3. Serve /<path>.html when /<path> /<path>/something or /<lang>/<path>/something is requested
+# You may in the future use the following regex
+# ^([a-z]{2}/)?([a-z0-9\-]{3,200})(/.*)?$
+RewriteRule ^([a-z]{2}/)?(index|invitation|registration|my-next|control|sign-in|reset-password)(/.*)?$ /$2.html [L]

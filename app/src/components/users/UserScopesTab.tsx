@@ -9,13 +9,13 @@ import {
 import { notifications } from "@mantine/notifications";
 import { IconDeviceFloppy } from "@tabler/icons-react";
 import { useEffect, useMemo, useState } from "react";
-import { toRequestError } from "../../../api/client";
-import type { MultiLanguageLabel } from "../../../api/types";
-import { usersApi } from "../../../api/users";
-import { QueryState } from "../../ui/QueryState";
-import { useScopes, useUserScopes } from "../../users/userHooks";
+import { toRequestError } from "../../api/client";
+import type { MultiLanguageLabel } from "../../api/types";
+import { usersApi } from "../../api/users";
+import { QueryState } from "../ui/QueryState";
+import { useScopes, useUserScopes } from "./userHooks";
 
-export function ScopesTab({
+export function UserScopesTab({
   userId,
   disabled,
 }: {
@@ -45,7 +45,7 @@ export function ScopesTab({
   const options = useMemo(() => {
     const map = new Map<string, string>();
     for (const s of catalog.data ?? []) {
-      const label = s.label && s.label[locale as keyof MultiLanguageLabel] ?? s.label?.en ?? s.scope;
+      const label = (s.label && s.label[locale as keyof MultiLanguageLabel]) ?? s.label?.en ?? s.scope;
       map.set(s.scope, label === s.scope ? s.scope : `${s.scope} — ${label}`);
     }
     // Make sure currently-granted scopes are always selectable, even if the
