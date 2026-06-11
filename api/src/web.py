@@ -1,0 +1,39 @@
+"""FastAPI application factory — entry point for the *web* start-up mode.
+
+A reverse proxy / TLS terminator will sit in front of the web replicas; that is
+configured separately (not part of this repository yet).
+"""
+
+from __future__ import annotations
+
+from fastapi import FastAPI
+
+from src.auth.router import router as auth_router
+from src.config import settings
+from src.core.errors import register_exception_handlers
+from src.logger import configure_logger
+from src.misc.router import router as misc_router
+from src.users.router import router as users_router
+
+
+def create_app() -> FastAPI:
+    configure_logger(settings.log_level)
+
+    app = FastAPI(
+        title="Event Central",
+        description="Centralized API to generate e-invoices (E-Rechnungen) for events",
+        version="1.0.0",
+        docs_url="/docs",
+        openapi_url="/openapi.json",
+    )
+
+    register_exception_handlers(app)
+
+    app.include_router(misc_router)
+    app.include_router(auth_router)
+    app.include_router(users_router)
+
+    return app
+
+
+app = create_app()
