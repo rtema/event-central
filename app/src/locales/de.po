@@ -1,0 +1,564 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-06-10 09:40+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: de\n"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:272
+msgid "A secret will be generated and shown once after creation."
+msgstr "Ein Geheimnis wird erzeugt und nach dem Erstellen einmalig angezeigt."
+
+#: src/pages/user-detail/ScopesTab.tsx:66
+msgid "Access has been updated for this user."
+msgstr "Die Zugriffsrechte für diesen Benutzer wurden aktualisiert."
+
+#: src/components/AppLayout.tsx:75
+msgid "Account menu"
+msgstr "Kontomenü"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:190
+#: src/pages/UserDetailPage.tsx:122
+#: src/tables/UsersTable.tsx:84
+msgid "Active"
+msgstr "Aktiv"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:243
+msgid "Add auth method"
+msgstr "Anmeldemethode hinzufügen"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:146
+msgid "Add method"
+msgstr "Methode hinzufügen"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:86
+msgid "Auth method added"
+msgstr "Anmeldemethode hinzugefügt"
+
+#: src/pages/UserDetailPage.tsx:166
+msgid "Auth methods"
+msgstr "Anmeldemethoden"
+
+#: src/pages/PasswordResetPage.tsx:153
+msgid "Back to sign in"
+msgstr "Zurück zur Anmeldung"
+
+#: src/pages/UserDetailPage.tsx:104
+msgid "Back to users"
+msgstr "Zurück zu den Benutzern"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:112
+#: src/pages/user-detail/AuthMethodsTab.tsx:279
+#: src/pages/UserDetailPage.tsx:60
+#: src/pages/UsersListPage.tsx:115
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: src/components/LanguageSwitcher.tsx:27
+msgid "Change language"
+msgstr "Sprache ändern"
+
+#: src/pages/LoginPage.tsx:101
+#: src/pages/PasswordResetPage.tsx:66
+msgid "Check your inbox"
+msgstr "Prüfen Sie Ihren Posteingang"
+
+#: src/pages/PasswordResetPage.tsx:107
+msgid "Choose a new password"
+msgstr "Wählen Sie ein neues Passwort"
+
+#: src/pages/PasswordResetPage.tsx:134
+msgid "Confirm password"
+msgstr "Passwort bestätigen"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:310
+msgid "Copied"
+msgstr "Kopiert"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:310
+#: src/pages/user-detail/AuthMethodsTab.tsx:315
+msgid "Copy"
+msgstr "Kopieren"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:291
+msgid "Copy this secret now"
+msgstr "Kopieren Sie dieses Geheimnis jetzt"
+
+#: src/components/QueryState.tsx:44
+msgid "Correlation ID"
+msgstr "Korrelations-ID"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:93
+msgid "Could not add auth method"
+msgstr "Anmeldemethode konnte nicht hinzugefügt werden"
+
+#: src/pages/PasswordResetPage.tsx:51
+msgid "Could not complete request"
+msgstr "Anfrage konnte nicht abgeschlossen werden"
+
+#: src/pages/UsersListPage.tsx:74
+msgid "Could not create user"
+msgstr "Benutzer konnte nicht erstellt werden"
+
+#: src/pages/UserDetailPage.tsx:74
+msgid "Could not delete"
+msgstr "Löschen nicht möglich"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:126
+msgid "Could not disable"
+msgstr "Deaktivieren nicht möglich"
+
+#: src/pages/UserDetailPage.tsx:93
+msgid "Could not restore"
+msgstr "Wiederherstellen nicht möglich"
+
+#: src/pages/user-detail/ProfileTab.tsx:73
+msgid "Could not save"
+msgstr "Speichern nicht möglich"
+
+#: src/pages/user-detail/DataTab.tsx:75
+msgid "Could not save data"
+msgstr "Daten konnten nicht gespeichert werden"
+
+#: src/pages/user-detail/ScopesTab.tsx:71
+msgid "Could not update scopes"
+msgstr "Berechtigungen konnten nicht aktualisiert werden"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:282
+msgid "Create"
+msgstr "Erstellen"
+
+#: src/pages/UsersListPage.tsx:118
+msgid "Create user"
+msgstr "Benutzer erstellen"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:166
+#: src/pages/UserDetailPage.tsx:130
+#: src/tables/UsersTable.tsx:67
+msgid "Created"
+msgstr "Erstellt"
+
+#: src/components/ColorSchemeToggle.tsx:11
+msgid "Dark mode"
+msgstr "Dunkler Modus"
+
+#: src/pages/UserDetailPage.tsx:178
+msgid "Data"
+msgstr "Daten"
+
+#: src/pages/user-detail/DataTab.tsx:69
+msgid "Data saved"
+msgstr "Daten gespeichert"
+
+#: src/pages/UserDetailPage.tsx:60
+#: src/pages/UserDetailPage.tsx:154
+msgid "Delete"
+msgstr "Löschen"
+
+#: src/pages/UserDetailPage.tsx:51
+msgid "Delete user"
+msgstr "Benutzer löschen"
+
+#: src/pages/UserDetailPage.tsx:118
+#: src/pages/UserDetailPage.tsx:134
+#: src/tables/UsersTable.tsx:80
+msgid "Deleted"
+msgstr "Gelöscht"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:169
+msgid "Detail"
+msgstr "Detail"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:112
+#: src/pages/user-detail/AuthMethodsTab.tsx:219
+#: src/pages/user-detail/AuthMethodsTab.tsx:224
+msgid "Disable"
+msgstr "Deaktivieren"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:103
+msgid "Disable auth method"
+msgstr "Anmeldemethode deaktivieren"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:120
+#: src/pages/user-detail/AuthMethodsTab.tsx:194
+msgid "Disabled"
+msgstr "Deaktiviert"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:330
+msgid "Done"
+msgstr "Fertig"
+
+#: src/pages/user-detail/ProfileTab.tsx:92
+#: src/pages/UsersListPage.tsx:93
+msgid "e.g. Dr."
+msgstr "z. B. Dr."
+
+#: src/pages/user-detail/ProfileTab.tsx:86
+#: src/pages/UsersListPage.tsx:88
+msgid "e.g. Mr, Ms"
+msgstr "z. B. Herr, Frau"
+
+#: src/pages/LoginPage.tsx:188
+#: src/pages/PasswordResetPage.tsx:120
+#: src/pages/user-detail/HistoryTab.tsx:26
+#: src/pages/user-detail/ProfileTab.tsx:110
+#: src/pages/UsersListPage.tsx:108
+#: src/tables/UsersTable.tsx:58
+msgid "Email"
+msgstr "E-Mail"
+
+#: src/pages/LoginPage.tsx:183
+msgid "Email code"
+msgstr "Code per E-Mail"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:264
+msgid "Email or phone number"
+msgstr "E-Mail oder Telefonnummer"
+
+#: src/pages/LoginPage.tsx:55
+#: src/pages/PasswordResetPage.tsx:36
+#: src/pages/user-detail/ProfileTab.tsx:33
+#: src/pages/UsersListPage.tsx:45
+msgid "Enter a valid email"
+msgstr "Geben Sie eine gültige E-Mail-Adresse ein"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:62
+msgid "Enter an email or phone number"
+msgstr "Geben Sie eine E-Mail-Adresse oder Telefonnummer ein"
+
+#: src/pages/LoginPage.tsx:59
+msgid "Enter the code"
+msgstr "Geben Sie den Code ein"
+
+#: src/pages/LoginPage.tsx:220
+msgid "Enter the code we emailed you."
+msgstr "Geben Sie den Code ein, den wir Ihnen per E-Mail gesendet haben."
+
+#: src/pages/user-detail/HistoryTab.tsx:24
+#: src/pages/user-detail/ProfileTab.tsx:97
+#: src/pages/UsersListPage.tsx:97
+msgid "First name"
+msgstr "Vorname"
+
+#: src/pages/user-detail/ProfileTab.tsx:34
+#: src/pages/UsersListPage.tsx:46
+msgid "First name is required"
+msgstr "Vorname ist erforderlich"
+
+#: src/pages/LoginPage.tsx:206
+msgid "Forgot your password?"
+msgstr "Passwort vergessen?"
+
+#: src/pages/NotFoundPage.tsx:19
+msgid "Go to users"
+msgstr "Zu den Benutzern"
+
+#: src/pages/user-detail/ScopesTab.tsx:89
+msgid "Granted scopes"
+msgstr "Erteilte Berechtigungen"
+
+#: src/pages/UserDetailPage.tsx:184
+msgid "History"
+msgstr "Verlauf"
+
+#: src/pages/PasswordResetPage.tsx:67
+msgid "If the address exists, a reset link is on its way."
+msgstr "Falls die Adresse existiert, ist ein Link zum Zurücksetzen unterwegs."
+
+#: src/pages/user-detail/DataTab.tsx:55
+msgid "Invalid JSON — please fix the syntax."
+msgstr "Ungültiges JSON – bitte korrigieren Sie die Syntax."
+
+#: src/components/LanguageSwitcher.tsx:26
+msgid "Language"
+msgstr "Sprache"
+
+#: src/pages/user-detail/HistoryTab.tsx:25
+#: src/pages/user-detail/ProfileTab.tsx:103
+#: src/pages/UsersListPage.tsx:102
+msgid "Last name"
+msgstr "Nachname"
+
+#: src/pages/user-detail/ProfileTab.tsx:35
+#: src/pages/UsersListPage.tsx:47
+msgid "Last name is required"
+msgstr "Nachname ist erforderlich"
+
+#: src/components/ColorSchemeToggle.tsx:11
+msgid "Light mode"
+msgstr "Heller Modus"
+
+#: src/pages/LoginPage.tsx:151
+msgid "Manage accounts, sign-in methods and access scopes for the e-invoicing platform."
+msgstr "Verwalten Sie Konten, Anmeldemethoden und Zugriffsberechtigungen für die E-Rechnungs-Plattform."
+
+#: src/pages/UsersListPage.tsx:138
+msgid "Manage accounts, sign-in methods and access."
+msgstr "Verwalten Sie Konten, Anmeldemethoden und Zugriff."
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:160
+#: src/pages/user-detail/AuthMethodsTab.tsx:248
+msgid "Method"
+msgstr "Methode"
+
+#: src/tables/UsersTable.tsx:48
+msgid "Name"
+msgstr "Name"
+
+#: src/pages/PasswordResetPage.tsx:129
+msgid "New password"
+msgstr "Neues Passwort"
+
+#: src/pages/UsersListPage.tsx:83
+#: src/pages/UsersListPage.tsx:142
+msgid "New user"
+msgstr "Neuer Benutzer"
+
+#: src/pages/user-detail/DataTab.tsx:110
+msgid "No data has been stored for this user yet."
+msgstr "Für diesen Benutzer wurden noch keine Daten gespeichert."
+
+#: src/pages/user-detail/ScopesTab.tsx:96
+msgid "No matching scope"
+msgstr "Keine passende Berechtigung"
+
+#: src/pages/user-detail/ScopesTab.tsx:90
+msgid "No scopes granted"
+msgstr "Keine Berechtigungen erteilt"
+
+#: src/tables/UsersTable.tsx:187
+msgid "No users match your search."
+msgstr "Keine Benutzer entsprechen Ihrer Suche."
+
+#: src/pages/UsersListPage.tsx:155
+msgid "No users yet. Create the first one."
+msgstr "Noch keine Benutzer. Erstellen Sie den ersten."
+
+#: src/components/QueryState.tsx:59
+msgid "Nothing here yet"
+msgstr "Noch nichts vorhanden"
+
+#: src/pages/NotFoundPage.tsx:13
+msgid "Page not found"
+msgstr "Seite nicht gefunden"
+
+#: src/pages/LoginPage.tsx:182
+#: src/pages/LoginPage.tsx:197
+#: src/pages/user-detail/AuthMethodsTab.tsx:263
+msgid "Password"
+msgstr "Passwort"
+
+#: src/pages/LoginPage.tsx:57
+msgid "Password is required"
+msgstr "Passwort ist erforderlich"
+
+#: src/pages/PasswordResetPage.tsx:87
+msgid "Password updated"
+msgstr "Passwort aktualisiert"
+
+#: src/pages/PasswordResetPage.tsx:43
+msgid "Passwords do not match"
+msgstr "Passwörter stimmen nicht überein"
+
+#: src/pages/UserDetailPage.tsx:163
+msgid "Profile"
+msgstr "Profil"
+
+#: src/pages/user-detail/HistoryTab.tsx:53
+msgid "Profile updated"
+msgstr "Profil aktualisiert"
+
+#: src/pages/user-detail/ProfileTab.tsx:68
+msgid "Profile updated successfully."
+msgstr "Profil erfolgreich aktualisiert."
+
+#: src/pages/LoginPage.tsx:235
+msgid "Resend code"
+msgstr "Code erneut senden"
+
+#: src/pages/PasswordResetPage.tsx:105
+msgid "Reset password"
+msgstr "Passwort zurücksetzen"
+
+#: src/pages/UserDetailPage.tsx:145
+msgid "Restore"
+msgstr "Wiederherstellen"
+
+#: src/pages/user-detail/HistoryTab.tsx:22
+#: src/pages/user-detail/ProfileTab.tsx:85
+#: src/pages/UsersListPage.tsx:87
+msgid "Salutation"
+msgstr "Anrede"
+
+#: src/pages/user-detail/ProfileTab.tsx:122
+msgid "Save changes"
+msgstr "Änderungen speichern"
+
+#: src/pages/user-detail/DataTab.tsx:133
+msgid "Save data"
+msgstr "Daten speichern"
+
+#: src/pages/user-detail/ScopesTab.tsx:109
+msgid "Save scopes"
+msgstr "Berechtigungen speichern"
+
+#: src/pages/user-detail/ProfileTab.tsx:67
+msgid "Saved"
+msgstr "Gespeichert"
+
+#: src/pages/user-detail/DataTab.tsx:95
+msgid "Schemaless data used by apps. Saving replaces the whole object — no server-side merge is performed."
+msgstr "Schemalose Daten, die von Apps genutzt werden. Beim Speichern wird das gesamte Objekt ersetzt – serverseitig wird nichts zusammengeführt."
+
+#: src/pages/UserDetailPage.tsx:172
+msgid "Scopes"
+msgstr "Berechtigungen"
+
+#: src/pages/user-detail/ScopesTab.tsx:65
+msgid "Scopes updated"
+msgstr "Berechtigungen aktualisiert"
+
+#: src/tables/UsersTable.tsx:120
+msgid "Search name or email"
+msgstr "Name oder E-Mail suchen"
+
+#: src/pages/user-detail/ScopesTab.tsx:83
+msgid "Select every scope this user should have. Removing a scope here revokes it; the change history is kept on the server."
+msgstr "Wählen Sie alle Berechtigungen aus, die dieser Benutzer haben soll. Das Entfernen einer Berechtigung widerruft sie; der Änderungsverlauf bleibt auf dem Server erhalten."
+
+#: src/pages/LoginPage.tsx:215
+msgid "Send code"
+msgstr "Code senden"
+
+#: src/pages/PasswordResetPage.tsx:146
+msgid "Send reset link"
+msgstr "Link zum Zurücksetzen senden"
+
+#: src/pages/PasswordResetPage.tsx:114
+msgid "Set a new password for your account."
+msgstr "Legen Sie ein neues Passwort für Ihr Konto fest."
+
+#: src/pages/LoginPage.tsx:167
+#: src/pages/LoginPage.tsx:203
+msgid "Sign in"
+msgstr "Anmelden"
+
+#: src/pages/LoginPage.tsx:67
+msgid "Sign in failed"
+msgstr "Anmeldung fehlgeschlagen"
+
+#: src/components/AppLayout.tsx:96
+msgid "Sign out"
+msgstr "Abmelden"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:139
+msgid "Sign-in methods configured for this user."
+msgstr "Für diesen Benutzer konfigurierte Anmeldemethoden."
+
+#: src/components/AppLayout.tsx:85
+msgid "Signed in"
+msgstr "Angemeldet"
+
+#: src/components/QueryState.tsx:38
+msgid "Something went wrong"
+msgstr "Etwas ist schiefgelaufen"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:163
+#: src/tables/UsersTable.tsx:74
+msgid "Status"
+msgstr "Status"
+
+#: src/pages/NotFoundPage.tsx:16
+msgid "The page you are looking for doesn't exist."
+msgstr "Die gesuchte Seite existiert nicht."
+
+#: src/pages/user-detail/DataTab.tsx:59
+msgid "The top level must be a JSON object."
+msgstr "Die oberste Ebene muss ein JSON-Objekt sein."
+
+#. placeholder {0}: METHOD_LABELS[item.method]
+#: src/pages/user-detail/AuthMethodsTab.tsx:106
+msgid "This disables the {0} method. Auth methods cannot be edited — disabling keeps the history intact."
+msgstr "Dies deaktiviert die Methode {0}. Anmeldemethoden können nicht bearbeitet werden – durch das Deaktivieren bleibt der Verlauf erhalten."
+
+#. placeholder {0}: fullName || user?.email
+#: src/pages/UserDetailPage.tsx:54
+msgid "This soft-deletes {0}. They can be restored later."
+msgstr "Dies löscht {0} vorläufig. Der Benutzer kann später wiederhergestellt werden."
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:296
+msgid "This value is shown only once and cannot be retrieved later."
+msgstr "Dieser Wert wird nur einmal angezeigt und kann später nicht abgerufen werden."
+
+#: src/pages/user-detail/HistoryTab.tsx:23
+#: src/pages/user-detail/ProfileTab.tsx:91
+#: src/pages/UsersListPage.tsx:92
+msgid "Title"
+msgstr "Titel"
+
+#: src/components/ColorSchemeToggle.tsx:16
+msgid "Toggle color scheme"
+msgstr "Farbschema umschalten"
+
+#: src/pages/PasswordResetPage.tsx:148
+msgid "Update password"
+msgstr "Passwort aktualisieren"
+
+#: src/pages/user-detail/DataTab.tsx:102
+msgid "Updated"
+msgstr "Aktualisiert"
+
+#: src/pages/PasswordResetPage.tsx:39
+#: src/pages/user-detail/AuthMethodsTab.tsx:60
+msgid "Use at least 8 characters"
+msgstr "Verwenden Sie mindestens 8 Zeichen"
+
+#: src/pages/LoginPage.tsx:170
+msgid "Use your Event Central credentials."
+msgstr "Verwenden Sie Ihre Event-Central-Anmeldedaten."
+
+#: src/components/AppLayout.tsx:65
+#: src/pages/LoginPage.tsx:148
+msgid "User administration"
+msgstr "Benutzerverwaltung"
+
+#: src/pages/user-detail/HistoryTab.tsx:51
+#: src/pages/UsersListPage.tsx:65
+msgid "User created"
+msgstr "Benutzer erstellt"
+
+#: src/pages/user-detail/DataTab.tsx:70
+msgid "User data has been replaced."
+msgstr "Die Benutzerdaten wurden ersetzt."
+
+#: src/pages/UserDetailPage.tsx:68
+msgid "User deleted"
+msgstr "Benutzer gelöscht"
+
+#: src/pages/UserDetailPage.tsx:87
+msgid "User restored"
+msgstr "Benutzer wiederhergestellt"
+
+#: src/components/AppLayout.tsx:109
+#: src/pages/UsersListPage.tsx:135
+msgid "Users"
+msgstr "Benutzer"
+
+#: src/pages/LoginPage.tsx:232
+msgid "Verify and sign in"
+msgstr "Bestätigen und anmelden"
+
+#. placeholder {0}: form.values.email
+#: src/pages/LoginPage.tsx:102
+msgid "We sent a one-time code to {0}."
+msgstr "Wir haben einen Einmalcode an {0} gesendet."
+
+#: src/pages/PasswordResetPage.tsx:112
+msgid "We'll email you a link to reset it."
+msgstr "Wir senden Ihnen einen Link zum Zurücksetzen per E-Mail."
+
+#: src/pages/PasswordResetPage.tsx:88
+msgid "You can now sign in with your new password."
+msgstr "Sie können sich jetzt mit Ihrem neuen Passwort anmelden."

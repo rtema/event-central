@@ -1,0 +1,564 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-06-10 09:40+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:272
+msgid "A secret will be generated and shown once after creation."
+msgstr "A secret will be generated and shown once after creation."
+
+#: src/pages/user-detail/ScopesTab.tsx:66
+msgid "Access has been updated for this user."
+msgstr "Access has been updated for this user."
+
+#: src/components/AppLayout.tsx:75
+msgid "Account menu"
+msgstr "Account menu"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:190
+#: src/pages/UserDetailPage.tsx:122
+#: src/tables/UsersTable.tsx:84
+msgid "Active"
+msgstr "Active"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:243
+msgid "Add auth method"
+msgstr "Add auth method"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:146
+msgid "Add method"
+msgstr "Add method"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:86
+msgid "Auth method added"
+msgstr "Auth method added"
+
+#: src/pages/UserDetailPage.tsx:166
+msgid "Auth methods"
+msgstr "Auth methods"
+
+#: src/pages/PasswordResetPage.tsx:153
+msgid "Back to sign in"
+msgstr "Back to sign in"
+
+#: src/pages/UserDetailPage.tsx:104
+msgid "Back to users"
+msgstr "Back to users"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:112
+#: src/pages/user-detail/AuthMethodsTab.tsx:279
+#: src/pages/UserDetailPage.tsx:60
+#: src/pages/UsersListPage.tsx:115
+msgid "Cancel"
+msgstr "Cancel"
+
+#: src/components/LanguageSwitcher.tsx:27
+msgid "Change language"
+msgstr "Change language"
+
+#: src/pages/LoginPage.tsx:101
+#: src/pages/PasswordResetPage.tsx:66
+msgid "Check your inbox"
+msgstr "Check your inbox"
+
+#: src/pages/PasswordResetPage.tsx:107
+msgid "Choose a new password"
+msgstr "Choose a new password"
+
+#: src/pages/PasswordResetPage.tsx:134
+msgid "Confirm password"
+msgstr "Confirm password"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:310
+msgid "Copied"
+msgstr "Copied"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:310
+#: src/pages/user-detail/AuthMethodsTab.tsx:315
+msgid "Copy"
+msgstr "Copy"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:291
+msgid "Copy this secret now"
+msgstr "Copy this secret now"
+
+#: src/components/QueryState.tsx:44
+msgid "Correlation ID"
+msgstr "Correlation ID"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:93
+msgid "Could not add auth method"
+msgstr "Could not add auth method"
+
+#: src/pages/PasswordResetPage.tsx:51
+msgid "Could not complete request"
+msgstr "Could not complete request"
+
+#: src/pages/UsersListPage.tsx:74
+msgid "Could not create user"
+msgstr "Could not create user"
+
+#: src/pages/UserDetailPage.tsx:74
+msgid "Could not delete"
+msgstr "Could not delete"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:126
+msgid "Could not disable"
+msgstr "Could not disable"
+
+#: src/pages/UserDetailPage.tsx:93
+msgid "Could not restore"
+msgstr "Could not restore"
+
+#: src/pages/user-detail/ProfileTab.tsx:73
+msgid "Could not save"
+msgstr "Could not save"
+
+#: src/pages/user-detail/DataTab.tsx:75
+msgid "Could not save data"
+msgstr "Could not save data"
+
+#: src/pages/user-detail/ScopesTab.tsx:71
+msgid "Could not update scopes"
+msgstr "Could not update scopes"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:282
+msgid "Create"
+msgstr "Create"
+
+#: src/pages/UsersListPage.tsx:118
+msgid "Create user"
+msgstr "Create user"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:166
+#: src/pages/UserDetailPage.tsx:130
+#: src/tables/UsersTable.tsx:67
+msgid "Created"
+msgstr "Created"
+
+#: src/components/ColorSchemeToggle.tsx:11
+msgid "Dark mode"
+msgstr "Dark mode"
+
+#: src/pages/UserDetailPage.tsx:178
+msgid "Data"
+msgstr "Data"
+
+#: src/pages/user-detail/DataTab.tsx:69
+msgid "Data saved"
+msgstr "Data saved"
+
+#: src/pages/UserDetailPage.tsx:60
+#: src/pages/UserDetailPage.tsx:154
+msgid "Delete"
+msgstr "Delete"
+
+#: src/pages/UserDetailPage.tsx:51
+msgid "Delete user"
+msgstr "Delete user"
+
+#: src/pages/UserDetailPage.tsx:118
+#: src/pages/UserDetailPage.tsx:134
+#: src/tables/UsersTable.tsx:80
+msgid "Deleted"
+msgstr "Deleted"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:169
+msgid "Detail"
+msgstr "Detail"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:112
+#: src/pages/user-detail/AuthMethodsTab.tsx:219
+#: src/pages/user-detail/AuthMethodsTab.tsx:224
+msgid "Disable"
+msgstr "Disable"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:103
+msgid "Disable auth method"
+msgstr "Disable auth method"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:120
+#: src/pages/user-detail/AuthMethodsTab.tsx:194
+msgid "Disabled"
+msgstr "Disabled"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:330
+msgid "Done"
+msgstr "Done"
+
+#: src/pages/user-detail/ProfileTab.tsx:92
+#: src/pages/UsersListPage.tsx:93
+msgid "e.g. Dr."
+msgstr "e.g. Dr."
+
+#: src/pages/user-detail/ProfileTab.tsx:86
+#: src/pages/UsersListPage.tsx:88
+msgid "e.g. Mr, Ms"
+msgstr "e.g. Mr, Ms"
+
+#: src/pages/LoginPage.tsx:188
+#: src/pages/PasswordResetPage.tsx:120
+#: src/pages/user-detail/HistoryTab.tsx:26
+#: src/pages/user-detail/ProfileTab.tsx:110
+#: src/pages/UsersListPage.tsx:108
+#: src/tables/UsersTable.tsx:58
+msgid "Email"
+msgstr "Email"
+
+#: src/pages/LoginPage.tsx:183
+msgid "Email code"
+msgstr "Email code"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:264
+msgid "Email or phone number"
+msgstr "Email or phone number"
+
+#: src/pages/LoginPage.tsx:55
+#: src/pages/PasswordResetPage.tsx:36
+#: src/pages/user-detail/ProfileTab.tsx:33
+#: src/pages/UsersListPage.tsx:45
+msgid "Enter a valid email"
+msgstr "Enter a valid email"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:62
+msgid "Enter an email or phone number"
+msgstr "Enter an email or phone number"
+
+#: src/pages/LoginPage.tsx:59
+msgid "Enter the code"
+msgstr "Enter the code"
+
+#: src/pages/LoginPage.tsx:220
+msgid "Enter the code we emailed you."
+msgstr "Enter the code we emailed you."
+
+#: src/pages/user-detail/HistoryTab.tsx:24
+#: src/pages/user-detail/ProfileTab.tsx:97
+#: src/pages/UsersListPage.tsx:97
+msgid "First name"
+msgstr "First name"
+
+#: src/pages/user-detail/ProfileTab.tsx:34
+#: src/pages/UsersListPage.tsx:46
+msgid "First name is required"
+msgstr "First name is required"
+
+#: src/pages/LoginPage.tsx:206
+msgid "Forgot your password?"
+msgstr "Forgot your password?"
+
+#: src/pages/NotFoundPage.tsx:19
+msgid "Go to users"
+msgstr "Go to users"
+
+#: src/pages/user-detail/ScopesTab.tsx:89
+msgid "Granted scopes"
+msgstr "Granted scopes"
+
+#: src/pages/UserDetailPage.tsx:184
+msgid "History"
+msgstr "History"
+
+#: src/pages/PasswordResetPage.tsx:67
+msgid "If the address exists, a reset link is on its way."
+msgstr "If the address exists, a reset link is on its way."
+
+#: src/pages/user-detail/DataTab.tsx:55
+msgid "Invalid JSON — please fix the syntax."
+msgstr "Invalid JSON — please fix the syntax."
+
+#: src/components/LanguageSwitcher.tsx:26
+msgid "Language"
+msgstr "Language"
+
+#: src/pages/user-detail/HistoryTab.tsx:25
+#: src/pages/user-detail/ProfileTab.tsx:103
+#: src/pages/UsersListPage.tsx:102
+msgid "Last name"
+msgstr "Last name"
+
+#: src/pages/user-detail/ProfileTab.tsx:35
+#: src/pages/UsersListPage.tsx:47
+msgid "Last name is required"
+msgstr "Last name is required"
+
+#: src/components/ColorSchemeToggle.tsx:11
+msgid "Light mode"
+msgstr "Light mode"
+
+#: src/pages/LoginPage.tsx:151
+msgid "Manage accounts, sign-in methods and access scopes for the e-invoicing platform."
+msgstr "Manage accounts, sign-in methods and access scopes for the e-invoicing platform."
+
+#: src/pages/UsersListPage.tsx:138
+msgid "Manage accounts, sign-in methods and access."
+msgstr "Manage accounts, sign-in methods and access."
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:160
+#: src/pages/user-detail/AuthMethodsTab.tsx:248
+msgid "Method"
+msgstr "Method"
+
+#: src/tables/UsersTable.tsx:48
+msgid "Name"
+msgstr "Name"
+
+#: src/pages/PasswordResetPage.tsx:129
+msgid "New password"
+msgstr "New password"
+
+#: src/pages/UsersListPage.tsx:83
+#: src/pages/UsersListPage.tsx:142
+msgid "New user"
+msgstr "New user"
+
+#: src/pages/user-detail/DataTab.tsx:110
+msgid "No data has been stored for this user yet."
+msgstr "No data has been stored for this user yet."
+
+#: src/pages/user-detail/ScopesTab.tsx:96
+msgid "No matching scope"
+msgstr "No matching scope"
+
+#: src/pages/user-detail/ScopesTab.tsx:90
+msgid "No scopes granted"
+msgstr "No scopes granted"
+
+#: src/tables/UsersTable.tsx:187
+msgid "No users match your search."
+msgstr "No users match your search."
+
+#: src/pages/UsersListPage.tsx:155
+msgid "No users yet. Create the first one."
+msgstr "No users yet. Create the first one."
+
+#: src/components/QueryState.tsx:59
+msgid "Nothing here yet"
+msgstr "Nothing here yet"
+
+#: src/pages/NotFoundPage.tsx:13
+msgid "Page not found"
+msgstr "Page not found"
+
+#: src/pages/LoginPage.tsx:182
+#: src/pages/LoginPage.tsx:197
+#: src/pages/user-detail/AuthMethodsTab.tsx:263
+msgid "Password"
+msgstr "Password"
+
+#: src/pages/LoginPage.tsx:57
+msgid "Password is required"
+msgstr "Password is required"
+
+#: src/pages/PasswordResetPage.tsx:87
+msgid "Password updated"
+msgstr "Password updated"
+
+#: src/pages/PasswordResetPage.tsx:43
+msgid "Passwords do not match"
+msgstr "Passwords do not match"
+
+#: src/pages/UserDetailPage.tsx:163
+msgid "Profile"
+msgstr "Profile"
+
+#: src/pages/user-detail/HistoryTab.tsx:53
+msgid "Profile updated"
+msgstr "Profile updated"
+
+#: src/pages/user-detail/ProfileTab.tsx:68
+msgid "Profile updated successfully."
+msgstr "Profile updated successfully."
+
+#: src/pages/LoginPage.tsx:235
+msgid "Resend code"
+msgstr "Resend code"
+
+#: src/pages/PasswordResetPage.tsx:105
+msgid "Reset password"
+msgstr "Reset password"
+
+#: src/pages/UserDetailPage.tsx:145
+msgid "Restore"
+msgstr "Restore"
+
+#: src/pages/user-detail/HistoryTab.tsx:22
+#: src/pages/user-detail/ProfileTab.tsx:85
+#: src/pages/UsersListPage.tsx:87
+msgid "Salutation"
+msgstr "Salutation"
+
+#: src/pages/user-detail/ProfileTab.tsx:122
+msgid "Save changes"
+msgstr "Save changes"
+
+#: src/pages/user-detail/DataTab.tsx:133
+msgid "Save data"
+msgstr "Save data"
+
+#: src/pages/user-detail/ScopesTab.tsx:109
+msgid "Save scopes"
+msgstr "Save scopes"
+
+#: src/pages/user-detail/ProfileTab.tsx:67
+msgid "Saved"
+msgstr "Saved"
+
+#: src/pages/user-detail/DataTab.tsx:95
+msgid "Schemaless data used by apps. Saving replaces the whole object — no server-side merge is performed."
+msgstr "Schemaless data used by apps. Saving replaces the whole object — no server-side merge is performed."
+
+#: src/pages/UserDetailPage.tsx:172
+msgid "Scopes"
+msgstr "Scopes"
+
+#: src/pages/user-detail/ScopesTab.tsx:65
+msgid "Scopes updated"
+msgstr "Scopes updated"
+
+#: src/tables/UsersTable.tsx:120
+msgid "Search name or email"
+msgstr "Search name or email"
+
+#: src/pages/user-detail/ScopesTab.tsx:83
+msgid "Select every scope this user should have. Removing a scope here revokes it; the change history is kept on the server."
+msgstr "Select every scope this user should have. Removing a scope here revokes it; the change history is kept on the server."
+
+#: src/pages/LoginPage.tsx:215
+msgid "Send code"
+msgstr "Send code"
+
+#: src/pages/PasswordResetPage.tsx:146
+msgid "Send reset link"
+msgstr "Send reset link"
+
+#: src/pages/PasswordResetPage.tsx:114
+msgid "Set a new password for your account."
+msgstr "Set a new password for your account."
+
+#: src/pages/LoginPage.tsx:167
+#: src/pages/LoginPage.tsx:203
+msgid "Sign in"
+msgstr "Sign in"
+
+#: src/pages/LoginPage.tsx:67
+msgid "Sign in failed"
+msgstr "Sign in failed"
+
+#: src/components/AppLayout.tsx:96
+msgid "Sign out"
+msgstr "Sign out"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:139
+msgid "Sign-in methods configured for this user."
+msgstr "Sign-in methods configured for this user."
+
+#: src/components/AppLayout.tsx:85
+msgid "Signed in"
+msgstr "Signed in"
+
+#: src/components/QueryState.tsx:38
+msgid "Something went wrong"
+msgstr "Something went wrong"
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:163
+#: src/tables/UsersTable.tsx:74
+msgid "Status"
+msgstr "Status"
+
+#: src/pages/NotFoundPage.tsx:16
+msgid "The page you are looking for doesn't exist."
+msgstr "The page you are looking for doesn't exist."
+
+#: src/pages/user-detail/DataTab.tsx:59
+msgid "The top level must be a JSON object."
+msgstr "The top level must be a JSON object."
+
+#. placeholder {0}: METHOD_LABELS[item.method]
+#: src/pages/user-detail/AuthMethodsTab.tsx:106
+msgid "This disables the {0} method. Auth methods cannot be edited — disabling keeps the history intact."
+msgstr "This disables the {0} method. Auth methods cannot be edited — disabling keeps the history intact."
+
+#. placeholder {0}: fullName || user?.email
+#: src/pages/UserDetailPage.tsx:54
+msgid "This soft-deletes {0}. They can be restored later."
+msgstr "This soft-deletes {0}. They can be restored later."
+
+#: src/pages/user-detail/AuthMethodsTab.tsx:296
+msgid "This value is shown only once and cannot be retrieved later."
+msgstr "This value is shown only once and cannot be retrieved later."
+
+#: src/pages/user-detail/HistoryTab.tsx:23
+#: src/pages/user-detail/ProfileTab.tsx:91
+#: src/pages/UsersListPage.tsx:92
+msgid "Title"
+msgstr "Title"
+
+#: src/components/ColorSchemeToggle.tsx:16
+msgid "Toggle color scheme"
+msgstr "Toggle color scheme"
+
+#: src/pages/PasswordResetPage.tsx:148
+msgid "Update password"
+msgstr "Update password"
+
+#: src/pages/user-detail/DataTab.tsx:102
+msgid "Updated"
+msgstr "Updated"
+
+#: src/pages/PasswordResetPage.tsx:39
+#: src/pages/user-detail/AuthMethodsTab.tsx:60
+msgid "Use at least 8 characters"
+msgstr "Use at least 8 characters"
+
+#: src/pages/LoginPage.tsx:170
+msgid "Use your Event Central credentials."
+msgstr "Use your Event Central credentials."
+
+#: src/components/AppLayout.tsx:65
+#: src/pages/LoginPage.tsx:148
+msgid "User administration"
+msgstr "User administration"
+
+#: src/pages/user-detail/HistoryTab.tsx:51
+#: src/pages/UsersListPage.tsx:65
+msgid "User created"
+msgstr "User created"
+
+#: src/pages/user-detail/DataTab.tsx:70
+msgid "User data has been replaced."
+msgstr "User data has been replaced."
+
+#: src/pages/UserDetailPage.tsx:68
+msgid "User deleted"
+msgstr "User deleted"
+
+#: src/pages/UserDetailPage.tsx:87
+msgid "User restored"
+msgstr "User restored"
+
+#: src/components/AppLayout.tsx:109
+#: src/pages/UsersListPage.tsx:135
+msgid "Users"
+msgstr "Users"
+
+#: src/pages/LoginPage.tsx:232
+msgid "Verify and sign in"
+msgstr "Verify and sign in"
+
+#. placeholder {0}: form.values.email
+#: src/pages/LoginPage.tsx:102
+msgid "We sent a one-time code to {0}."
+msgstr "We sent a one-time code to {0}."
+
+#: src/pages/PasswordResetPage.tsx:112
+msgid "We'll email you a link to reset it."
+msgstr "We'll email you a link to reset it."
+
+#: src/pages/PasswordResetPage.tsx:88
+msgid "You can now sign in with your new password."
+msgstr "You can now sign in with your new password."
