@@ -11,6 +11,8 @@ from __future__ import annotations
 SCOPE_USERS_READ_ALL = "users:read:all"
 SCOPE_USERS_WRITE_ALL = "users:write:all"
 
+SCOPE_CATALOGUE = [SCOPE_USERS_READ_ALL, SCOPE_USERS_WRITE_ALL]
+
 
 def parse_scope(scope_str: str | None) -> set[str]:
     """Split a space-delimited scope string into a set."""
