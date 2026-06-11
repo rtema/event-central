@@ -13,7 +13,7 @@ pydantic-settings==2.14.1
 email-validator==2.3.0
 
 # --- Auth ------------------------------------------------------------------
-PyJWT==2.13.0
+PyJWT[crypto]==2.13.0
 argon2-cffi==25.1.0
 
 # --- Object storage (S3 compatible: MinIO in dev, dual S3 in prod) ---------

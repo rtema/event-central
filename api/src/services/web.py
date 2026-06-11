@@ -7,6 +7,7 @@ configured separately (not part of this repository yet).
 from __future__ import annotations
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from src.auth.router import router as auth_router
 from src.config import settings
@@ -14,6 +15,10 @@ from src.core.errors import register_exception_handlers
 from src.logger import configure_logger
 from src.misc.router import router as misc_router
 from src.users.router import router as users_router
+
+origins = [
+    "http://localhost:7430",
+]
 
 
 def create_app() -> FastAPI:
@@ -25,6 +30,14 @@ def create_app() -> FastAPI:
         version="1.0.0",
         docs_url="/docs",
         openapi_url="/openapi.json",
+    )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
 
     register_exception_handlers(app)

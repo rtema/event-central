@@ -1,0 +1,21 @@
+{
+  "cSpell.words": [
+    "ABCDEFGHJKLMNPQRSTUVWXYZ",
+    "boto3",
+    "cffi",
+    "E-Rechnungen",
+    "fastapi",
+    "ondelete",
+    "openobserve",
+    "openpyxl",
+    "pango",
+    "passwordless",
+    "psycopg",
+    "pydantic",
+    "selectin",
+    "TOTP",
+    "userinfo",
+    "uvicorn",
+    "weasyprint"
+  ]
+}
