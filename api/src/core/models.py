@@ -33,6 +33,17 @@ class CreatedAtMixin:
     )
 
 
+class UpdatedAtMixin:
+    """Adds an automatic ``updated_at`` column (set on insert and update)."""
+
+    updated_at: Mapped[dt.datetime] = mapped_column(
+        TZDateTime,
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+
 class CreatedByMixin:
     """Adds a ``created_by`` column to track the actor.
     Format is as follows: User ID or APP: user:userId or app:appKey

@@ -78,3 +78,30 @@ def require_any_scope(*required: str):
         return authenticated_actor
 
     return _dep
+
+
+def require_event_path_scope(resource: str, action: str):
+    """Dependency factory for routes carrying an ``event_id`` path parameter.
+
+    The required scope is resolved against the concrete event in the path, so a
+    token granted ``<resource>:<action>:<eventId>`` (or the broader ``:all``)
+    is accepted. This is the precise per-event check the spec describes for the
+    event-scoped routes (e.g. ``events:read:{eventId}``).
+    """
+
+    def _dep(
+        event_id: str,
+        authenticated_actor: AuthenticatedActor = Depends(get_authenticated_actor),
+    ) -> AuthenticatedActor:
+        required = [
+            scope_utils.build_scope(resource, action, "all"),
+            scope_utils.build_scope(resource, action, event_id),
+        ]
+        if not scope_utils.has_any(authenticated_actor.scopes, required):
+            raise ForbiddenError(
+                f"missing required scope: {scope_utils.build_scope(resource, action, event_id)}",
+                error="insufficient_scope",
+            )
+        return authenticated_actor
+
+    return _dep

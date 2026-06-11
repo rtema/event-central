@@ -47,6 +47,24 @@ class ForbiddenError(AppError):
     error_code = "forbidden"
 
 
+class ConflictError(AppError):
+    http_status = status.HTTP_409_CONFLICT
+    error_code = "conflict"
+
+
+class NotImplementedYetError(AppError):
+    """A scaffolded endpoint whose behaviour is delivered in a later step.
+
+    Step 2 wires up every route, its validation and its persistence schema, but
+    the e-invoice generation (step 3) and validation (step 4) are not built yet.
+    Those routes raise this and surface a clear ``501`` rather than pretending
+    to succeed.
+    """
+
+    http_status = status.HTTP_501_NOT_IMPLEMENTED
+    error_code = "not_implemented"
+
+
 class AuthError(Exception):
     """OAuth-style error rendered as the AuthError payload."""
 

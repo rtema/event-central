@@ -1,21 +1,28 @@
 {
   "cSpell.words": [
     "ABCDEFGHJKLMNPQRSTUVWXYZ",
+    "Bearbeiten",
     "boto3",
     "cffi",
     "E-Rechnungen",
     "fastapi",
+    "iban",
+    "nullable",
     "ondelete",
+    "onupdate",
     "openobserve",
     "openpyxl",
     "pango",
     "passwordless",
     "psycopg",
     "pydantic",
+    "Rechnungskreis",
     "selectin",
+    "tema",
     "TOTP",
     "userinfo",
     "uvicorn",
     "weasyprint"
-  ]
+  ],
+  "cSpell.language": "en,de-DE"
 }

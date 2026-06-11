@@ -8,10 +8,143 @@ requirement for the same resource/action.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
+# --------------------------------------------------------------------------- #
+# Scope constants
+# --------------------------------------------------------------------------- #
+# Users
 SCOPE_USERS_READ_ALL = "users:read:all"
 SCOPE_USERS_WRITE_ALL = "users:write:all"
 
-SCOPE_CATALOGUE = [SCOPE_USERS_READ_ALL, SCOPE_USERS_WRITE_ALL]
+# Invoices
+SCOPE_INVOICES_READ_ALL = "invoices:read:all"
+SCOPE_INVOICES_READ_OWN = "invoices:read:own"
+SCOPE_INVOICES_WRITE_ALL = "invoices:write:all"
+SCOPE_INVOICES_WRITE_OWN = "invoices:write:own"
+
+# Orders
+SCOPE_ORDERS_READ_ALL = "orders:read:all"
+SCOPE_ORDERS_READ_OWN = "orders:read:own"
+SCOPE_ORDERS_WRITE_ALL = "orders:write:all"
+SCOPE_ORDERS_WRITE_OWN = "orders:write:own"
+
+# Events
+SCOPE_EVENTS_READ_ALL = "events:read:all"
+SCOPE_EVENTS_READ_OWN = "events:read:own"
+SCOPE_EVENTS_WRITE_ALL = "events:write:all"
+SCOPE_EVENTS_WRITE_OWN = "events:write:own"
+
+# Payments
+SCOPE_PAYMENTS_READ_ALL = "payments:read:all"
+SCOPE_PAYMENTS_READ_OWN = "payments:read:own"
+SCOPE_PAYMENTS_WRITE_ALL = "payments:write:all"
+SCOPE_PAYMENTS_WRITE_OWN = "payments:write:own"
+
+# Emails (read-only, reserved for a later feature)
+SCOPE_EMAILS_READ_ALL = "emails:read:all"
+
+# Backend / misc data (document templates, taxes, scope catalogue, ...)
+SCOPE_BACKEND_READ = "backend:read"
+SCOPE_BACKEND_WRITE = "backend:write"
+
+# A placeholder qualifier the catalogue documents for the per-event variants.
+# Concrete grants substitute a real event id (e.g. ``invoices:read:tema-2026``).
+EVENT_QUALIFIER = "{eventId}"
+
+
+@dataclass(frozen=True, slots=True)
+class ScopeDef:
+    """A documented scope and its human-readable labels (for /api/v1/scopes)."""
+
+    scope: str
+    de: str
+    en: str
+
+
+# Resources that follow the read/write × all/own/{eventId} matrix, with the
+# plural noun used to render labels.
+_RESOURCE_LABELS = {
+    "invoices": ("Rechnungen", "invoices"),
+    "orders": ("Bestellungen", "orders"),
+    "events": ("Events", "events"),
+    "payments": ("Zahlungen", "payments"),
+}
+_ACTION_LABELS = {
+    "read": ("Zugriff auf", "Allow access to"),
+    "write": ("Bearbeiten/erstellen von", "Allow creation/modification of"),
+}
+
+
+def _qualifier_phrase(
+    resource: str, qualifier: str, de_plural: str, en_plural: str
+) -> tuple[str, str]:
+    if qualifier == "all":
+        return f"alle {de_plural}", f"all {en_plural}"
+    if qualifier == "own":
+        return f"eigene {de_plural}", f"{en_plural} created by the user/app"
+    # Per-event variant ({eventId}); events read as a single specific event.
+    if resource == "events":
+        return "ein bestimmtes Event", "a specific event"
+    return f"{de_plural} eines Events", f"{en_plural} associated with an event"
+
+
+def _build_catalogue() -> list[ScopeDef]:
+    out: list[ScopeDef] = [
+        ScopeDef(SCOPE_USERS_READ_ALL, "Zugriff auf alle Nutzer",
+                 "Allow access to all users"),
+        ScopeDef(
+            SCOPE_USERS_WRITE_ALL, "Bearbeiten/erstellen von allen Nutzern",
+            "Allow creation/modification of all users"
+        ),
+    ]
+    for resource, (de_plural, en_plural) in _RESOURCE_LABELS.items():
+        for action, (de_verb, en_verb) in _ACTION_LABELS.items():
+            for qualifier in ("all", "own", EVENT_QUALIFIER):
+                de_q, en_q = _qualifier_phrase(
+                    resource, qualifier, de_plural, en_plural)
+                out.append(
+                    ScopeDef(
+                        f"{resource}:{action}:{qualifier}",
+                        f"{de_verb} {de_q}",
+                        f"{en_verb} {en_q}",
+                    )
+                )
+    out.append(
+        ScopeDef(SCOPE_EMAILS_READ_ALL, "Zugriff auf alle E-Mails",
+                 "Allow access to all emails")
+    )
+    out.append(
+        ScopeDef(
+            SCOPE_BACKEND_READ,
+            "Backend-Daten lesen",
+            "Read misc data necessary to access the backend",
+        )
+    )
+    out.append(
+        ScopeDef(
+            SCOPE_BACKEND_WRITE,
+            "Backend-Daten schreiben",
+            "Write misc data necessary to access the backend",
+        )
+    )
+    return out
+
+
+# The full documented catalogue mirrors the OpenAPI ``oAuth`` security scheme,
+# including the templated ``:{eventId}`` variants (shown to clients, never
+# granted directly — a concrete event id is substituted at grant time).
+SCOPES: list[ScopeDef] = _build_catalogue()
+
+# Backwards-compatible flat list of every documented scope string. The seed in
+# src/main.py grants the resource-wide (``:all``) and ``backend:`` scopes from
+# this list; the templated ``:{eventId}`` entries are intentionally not granted.
+SCOPE_CATALOGUE = [s.scope for s in SCOPES]
+
+
+def build_scope(resource: str, action: str, qualifier: str) -> str:
+    """Build a concrete scope, e.g. ``invoices:read:tema-2026`` or ``invoices:read:all``."""
+    return f"{resource}:{action}:{qualifier}"
 
 
 def parse_scope(scope_str: str | None) -> set[str]:
