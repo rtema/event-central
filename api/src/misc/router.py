@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -13,6 +14,7 @@ from src.core.scopes import SCOPE_BACKEND_READ, SCOPES
 from src.invoices import service as invoicing_service
 from src.invoices.schemas import TaxesListResponse, TaxOut
 from src.misc.schemas import ScopeOut, ScopesListResponse
+from src.storage.s3 import get_storage
 
 router = APIRouter(tags=["Misc"])
 
@@ -22,10 +24,16 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@router.get("/health/db", summary="Readiness probe")
+@router.get("/health/db", summary="DB connection probe")
 def health_db(db: Session = Depends(get_db)) -> dict[str, str]:
     db.execute(text("SELECT 1"))
     return {"status": "ready"}
+
+
+@router.get("/health/storage", summary="Storage connection probe")
+def health_storage(db: Session = Depends(get_db)) -> JSONResponse:
+    status, code = get_storage().test_connections()
+    return JSONResponse(status, code)
 
 
 @router.get("/api/v1/taxes", response_model=TaxesListResponse, summary="List tax rates")
@@ -34,10 +42,12 @@ def list_taxes(
     db: Session = Depends(get_db),
     _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ)),
 ) -> TaxesListResponse:
-    taxes, total = invoicing_service.list_all_taxes(db, limit=page.limit, offset=page.offset)
+    taxes, total = invoicing_service.list_all_taxes(
+        db, limit=page.limit, offset=page.offset)
     return TaxesListResponse(
         data=[TaxOut.model_validate(t) for t in taxes],
-        pagination=make_pagination(total, limit=page.limit, offset=page.offset),
+        pagination=make_pagination(
+            total, limit=page.limit, offset=page.offset),
     )
 
 
