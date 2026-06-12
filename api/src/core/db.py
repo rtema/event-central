@@ -22,10 +22,10 @@ class Base(DeclarativeBase):
 
 _engine = create_engine(
     settings.database_url,
-    pool_size=settings.db_pool_size,
-    max_overflow=settings.db_max_overflow,
+    pool_size=settings.api_db_pool_size,
+    max_overflow=settings.api_db_max_overflow,
     pool_pre_ping=True,
-    echo=settings.db_echo,
+    echo=settings.api_db_echo,
     future=True,
 )
 

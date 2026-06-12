@@ -23,7 +23,7 @@ from src.payments.router import router as payments_router
 from src.users.router import router as users_router
 
 origins = [
-    "http://localhost:7430",
+    settings.app_base_url,
 ]
 
 

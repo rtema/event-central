@@ -16,16 +16,108 @@ from src.logger import configure_logger
 log = logging.getLogger("app.restore")
 
 
-def run(email: str | None, password: str | None) -> None:
+def create_secrets(secret_names: list[str], directory: str) -> bool:
+    """Create every necessary secret to start up the development environment.
+
+    For each name in ``list_of_secrets`` a file ``<directory>/<name>`` is
+    created containing a freshly generated, URL-safe random token. The file
+    names are expected to match the lower-case setting names that
+    pydantic-settings reads from ``secrets_dir`` (e.g. ``jwt_secret``,
+    ``signed_url_secret``).
+
+    Existing secrets are never overwritten.
+
+    Returns ``True`` only if every requested secret now exists (whether it was
+    just created or was already present); ``False`` if anything went wrong,
+    e.g. the directory is not writable or a secret name is unsafe.
+    """
+    import logging
+    import os
+    from pathlib import Path
+    from secrets import token_urlsafe
+
+    configure_logger(settings.log_level)
+    log = logging.getLogger("seed")
+
+    target = Path(directory)
+
+    # --- Make sure the target directory exists and is usable ---------------
+    try:
+        target.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        log.error("cannot create secrets directory %s: %s", target, exc)
+        return False
+
+    if not target.is_dir():
+        log.error("secrets path %s exists but is not a directory", target)
+        return False
+
+    if not os.access(target, os.W_OK | os.X_OK):
+        log.error("secrets directory %s is not writable", target)
+        return False
+
+    created = 0
+    skipped = 0
+    failed = 0
+
+    for secret_name in secret_names:
+        # Reject names that would escape the directory or aren't a plain file.
+        if (not secret_name or secret_name in {".", ".."} or
+                "/" in secret_name or "\\" in secret_name):
+            log.error("invalid secret name %r, skipping", secret_name)
+            failed += 1
+            continue
+
+        path = target / secret_name
+        if path.exists():
+            log.info("secret %r already exists, leaving untouched", secret_name)
+            skipped += 1
+            continue
+
+        try:
+            # O_EXCL: never clobber (also guards against a concurrent writer).
+            # mode 0o600: readable/writable by the owner only.
+            fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            try:
+                # No trailing newline: the token is the exact secret value.
+                os.write(fd, token_urlsafe(32).encode("utf-8"))
+            finally:
+                os.close(fd)
+        except FileExistsError:
+            # Lost a race with another writer; treat as "already there".
+            log.info("secret %r already exists, leaving untouched", secret_name)
+            skipped += 1
+            continue
+        except OSError as exc:
+            log.error("failed to write secret %r: %s", secret_name, exc)
+            failed += 1
+            continue
+
+        log.info("created secret %r", secret_name)
+        created += 1
+
+    log.info(
+        "secrets summary: %d created, %d skipped, %d failed (in %s)",
+        created,
+        skipped,
+        failed,
+        target,
+    )
+
+    # Only proceed if every secret is already set up
+    return (failed == 0 and created == 0)
+
+
+def create_admin_account(email: str | None, password: str | None) -> None:
     """Create an initial admin account.
 
-     This grants a full set of resource-wide admin scopes and adds a
-     password login.
+       This grants a full set of resource-wide admin scopes and adds a
+       password login.
 
-     Idempotent: re-running with the same email won't duplicate the user or its
-     scope grants. A password method is added when one is supplied, or generated
-     for a brand-new admin so the account is immediately usable.
-     """
+       Idempotent: re-running with the same email won't duplicate the user or its
+       scope grants. A password method is added when one is supplied, or generated
+       for a brand-new admin so the account is immediately usable.
+       """
     import logging
     import secrets
 
@@ -38,7 +130,7 @@ def run(email: str | None, password: str | None) -> None:
     from src.users.models import User, UserScope
 
     configure_logger(settings.log_level)
-    log = logging.getLogger("src.seed")
+    log = logging.getLogger("seed")
 
     email = email or os.getenv("SEED_ADMIN_EMAIL", "admin@example.com")
 
@@ -103,3 +195,29 @@ def run(email: str | None, password: str | None) -> None:
         print(f"\nAdmin account ready: {email} (password as supplied).\n")
     else:
         print(f"\nAdmin account updated: {email}.\n")
+
+
+def run(email: str | None, password: str | None) -> None:
+    # create all necessary secrets
+    proceed = create_secrets(
+        [
+            "db_password",
+            "api_jwt_secret",
+            "api_signed_url_secret",
+            "storage_root_key",
+            "storage_root_secret",
+            "storage_primary_user_key",
+            "storage_primary_user_secret",
+            "storage_secondary_user_key",
+            "storage_secondary_user_secret"
+        ],
+        "../secrets"
+    )
+
+    if not proceed:
+        print(
+            "[NOT FINISHED] Please start all development containers and restart this script")
+        exit(1)
+
+    # initialize the admin account
+    proceed = create_admin_account(email, password)

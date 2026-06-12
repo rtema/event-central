@@ -25,8 +25,8 @@ def _run_web() -> None:
     # A single worker per container; scaling is done by adding containers.
     uvicorn.run(
         "src.services.web:app",
-        host=settings.host,
-        port=settings.port,
+        host=settings.api_host,
+        port=settings.api_port,
         workers=1,
         log_level=settings.log_level.lower(),
     )

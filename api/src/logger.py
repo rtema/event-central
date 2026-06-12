@@ -126,8 +126,8 @@ def configure_logger(level: str | None = None) -> None:
         return
 
     level = (level or settings.log_level).upper()
-    if settings.log_format == "json":
-        formatter: logging.Formatter = JsonFormatter(settings.service_name, settings.environment)
+    if settings.api_log_format == "json":
+        formatter: logging.Formatter = JsonFormatter(settings.api_service_name, settings.environment)
     else:
         formatter = logging.Formatter(
             fmt="%(asctime)s %(levelname)-8s %(name)s :: %(message)s",

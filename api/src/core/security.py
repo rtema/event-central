@@ -97,11 +97,11 @@ def _now() -> dt.datetime:
 
 def _encode(payload: dict[str, Any]) -> str:
     base_payload = {
-        "iss": settings.jwt_issuer,
-        "aud": settings.jwt_audience,
+        "iss": settings.api_jwt_issuer,
+        "aud": settings.api_jwt_audience,
     }
     base_payload.update(payload)
-    return jwt.encode(base_payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+    return jwt.encode(base_payload, settings.api_jwt_secret, algorithm=settings.api_jwt_algorithm)
 
 
 def create_access_token(
@@ -109,7 +109,7 @@ def create_access_token(
 ) -> tuple[str, int]:
     """Return ``(token, expires_in_seconds)``."""
     iat = _now()
-    exp = iat + dt.timedelta(seconds=settings.access_token_ttl_seconds)
+    exp = iat + dt.timedelta(seconds=settings.api_access_token_ttl_seconds)
     token = _encode(
         {
             "sub": sub,
@@ -121,7 +121,7 @@ def create_access_token(
             "exp": int(exp.timestamp()),
         }
     )
-    return token, settings.access_token_ttl_seconds
+    return token, settings.api_access_token_ttl_seconds
 
 
 def create_refresh_token(
@@ -134,7 +134,7 @@ def create_refresh_token(
     """
     jti = jti or uuid.uuid4()
     iat = _now()
-    exp = iat + dt.timedelta(seconds=settings.refresh_token_ttl_seconds)
+    exp = iat + dt.timedelta(seconds=settings.api_refresh_token_ttl_seconds)
     token = _encode(
         {
             "sub": sub,
@@ -157,10 +157,10 @@ def decode_token(token: str, *, expected_type: str | None = None) -> TokenClaims
     try:
         data = jwt.decode(
             token,
-            settings.jwt_secret,
-            algorithms=[settings.jwt_algorithm],
-            audience=settings.jwt_audience,
-            issuer=settings.jwt_issuer,
+            settings.api_jwt_secret,
+            algorithms=[settings.api_jwt_algorithm],
+            audience=settings.api_jwt_audience,
+            issuer=settings.api_jwt_issuer,
         )
     except jwt.PyJWTError as exc:
         raise TokenError(str(exc)) from exc
@@ -186,7 +186,7 @@ def sign_download_token(*, resource: str, expires_at: int) -> str:
     """Create an opaque, tamper-evident token of the form ``<payload>.<sig>``."""
     payload = f"{resource}:{expires_at}"
     sig = hmac.new(
-        settings.signed_url_secret.encode(), payload.encode(), hashlib.sha256
+        settings.api_signed_url_secret.encode(), payload.encode(), hashlib.sha256
     ).hexdigest()
     return f"{resource}.{expires_at}.{sig}"
 
@@ -202,7 +202,7 @@ def verify_download_token(token: str, *, resource: str) -> bool:
     if expires_at < int(_now().timestamp()):
         return False
     expected = hmac.new(
-        settings.signed_url_secret.encode(),
+        settings.api_signed_url_secret.encode(),
         f"{resource}:{expires_at}".encode(),
         hashlib.sha256,
     ).hexdigest()

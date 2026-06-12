@@ -35,14 +35,27 @@ x-app-env: &app-env
   # OPENOBSERVE_TOKEN: <base64 user:password>
 
 x-app-secrets: &app-secrets
-  - jwt_secret
-  - signed_url_secret
-  - s3_primary_secret_key
-  - database_url
+  - db_password
+  - storage_primary_user_key
+  - storage_primary_user_secret
+  - storage_secondary_user_key
+  - storage_secondary_user_secret
 
 secrets:
   db_password:
     file: ./secrets/db_password
+  storage_root_key:
+    file: ./secrets/storage_root_key
+  storage_root_secret:
+    file: ./secrets/storage_root_secret
+  storage_primary_user_key:
+    file: ./secrets/storage_primary_user_key
+  storage_primary_user_secret:
+    file: ./secrets/storage_primary_user_secret
+  storage_secondary_user_key:
+    file: ./secrets/storage_secondary_user_key
+  storage_secondary_user_secret:
+    file: ./secrets/storage_secondary_user_secret
 
 services:
   db:
@@ -58,10 +71,85 @@ services:
     ports:
       - 53542:5432
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U eventcentral"]
+      test: ["CMD-SHELL", "pg_isready -U event_central"]
       interval: 5s
       timeout: 3s
       retries: 10
+  storage-primary:
+    image: rustfs/rustfs:latest # pin to a tested tag for reproducibility
+    environment:
+      RUSTFS_ADDRESS: "0.0.0.0:${storage_primary_port}"
+      RUSTFS_CONSOLE_ADDRESS: "0.0.0.0:${storage_primary_console_port}"
+      RUSTFS_CONSOLE_ENABLE: "true"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        export RUSTFS_ACCESS_KEY="$$(cat /run/secrets/storage_root_key)"
+        export RUSTFS_SECRET_KEY="$$(cat /run/secrets/storage_root_secret)"
+        exec rustfs /data
+    ports:
+      - "${storage_primary_port}:${storage_primary_port}"
+      - "${storage_primary_console_port}:${storage_primary_console_port}"
+    volumes:
+      - storage-primary-data:/data
+    secrets:
+      - storage_root_key
+      - storage_root_secret
+    networks:
+      - storage-backend
+    restart: unless-stopped
+
+  storage-secondary:
+    image: rustfs/rustfs:latest
+    environment:
+      RUSTFS_ADDRESS: "0.0.0.0:${storage_secondary_port}"
+      RUSTFS_CONSOLE_ADDRESS: "0.0.0.0:${storage_secondary_console_port}"
+      RUSTFS_CONSOLE_ENABLE: "true"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        export RUSTFS_ACCESS_KEY="$$(cat /run/secrets/storage_root_key)"
+        export RUSTFS_SECRET_KEY="$$(cat /run/secrets/storage_root_secret)"
+        exec rustfs /data
+    ports:
+      - "${storage_secondary_port}:${storage_secondary_port}"
+      - "${storage_secondary_console_port}:${storage_secondary_console_port}"
+    volumes:
+      - storage-secondary-data:/data
+    secrets:
+      - storage_root_key
+      - storage_root_secret
+    networks:
+      - storage-backend
+    restart: unless-stopped
+
+  storage-init:
+    build: ./storage/init
+    depends_on:
+      storage-primary:
+        condition: service_started
+      storage-secondary:
+        condition: service_started
+    environment:
+      PRIMARY_ENDPOINT: "http://storage-primary:${storage_primary_port}"
+      SECONDARY_ENDPOINT: "http://storage-secondary:${storage_secondary_port}"
+      PRIMARY_CONSOLE: "http://localhost:${storage_primary_console_port}"
+      SECONDARY_CONSOLE: "http://localhost:${storage_secondary_console_port}"
+      BUCKETS: "event-central,invoices,backups"
+    secrets:
+      - storage_root_key
+      - storage_root_secret
+      - storage_primary_user_key
+      - storage_primary_user_secret
+      - storage_secondary_user_key
+      - storage_secondary_user_secret
+    networks:
+      - storage-backend
+
+networks:
+  storage-backend:
 
 volumes:
   db-data:
+  storage-primary-data:
+  storage-secondary-data:

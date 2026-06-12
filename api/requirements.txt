@@ -18,6 +18,8 @@ argon2-cffi==25.1.0
 
 # --- Object storage (S3 compatible: MinIO in dev, dual S3 in prod) ---------
 boto3==1.43.26
+boto3-stubs==1.43.28
+mypy-boto3-s3==1.43.14
 
 # --- Document generation ------------------------
 # Requires system libraries (pango, cairo, etc.) installed in the Docker image.
