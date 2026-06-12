@@ -137,7 +137,7 @@ class Settings(BaseSettings):
     storage_primary_user_secret: str = "password"
     storage_primary_bucket: str = "event-central"
 
-    storage_secondary_endpoint: str = "http://localhost:7450"
+    storage_secondary_endpoint: str = "http://localhost:7452"
     storage_secondary_region: str = "eu-central-1"
     storage_secondary_user_key: str = "user"
     storage_secondary_user_secret: str = "password"
