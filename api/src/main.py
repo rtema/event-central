@@ -1,9 +1,9 @@
 """Single entry point that dispatches to one of the start-up modes.
 
-    python -m src web        # FastAPI web request handler (default)
-    python -m src queue      # queue handler
-    python -m src migrate    # run DB migrations to head, then exit
-    python -m src backup     # dump DB to object storage, then exit
+    python -m src web             # FastAPI web request handler (default)
+    python -m src async_worker    # queue handler
+    python -m src migrate         # run DB migrations to head, then exit
+    python -m src backup          # dump DB to object storage, then exit
     python -m src restore --key backups/event-central-....dump
 
 One container image, one process per container; scale horizontally by running
@@ -47,10 +47,10 @@ def _run_seed(email: str | None, password: str | None) -> None:
     seed.run(email, password)
 
 
-# def _run_queue() -> None:
-#     from src import worker
+def _run_async_worker() -> None:
+    from src.services import async_worker
 
-#     worker.run()
+    async_worker.run()
 
 
 # def _run_backup() -> None:
@@ -120,7 +120,7 @@ def main(argv: list[str] | None = None) -> None:
     dispatch = {
         "web": _run_web,
         "smoke_test": _run_smoke_tests,
-        # "queue": _run_queue,
+        "async_worker": _run_async_worker,
         # "migrate": _run_migrate,
         # "backup": _run_backup,
     }
