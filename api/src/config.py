@@ -145,6 +145,19 @@ class Settings(BaseSettings):
 
     s3_force_path_style: bool = True
 
+    # -- Uploads ------------------------------------------------------------
+    # To protect the upload endpoints, set some boundaries
+    # 50 MiB hard cap on any single upload
+    api_files_max_size: int = 50 * 1024 * 1024
+    # ~64 MP guard against decompression bombs
+    api_files_max_image_pixels: int = 64_000_000
+
+    # -- Malware scanning ---------------------------------------------------
+    # To protect from unwanted files, allow malware scanning
+    clamav_host: str = "clamav"
+    clamav_port: int = 3310
+    clamav_timeout: float = 60.0
+
     # -- Observability (OpenObserve log shipping; optional) -----------------
     # When openobserve_url is set, a non-blocking background handler ships JSON
     # logs to OpenObserve's bulk ingest API. Otherwise logs go to stdout only
