@@ -86,9 +86,49 @@ TIGHT_TOLERANCE = 0.005
 ROUNDING_TOLERANCE = 0.02  # derived net/tax may differ by the server's rounding model
 
 # Pseudo-random data generation.
-FAKER_LOCALE = "de_DE"   # used only if Faker is installed
+FAKER_LOCALE_DEFAULT = "de_DE"   # default Faker locale: used for the shared pools and as a fallback
+# The locale each invoice is randomly assigned (echoed back as invoice.locale).
+INVOICE_LOCALES = ("de", "en")
+# Faker locale to generate an invoice's data with, keyed by that invoice's own
+# `locale`, so the random supplier / recipient / line-item text reads naturally
+# in the invoice's language. Unmapped values fall back to FAKER_LOCALE.
+FAKER_LOCALES_BY_LOCALE = {
+    "de": "de_DE",
+    "en": "en_US",
+}
 # shared pool of events invoices are spread across (>= 20)
 EVENT_POOL_SIZE = 25
+# shared pool of accounting entities (Rechnungskreise) invoices are spread across
+ACCOUNTING_ENTITY_POOL_SIZE = 8
+
+# The event and accounting-entity pools are built from these FIXED seeds so the
+# pools are identical on EVERY run, independent of the per-run --seed. Invoices
+# are therefore spread across a stable, recognizable set of events / numbering
+# circles instead of a freshly randomized set each time the fuzzer starts. Bump
+# the ":vN" suffix if you ever want to rotate to a new fixed pool.
+EVENT_POOL_SEED = "event-central:events:v1"
+ACCOUNTING_ENTITY_POOL_SEED = "event-central:accounting-entities:v1"
+
+# Probability that a single invoice draws its event / accounting entity from the
+# small run-local pool of NEW entities below, instead of the stable pool (~1 in
+# 5). Rolled independently for the event and the accounting entity.
+NEW_ENTITY_PROBABILITY = 0.2
+
+# Sizes of the run-local pools of NEW (non-stable) events / accounting entities.
+# These are seeded from the per-run base seed -- so they differ each run but stay
+# reproducible within it -- and are deliberately kept SMALL so a single run
+# reuses them: the FIRST use of each new event / entity in a run is flagged as an
+# anomaly ("new-event" / "new-accounting-entity"), while every later use of that
+# same one is treated as clean.
+NEW_EVENT_POOL_SIZE = 4
+NEW_ACCOUNTING_ENTITY_POOL_SIZE = 3
+
+# All generated accounting-entity prefixes start with this, so the invoice
+# numbers they produce are unmistakably test data.
+ACCOUNTING_ENTITY_PREFIX_TAG = "TEST-"
+
+# A UNIQUE RUN ID
+RUN_ID = datetime.datetime.now().isoformat(timespec='seconds').replace(':', '-')
 
 
 # ======================================================================
@@ -375,24 +415,38 @@ def seed_faker(fake: Faker, rng: random.Random) -> Faker:
     return fake
 
 
-def build_event_pool(base_seed: int, size: int, fake: Faker) -> list[dict[str, str]]:
+EVENT_KINDS = ["Summit", "Expo", "Forum", "Kongress",
+               "Festival", "Conference", "Messe"]
+
+
+def _make_event(rng: random.Random, fake: Faker,
+                seen: set[str] | None = None) -> dict[str, str]:
     """
-    Build a shared pool of events (at least `size`, default >= 20) that invoices
-    are spread across. Deterministic for a given base seed, so runs reproduce.
+    Build a single event with a slug `id` and a human `label`. If `seen` is
+    given, the slug is made unique against it (used when filling the pool).
     """
-    rng = random.Random(f"{base_seed}:eventpool")
-    seed_faker(fake, rng)
-    kinds = ["Summit", "Expo", "Forum", "Kongress",
-             "Festival", "Conference", "Messe"]
-    pool: list[dict[str, str]] = []
-    seen: set[str] = set()
-    for _i in range(size):
-        label = f"{fake.city()} {rng.choice(kinds)} 20{rng.randint(24, 29):02d}"
-        slug = f"{_slugify(label, rng)}"
+    label = f"{fake.city()} {rng.choice(EVENT_KINDS)} 20{rng.randint(24, 29):02d}"
+    slug = _slugify(label, rng)
+    if seen is not None:
         while slug in seen:
             slug = f"{slug}-{rng.randint(0, 999)}"
         seen.add(slug)
-        pool.append({"id": slug, "label": label})
+    return {"id": slug, "label": label}
+
+
+def build_event_pool(size: int, fake: Faker, *,
+                     seed: Any = EVENT_POOL_SEED) -> list[dict[str, str]]:
+    """
+    Build a pool of events (at least `size`) that invoices are spread across.
+    Defaults to the FIXED EVENT_POOL_SEED, giving a pool that is identical on
+    every run; pass a base-seed-derived `seed` to build a run-local pool instead.
+    """
+    rng = random.Random(seed)
+    seed_faker(fake, rng)
+    pool: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for _i in range(size):
+        pool.append(_make_event(rng, fake, seen))
     return pool
 
 
@@ -416,22 +470,47 @@ def _make_supplier(rng: random.Random, fake: Faker) -> dict[str, Any]:
     }
 
 
-def _make_accounting_entity(rng: random.Random, supplier_name: str) -> dict[str, Any]:
+def _make_accounting_entity(rng: random.Random, source_name: str) -> dict[str, Any]:
     """
     A pseudo-random accounting entity (Rechnungskreis). The prefix is built from
-    the supplier's initials plus a 2-digit year, so it correlates with the
-    supplier the way a real numbering circle would. firstInvoiceNumber and
-    padNumber are randomized too, to exercise the server's number formatting.
+    `source_name`'s initials plus a 2-digit year, so it correlates with its
+    source the way a real numbering circle would, and is ALWAYS prefixed with
+    ACCOUNTING_ENTITY_PREFIX_TAG ("Test-") so the numbers it produces are clearly
+    test data. firstInvoiceNumber and padNumber are randomized too, to exercise
+    the server's number formatting.
     """
-    letters = "".join(c for c in supplier_name.upper()
+    letters = "".join(c for c in source_name.upper()
                       if c.isalpha() and c.isascii())[:4]
     while len(letters) < 3:
         letters += rng.choice(string.ascii_uppercase)
     return {
-        "prefix": f"{letters}{rng.randint(22, 29):02d}-",
+        "prefix": f"{ACCOUNTING_ENTITY_PREFIX_TAG}{letters}{rng.randint(22, 29):02d}-",
         "firstInvoiceNumber": rng.randint(1, 500),
         "padNumber": rng.choice([4, 5, 6]),
     }
+
+
+def build_accounting_entity_pool(size: int, fake: Faker, *,
+                                 seed: Any = ACCOUNTING_ENTITY_POOL_SEED) -> list[dict[str, Any]]:
+    """
+    Build a pool of accounting entities (Rechnungskreise) that invoices are
+    spread across. Defaults to the FIXED ACCOUNTING_ENTITY_POOL_SEED, giving a
+    pool identical on every run; pass a base-seed-derived `seed` for a run-local
+    pool. Prefixes are kept distinct, and every one starts with "Test-".
+    """
+    rng = random.Random(seed)
+    seed_faker(fake, rng)
+    pool: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for _i in range(size):
+        entity = _make_accounting_entity(rng, fake.company())
+        attempts = 0
+        while entity["prefix"] in seen and attempts < 10:
+            entity = _make_accounting_entity(rng, fake.company())
+            attempts += 1
+        seen.add(entity["prefix"])
+        pool.append(entity)
+    return pool
 
 
 def _make_order_links(rng: random.Random, order_id: str, event_id: str) -> dict[str, str]:
@@ -546,17 +625,78 @@ def _make_line_item(
     return item, anomalies
 
 
+@dataclass
+class GenerationContext:
+    """
+    Shared, run-wide state for invoice generation.
+
+    Besides the stable and run-local pools, it tracks which NEW (run-local)
+    events / accounting entities have already been used this run, so the FIRST
+    use of each can be flagged as an anomaly while later uses are treated as
+    clean. `note_new_event` / `note_new_entity` return True on first use only.
+
+    The pools are deterministic; the `seen_*` sets are the only mutable state,
+    and they are what makes "first use vs. later use" a run-level property.
+    """
+    fake: Faker
+    event_pool: list[dict[str, str]]
+    accounting_entity_pool: list[dict[str, Any]]
+    # small run-local pools of NEW (non-stable) events / entities, reusable
+    # within a run so the same "new" entity can appear on several invoices.
+    new_event_pool: list[dict[str, str]] = field(default_factory=list[dict[str, str]])
+    new_accounting_entity_pool: list[dict[str, Any]] = field(default_factory=list[dict[str, Any]])
+    # first-use bookkeeping for this run
+    seen_new_event_ids: set[str] = field(default_factory=set[str])
+    seen_new_entity_prefixes: set[str] = field(default_factory=set[str])
+    # Faker instances keyed by locale string, built on demand (see faker_for).
+    _faker_by_locale: dict[str, Faker] = field(default_factory=dict[str, Faker], repr=False)
+
+    def faker_for(self, locale: str) -> Faker:
+        """
+        Return a Faker whose locale matches the invoice `locale` value (e.g.
+        "de" -> de_DE, "en" -> en_US), creating and caching it on first use.
+        Unknown locales fall back to FAKER_LOCALE.
+        """
+        faker_locale = FAKER_LOCALES_BY_LOCALE.get(locale, FAKER_LOCALE_DEFAULT)
+        fk = self._faker_by_locale.get(faker_locale)
+        if fk is None:
+            fk = Faker(faker_locale)
+            self._faker_by_locale[faker_locale] = fk
+        return fk
+
+    def note_new_event(self, event_id: str) -> bool:
+        """Record a use of a new event; return True iff it's the run's first."""
+        first = event_id not in self.seen_new_event_ids
+        self.seen_new_event_ids.add(event_id)
+        return first
+
+    def note_new_entity(self, prefix: str) -> bool:
+        """Record a use of a new entity; return True iff it's the run's first."""
+        first = prefix not in self.seen_new_entity_prefixes
+        self.seen_new_entity_prefixes.add(prefix)
+        return first
+
+
 def generate_invoice(seed_material: str, edge_cases: bool,
-                     event_pool: list[dict[str, str]], fake: Faker
+                     ctx: GenerationContext
                      ) -> tuple[dict[str, Any], list[str]]:
     """
     Build one randomized invoice body plus a list of anomalies (for repro/context).
     `seed_material` makes the result deterministic given the same base seed + index.
-    `event_pool` is the shared list of events to draw from; `fake` is an optional
-    Faker instance for realistic data.
+    `ctx` carries the stable pools invoices normally draw from, the small
+    run-local pools of NEW events / accounting entities (~1 invoice in 5,
+    NEW_ENTITY_PROBABILITY, draws from these instead), and the run-wide first-use
+    tracking. The FIRST use of a new event / entity in a run is recorded as the
+    anomaly "new-event" / "new-accounting-entity"; later uses of the same one are
+    not, and the request body is identical either way.
     """
     rng = random.Random(seed_material)
-    seed_faker(fake, rng)  # tie Faker's output to this invoice's seed
+    # Decide this invoice's locale first, then generate all of its data with a
+    # Faker whose locale matches -- so a "de" invoice gets German names/addresses
+    # and an "en" invoice English ones. The locale is echoed into the body below.
+    locale = rng.choice(INVOICE_LOCALES)
+    fake = ctx.faker_for(locale)
+    seed_faker(fake, rng)  # tie this locale's Faker output to the invoice seed
     anomalies: list[str] = []
     edge = edge_cases and rng.random() < 0.5  # ~half the invoices stay "clean"
 
@@ -578,11 +718,30 @@ def generate_invoice(seed_material: str, edge_cases: bool,
         anomalies.extend(item_anoms)
 
     supplier = _make_supplier(rng, fake)
-    event = rng.choice(event_pool) if event_pool else {
-        "id": "fallback-event", "label": "Fallback"
-    }
+
+    # Event: usually reuse one from the stable run-wide pool. ~1 in 5 instead
+    # draws from the small run-local pool of NEW events; the first time each such
+    # event is used in the run it's flagged "new-event", later uses are clean.
+    if ctx.event_pool and rng.random() >= NEW_ENTITY_PROBABILITY:
+        event = rng.choice(ctx.event_pool)
+    else:
+        event = (rng.choice(ctx.new_event_pool)
+                 if ctx.new_event_pool else _make_event(rng, fake))
+        if ctx.note_new_event(event["id"]):
+            anomalies.append("new-event")
+
+    # Accounting entity (Rechnungskreis): same idea, from the run-local pool of
+    # NEW entities ~1 in 5. Either way the prefix starts with "Test-".
+    if ctx.accounting_entity_pool and rng.random() >= NEW_ENTITY_PROBABILITY:
+        accounting_entity = rng.choice(ctx.accounting_entity_pool)
+    else:
+        accounting_entity = (rng.choice(ctx.new_accounting_entity_pool)
+                             if ctx.new_accounting_entity_pool
+                             else _make_accounting_entity(rng, event["label"]))
+        if ctx.note_new_entity(accounting_entity["prefix"]):
+            anomalies.append("new-accounting-entity")
+
     order_id = _rand_string(rng, 10)
-    locale = rng.choice(["de", "en"])
 
     body: dict[str, Any] = {
         "externalOrderId": f"ORD-{order_id}",
@@ -590,7 +749,7 @@ def generate_invoice(seed_material: str, edge_cases: bool,
         "locale": locale,
         "currency": "EUR",
         "dueDate": _rand_date(rng, 0, 365),
-        "accountingEntity": _make_accounting_entity(rng, event["label"]),
+        "accountingEntity": accounting_entity,
         "event": {"id": event["id"], "label": event["label"]},
         "links": _make_order_links(rng, order_id, event["id"]),
         "supplier": supplier,
@@ -883,7 +1042,7 @@ def save_invoice_files(body: dict[str, Any], resp: requests.Response,
         "dict[str, Any]", raw_invoice) if isinstance(raw_invoice, dict) else {}
 
     number = invoice.get("invoiceNumber")
-    stem = _safe_filename(number) if number else f"request-{index:04d}"
+    stem = f"{RUN_ID}-{_safe_filename(number) if number else f"request-{index:04d}"}"
 
     written: list[Path] = [save_request_body(body, output_dir, stem)]
 
@@ -925,7 +1084,7 @@ def save_failure(report: Report, body: dict[str, Any], resp: requests.Response) 
         "request": body,
         "response": response_body,
     }
-    path = FAILURES_DIR / f"fail-{int(time.time())}-{report.index:04d}.json"
+    path = FAILURES_DIR / f"{RUN_ID}-{report.index:04d}-failure.json"
     path.write_text(json.dumps(payload, indent=2,
                     ensure_ascii=False), encoding="utf-8")
     return path
@@ -969,15 +1128,26 @@ def run_fuzz(client: EventCentralClient, *, count: int, base_seed: int,
     indices = [only] if only is not None else range(count)
     reports: list[Report] = []
 
-    # Build the shared Faker instance and event pool once, both seeded from the
-    # base seed so the whole run is reproducible.
-    fake = Faker(FAKER_LOCALE)
-    event_pool = build_event_pool(base_seed, EVENT_POOL_SIZE, fake)
+    # Build the shared Faker instance once, then the generation context. The
+    # stable event / accounting-entity pools use fixed seeds (see *_POOL_SEED) so
+    # they are identical on every run. The small run-local "new" pools are seeded
+    # from the per-run base seed, so they differ each run but reproduce within it;
+    # the context's seen-sets track first-vs-later use of those new entities.
+    fake = Faker(FAKER_LOCALE_DEFAULT)
+    ctx = GenerationContext(
+        fake=fake,
+        event_pool=build_event_pool(EVENT_POOL_SIZE, fake),
+        accounting_entity_pool=build_accounting_entity_pool(
+            ACCOUNTING_ENTITY_POOL_SIZE, fake),
+        new_event_pool=build_event_pool(
+            NEW_EVENT_POOL_SIZE, fake, seed=f"{base_seed}:new-events"),
+        new_accounting_entity_pool=build_accounting_entity_pool(
+            NEW_ACCOUNTING_ENTITY_POOL_SIZE, fake, seed=f"{base_seed}:new-entities"),
+    )
 
     for i in indices:
         seed_material = f"{base_seed}:{i}"
-        body, anomalies = generate_invoice(
-            seed_material, edge_cases, event_pool, fake)
+        body, anomalies = generate_invoice(seed_material, edge_cases, ctx)
 
         if dry_run:
             print(f"\n--- invoice #{i}  anomalies={anomalies or ['none']} ---")
@@ -1095,7 +1265,8 @@ def main() -> int:
         1, 2**31)
     print(f"Fuzzing {client.base_url}  seed={base_seed}  "
           f"edge_cases={'off' if args.no_edge else 'on'}  "
-          f"events={EVENT_POOL_SIZE}  faker={FAKER_LOCALE}")
+          f"events={EVENT_POOL_SIZE}  entities={ACCOUNTING_ENTITY_POOL_SIZE}  "
+          f"faker={FAKER_LOCALE_DEFAULT}")
 
     return run_fuzz(
         client,
