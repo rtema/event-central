@@ -28,6 +28,8 @@ import urllib.parse
 import urllib.request
 from typing import Any
 import random
+import functools
+from pathlib import Path
 
 # --------------------------------------------------------------------------- #
 # Configuration
@@ -59,111 +61,32 @@ _LOCALE_SUBSET = {
 }
 _DEFAULT_SUBSET = "latin"
 
-# Static, localized labels baked into the template. Dynamic invoice values stay
-# as jinja ``{{ }}`` expressions and are filled in by the renderer.
-_LABELS = {
-    "en": {
-        "invoice": "Invoice", "invoice_no": "Invoice No.", "date": "Date",
-        "bill_to": "Bill To", "description": "Description", "qty": "Qty",
-        "unit_price": "Unit price", "amount": "Amount",
-        "subtotal": "Subtotal", "tax": "Tax", "total": "Total",
-    },
-    "de": {
-        "invoice": "Rechnung", "invoice_no": "Rechnungsnr.", "date": "Datum",
-        "bill_to": "Rechnung an", "description": "Beschreibung", "qty": "Menge",
-        "unit_price": "Einzelpreis", "amount": "Betrag",
-        "subtotal": "Zwischensumme", "tax": "MwSt.", "total": "Gesamtbetrag",
-    },
-}
-
 # --------------------------------------------------------------------------- #
-# Templates ($-placeholders are localized labels / font names; jinja {{ }} is
-# left untouched because string.Template only touches $tokens.)
+# Templates: loaded per-locale from ../templates/invoice-<lang>.{html,css}
+# ($-placeholders are localized labels / font names; jinja {{ }} is left
+# untouched because string.Template only touches $tokens.)
 # --------------------------------------------------------------------------- #
 
-_HTML = string.Template(
-    """<!doctype html>
-<html lang="">
-<head><meta charset="utf-8"></head>
-<body>
-  <header class="head">
-    {# 'logo' is resolved by the backend from the images[] array by its key. #}
-    <img class="logo" src="{{ images.logo }}" alt="logo">
-    <div class="seller">
-      <div class="seller-name">{{ seller.name }}</div>
-      <div>{{ seller.address }}</div>
-    </div>
-  </header>
+# ../templates, i.e. a sibling of this module's directory.
+_TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "templates"
+_DEFAULT_TEMPLATE_LANG = "en"
 
-  <h1>$invoice</h1>
 
-  <table class="meta">
-    <tr><td class="k">$invoice_no</td><td>{{ invoice.number }}</td></tr>
-    <tr><td class="k">$date</td><td>{{ invoice.date }}</td></tr>
-  </table>
+@functools.lru_cache(maxsize=None)
+def _load_template(kind: str, lang: str) -> string.Template:
+    """Load ``../templates/invoice-<lang>.<kind>`` as a Template (cached).
 
-  <div class="bill-to">
-    <div class="k">$bill_to</div>
-    <div>{{ buyer.name }}</div>
-    <div>{{ buyer.address }}</div>
-  </div>
-
-  <table class="items">
-    <thead>
-      <tr>
-        <th>$description</th>
-        <th class="num">$qty</th>
-        <th class="num">$unit_price</th>
-        <th class="num">$amount</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in items %}
-      <tr>
-        <td>{{ item.description }}</td>
-        <td class="num">{{ item.quantity }}</td>
-        <td class="num">{{ "%.2f"|format(item.unit_price) }} {{ currency }}</td>
-        <td class="num">{{ "%.2f"|format(item.quantity * item.unit_price) }} {{ currency }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-
-  <table class="totals">
-    <tr><td class="k">$subtotal</td><td class="num">{{ "%.2f"|format(subtotal) }} {{ currency }}</td></tr>
-    <tr><td class="k">$tax ({{ tax_rate }}%)</td><td class="num">{{ "%.2f"|format(tax_amount) }} {{ currency }}</td></tr>
-    <tr class="grand"><td class="k">$total</td><td class="num">{{ "%.2f"|format(total) }} {{ currency }}</td></tr>
-  </table>
-</body>
-</html>"""
-)
-
-# NOTE: no @font-face here. Uploaded font bytes have no URL the template can
-# reference, so the renderer is expected to register each fonts[] entry with
-# WeasyPrint under its `name`; the CSS just uses the family by name. If your
-# backend instead expects @font-face in the CSS, add it in _render_css.
-_CSS = string.Template(
-    """@page { size: A4; margin: 2cm; }
-* { box-sizing: border-box; }
-body { font-family: '$body_family', sans-serif; font-size: 11pt; color: #222; line-height: 1.4; }
-.head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
-.logo { height: 60px; width: auto; }
-.seller { text-align: right; }
-.seller-name { font-family: '$heading_family', serif; font-weight: 700; font-size: 13pt; }
-h1 { font-family: '$heading_family', serif; font-size: 26pt; margin: 8px 0 16px; }
-table { width: 100%; border-collapse: collapse; }
-.meta td { padding: 2px 0; }
-.meta .k, .bill-to .k, .totals .k { color: #666; }
-.bill-to { margin: 18px 0; }
-.items { margin: 24px 0; }
-.items th { text-align: left; border-bottom: 2px solid #222; padding: 6px 8px; font-size: 9pt; text-transform: uppercase; letter-spacing: .04em; }
-.items td { padding: 6px 8px; border-bottom: 1px solid #ddd; }
-.num { text-align: right; }
-.totals { width: 45%; margin-left: auto; margin-top: 12px; }
-.totals td { padding: 4px 8px; }
-.totals .grand td { font-family: '$heading_family', serif; font-weight: 700; font-size: 13pt; border-top: 2px solid #222; }
-"""
-)
+    ``kind`` is ``"html"`` or ``"css"``. Falls back to the default language
+    when no file exists for the requested one.
+    """
+    path = _TEMPLATE_DIR / f"invoice-{lang}.{kind}"
+    try:
+        text = path.read_text(encoding="utf-8")
+    except FileNotFoundError:
+        if lang != _DEFAULT_TEMPLATE_LANG:
+            return _load_template(kind, _DEFAULT_TEMPLATE_LANG)
+        raise
+    return string.Template(text)
 
 # --------------------------------------------------------------------------- #
 # HTTP + Google Fonts catalogue (cached)
@@ -253,7 +176,6 @@ def _fetch_image_file(seed: str, width: int, height: int) -> str | None:
 def make_invoice_template(rng: random.Random, locale: str) -> dict[str, Any]:
     lang = (locale or "en").replace("_", "-").split("-")[0].lower()
     subset = _LOCALE_SUBSET.get(lang, _DEFAULT_SUBSET)
-    labels = _LABELS.get(lang, _LABELS["en"])
 
     # --- fonts: pick two distinct families (heading + body); each gets a
     #     regular weight and, usually, a bold weight. -------------------------
@@ -292,9 +214,11 @@ def make_invoice_template(rng: random.Random, locale: str) -> dict[str, Any]:
         images.append({"key": "logo", "file": logo})  # 'link' left unset on purpose
 
     # --- assemble --------------------------------------------------------------
-    html = _HTML.safe_substitute(labels)
+    html = _load_template("html", lang).safe_substitute()
     html = html.replace('<html lang="">', f'<html lang="{lang}">')
-    css = _CSS.safe_substitute(heading_family=heading_family, body_family=body_family)
+    css = _load_template("css", lang).safe_substitute(
+        heading_family=heading_family, body_family=body_family
+    )
 
     template: dict[str, Any] = {"html": html, "css": css}
     if fonts:

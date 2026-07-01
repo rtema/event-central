@@ -13,13 +13,14 @@ with a small, dependency-free ``{{ placeholder }}`` substitution.
 
 from __future__ import annotations
 
+from typing import Any
+
 import pydyf  # pyright: ignore[reportMissingTypeStubs]
 from weasyprint import Attachment  # pyright: ignore[reportMissingTypeStubs]
 
 from src.document_templates.models import DocumentTemplate
 from src.document_templates.renderer.main import render_document
 from src.events.models import Event
-from src.invoices.generation.model import InvoiceDocument
 from src.invoices.models import Invoice
 from src.orders.models import Order
 
@@ -67,18 +68,19 @@ def _facturx_xmp() -> str:
     )
 
 
-def _make_finisher():
+def _make_finisher() -> Any:
     insert = _facturx_xmp().encode("utf-8")
 
     # pyright: ignore[reportMissingParameterType, reportUnknownParameterType]
-    def finisher(_document, pdf: pydyf.PDF) -> None:
-        for obj in pdf.objects:
+    def finisher(_document: Any, pdf: pydyf.PDF) -> None:
+        for obj in pdf.objects:  # type: ignore
             if not isinstance(obj, pydyf.Stream):
                 continue
             if getattr(obj, "extra", {}).get("Type") != "/Metadata":
                 continue
             raw = b"".join(
-                x if isinstance(x, bytes) else str(x).encode() for x in obj.stream
+                # type: ignore
+                x if isinstance(x, bytes) else str(x).encode() for x in obj.stream # type: ignore
             )
             if b"</rdf:RDF>" in raw:
                 obj.stream = [raw.replace(

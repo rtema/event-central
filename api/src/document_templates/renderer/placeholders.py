@@ -36,8 +36,8 @@ class PreserveUndefined(Undefined):
         return PreserveUndefined(name=f'{self._undefined_name}{suffix}')
 
     def __getattr__(self, name: str):
-        if name.startswith('_'):        # let internal attrs resolve normally
-            raise AttributeError(name)   # (guards against infinite recursion)
+        if name.startswith('_'):
+            raise AttributeError(name)
         return self._child(f'.{name}')
 
     def __getitem__(self, key: Any):
@@ -165,11 +165,9 @@ def generate_order_placeholders(order: Order | None, locale: str) -> dict[str, s
     placeholders = {
         'externalShortId': '',
         'link': '',
-        'salutation': '',
-        'name': '',
         'invoiceNumbers': '',
-        'address': '',
         'payments': '',
+        'paymentText': '',
     }
     if order:
         if order.external_short_id:
@@ -227,18 +225,21 @@ def generate_invoice_placeholders(invoice: Invoice | None, locale: str) -> dict[
     placeholders = {
         'label': '',
         'invoiceNumber': '',
-        'supplierAddressLine': '',
-        'customerAddress': '',
-        'customerName': '',
         'orderNumber': '',
-        'vatNumber': '',
         'issueDate': '',
+        'dueDate': '',
         'lines': '',
         'totals': '',
         'recipientName': '',
         'recipientPurchaseOrderReference': '',
         'recipientVatId': '',
-        'recipientAddress': ''
+        'recipientAddress': '',
+        'supplierAddressLine': '',
+        'supplierContact': '',
+        'supplierIban': '',
+        'supplierBank': '',
+        'supplierLegal': '',
+
     }
 
     resolved_locale = Locale(locale)
@@ -254,24 +255,37 @@ def generate_invoice_placeholders(invoice: Invoice | None, locale: str) -> dict[
         placeholders['invoiceNumber'] = escape(invoice.invoice_number) or ""
         placeholders['issueDate'] += format_date(
             invoice.issue_date, 'medium', locale=invoice.locale)
+        placeholders['dueDate'] += format_date(
+            invoice.due_date, 'medium', locale=invoice.locale)
 
         # supplier data
         if invoice.supplier:
-            placeholders['supplierAddressLine'] += ', '.join(
-                [
-                    escape(invoice.supplier.get('name', '')),
-                    escape(invoice.supplier.get('street', '')),
-                    escape(
-                        f'{invoice.supplier.get('zip', '')} {invoice.supplier.get('city', '')}'),
-                ]
-            )
 
-        # customer data
+            supplier_address: list[str | None] = [
+                invoice.supplier.get('line1', None),
+                invoice.supplier.get('line2', None),
+                invoice.supplier.get('line3', None),
+                f'{invoice.supplier.get('zip_code', '')} {invoice.supplier.get('city', '')}',
+            ]
+            placeholders['supplierAddressLine'] += ', '.join([escape(x) for x in supplier_address if x is not None])  # noqa: E501
+
+            placeholders['supplierIban'] += escape(
+                invoice.supplier.get('iban', ''))
+
+            supplier_contact: list[str | None] = [
+                'Kontakt:' if locale == 'de' else 'Contact:',
+                invoice.supplier.get('contact_name', None),
+                invoice.supplier.get('contact_phone', None),
+                invoice.supplier.get('contact_email', None),
+            ]
+            placeholders['supplierContact'] += '<br> '.join([escape(x) for x in supplier_contact if x is not None])  # noqa: E501
+
+        # recipient data
         if invoice.recipient:
-            placeholders['recipientName'] += escape(
-                f'{invoice.recipient.get('contact_firstname', '')} \
+            recipient_name = f'{invoice.recipient.get('contact_firstname', '')} \
                   {invoice.recipient.get('contact_lastname', '')}'
-            )
+
+            placeholders['recipientName'] += escape(recipient_name)
 
             placeholders['recipientPurchaseOrderReference'] += escape(
                 invoice.recipient.get('purchase_order_reference', '')
@@ -280,18 +294,15 @@ def generate_invoice_placeholders(invoice: Invoice | None, locale: str) -> dict[
             placeholders['recipientVatId'] += escape(
                 invoice.recipient.get('vat_id', ''))
 
-            placeholders['recipientAddress'] += f'{escape(invoice.recipient.get('line1', ''))}<br>'
-            line2 = invoice.recipient.get('line2', None)
-            if line2:
-                placeholders['recipientAddress'] += f'{escape(line2)}<br>'
-            line3 = invoice.recipient.get('line3', None)
-            if line3:
-                placeholders['recipientAddress'] += f'{escape(line3)}<br>'
-            placeholders['recipientAddress'] += \
-                f'{escape(invoice.recipient.get('zip', '')
-                          )} {escape(invoice.recipient.get('city', ''))}<br>'
-            placeholders['recipientAddress'] += \
+            recipient_address: list[str | None] = [
+                invoice.recipient.get('line1', None),
+                invoice.recipient.get('line2', None),
+                invoice.recipient.get('line3', None),
+                f'{invoice.recipient.get('zip', '')} {invoice.recipient.get('city', '')}',
                 f'{resolved_locale.territories[invoice.recipient.get('country', '').upper()]}'
+            ]
+
+            placeholders['recipientAddress'] += '<br> '.join([escape(x) for x in recipient_address if x is not None])  # noqa: E501
 
         # build items table
         taxes: dict[str, float] = {}
