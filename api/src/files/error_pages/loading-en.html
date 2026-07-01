@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Preparing your export…</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 32rem;
+      margin: 6rem auto;
+      padding: 0 1rem;
+      color: #1f2933;
+      text-align: center
+    }
+
+    h1 {
+      font-size: 1.4rem
+    }
+
+    .muted {
+      color: #52606d
+    }
+
+    .spin {
+      width: 2rem;
+      height: 2rem;
+      margin: 1.5rem auto;
+      border: 3px solid #cbd2d9;
+      border-top-color: #1f2933;
+      border-radius: 50%;
+      animation: s .8s linear infinite
+    }
+
+    @keyframes s {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    button {
+      font: inherit;
+      margin-top: 1.25rem;
+      padding: .55rem 1.1rem;
+      border: 1px solid #1f2933;
+      border-radius: .4rem;
+      background: #1f2933;
+      color: #fff;
+      cursor: pointer
+    }
+
+    button:hover {
+      background: #323f4b
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Preparing your export…</h1>
+  <div class="spin" aria-hidden="true"></div>
+  <p class="muted" id="status">Your download will start automatically once the file is ready.</p>
+  <button id="refresh" type="button">Check now</button>
+  <noscript>
+    <p class="muted">JavaScript is disabled — use the button above to check again.</p>
+  </noscript>
+  <script>
+    (function () {
+      "use strict";
+      var INTERVAL_MS = 30000;  // auto-refresh cadence
+      var MAX_AUTO = 5;         // stop auto-refreshing after this many times
+      var PARAM = "r";          // refresh counter carried in the URL
+
+      var url = new URL(window.location.href);
+      var count = parseInt(url.searchParams.get(PARAM), 10);
+      if (isNaN(count) || count < 0) count = 0;
+
+      var statusEl = document.getElementById("status");
+      var btn = document.getElementById("refresh");
+
+      // Reload the same URL (preserving signedToken, locale, …) with a new counter.
+      function reloadWith(n) {
+        var u = new URL(window.location.href);
+        u.searchParams.set(PARAM, String(n));
+        window.location.assign(u.toString());
+      }
+
+      // Manual check resets the counter so automatic refreshing resumes.
+      btn.addEventListener("click", function () { reloadWith(0); });
+
+      if (count >= MAX_AUTO) {
+        statusEl.textContent =
+          "Automatic checking has stopped. Use the button below to check again.";
+        return;
+      }
+
+      var remaining = Math.round(INTERVAL_MS / 1000);
+      var render = function () {
+        statusEl.textContent = "Checking again in " + remaining + "s…";
+      };
+      render();
+
+      var ticker = setInterval(function () {
+        remaining -= 1;
+        if (remaining <= 0) { clearInterval(ticker); } else { render(); }
+      }, 1000);
+
+      setTimeout(function () { reloadWith(count + 1); }, INTERVAL_MS);
+    })();
+  </script>
+</body>
+
+</html>

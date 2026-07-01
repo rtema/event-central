@@ -44,6 +44,7 @@ _ALLOWED: dict[str, set[str]] = {
 
     # Fonts
     # TODO
+    "font/sfnt": {"ttf"}
 }
 _IMAGE_MIMES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
 

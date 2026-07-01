@@ -5,17 +5,17 @@ from __future__ import annotations
 import datetime as dt
 import uuid
 
-from src.core.schemas import CamelModel, MultiLanguageLabel, Pagination
+from src.core.schemas import Base64Str, CamelModel, MultiLanguageLabel, Pagination
 
 
 class DocumentFont(CamelModel):
     name: str | None = None
-    file: str | None = None  # base64
+    file: Base64Str | None = None  # base64
 
 
 class DocumentImage(CamelModel):
     name: str | None = None
-    file: str | None = None  # base64
+    file: Base64Str | None = None  # base64
     link: str | None = None  # https only
 
 

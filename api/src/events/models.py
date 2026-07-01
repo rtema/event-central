@@ -12,7 +12,7 @@ import datetime as dt
 
 from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.db import Base
 from src.core.models import (
@@ -36,3 +36,8 @@ class Event(Base, CreatedAtMixin, UpdatedAtMixin, CreatedByMixin, DeletedAtMixin
 
     start_dt: Mapped[dt.datetime | None] = mapped_column(TZDateTime, nullable=True)
     end_dt: Mapped[dt.datetime | None] = mapped_column(TZDateTime, nullable=True)
+    
+    # Relationships
+    orders: Mapped[list["Order"]] = relationship( # noqa: F821, UP037 # pyright: ignore[reportUndefinedVariable]
+        back_populates="event", lazy="selectin", order_by="Order.created_at"
+    )

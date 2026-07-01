@@ -156,7 +156,7 @@ class Settings(BaseSettings):
     # To protect from unwanted files, allow malware scanning
     clamav_host: str = "clamav"
     clamav_port: int = 3310
-    clamav_timeout: float = 60.0
+    clamav_timeout: float = 10.0
 
     # -- Observability (OpenObserve log shipping; optional) -----------------
     # When openobserve_url is set, a non-blocking background handler ships JSON

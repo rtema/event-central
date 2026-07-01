@@ -1,0 +1,102 @@
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>{{ invoice.invoiceNumber }}</title>
+  <meta name="description" content="{{ invoice.invoiceNumber }}">
+</head>
+
+<body>
+  <img id="top-image" src="{{ images.logo }}" alt="{{ event.label }}" width="100%" height="2.5cm">
+
+  <header>
+    <address>
+      <address id="from">
+        {{ invoice.supplierAddressLine }}
+      </address>
+
+      <address id="to">
+        {{ invoice.customerAddress }}
+      </address>
+    </address>
+
+    <aside>
+      {{ invoice.supplierContact }}
+    </aside>
+  </header>
+
+  <h1>{{ invoice.label }}</h1>
+
+  <table id="info">
+    <thead>
+      <tr>
+        <th>Reg.-Nr.</th>
+        <th>Bestell-Nr.</th>
+        <th>Ansprechpartner</th>
+        <th>USt-IdNr.</th>
+        <th>Datum</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ invoice.invoiceNumber }}</td>
+        <td>{{ invoice.orderNumber }}</td>
+        <td>{{ invoice.customerName }}</td>
+        <td>{{ invoice.vatNumber }}</td>
+        <td>{{ invoice.issueDate }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <section id="help-text">
+    (Bitte bei Bezahlung angeben)
+  </section>
+  <main>
+    <table id="items">
+      <thead>
+        <tr>
+          <th>Menge</th>
+          <th>Artikel</th>
+          <th>Preis</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ invoice.lines }}
+        {{ invoice.totals }}
+      </tbody>
+    </table>
+  </main>
+
+  <footer>
+    <dl id="payment">
+      {{ order.payment_text }}
+    </dl>
+
+    <dl>
+      <strong>Achtung: Dies ist eine extra für die BVL Supply Chain CX eingerichtete Kontonummer.</strong>
+    </dl>
+
+    <dl>
+      Der Rechnungsbetrag ist <strong>sofort fällig</strong> und muss spätestens  am {{ invoice.dueDate }} dem
+      folgenden Bankkonto gutgeschrieben sein.
+    </dl>
+
+    <dl class="list">
+      <dt>Bank: </dt>
+      <dd>Deutsche Bank AG (BIC/Swift: DEUTDEHBXXX)</dd>
+    </dl>
+
+    <dl>
+      <dt>IBAN: </dt>
+      <dd>{{ invoice.supplierIban }}</dd>
+    </dl>
+
+    <dl id="legal">
+      {{ invoice.supplierLegal }}
+    </dl>
+  </footer>
+
+  <img id="bottom-image" src="{{ images.logo }}" alt="{{ event.label }}" width="100%" height="2.5cm">
+</body>
+
+</html>

@@ -5,7 +5,11 @@ required. Importing this module has the side effect of registering all tables.
 """
 
 from src.auth.models import AuthChallenge, RefreshToken
-from src.document_templates.models import DocumentTemplate, PublicDocumentTemplate
+from src.document_templates.models import (
+    DocumentTemplate,
+    DocumentTemplateFile,
+    PublicDocumentTemplate,
+)
 from src.events.models import Event
 from src.files.models import File
 from src.invoices.models import Invoice, InvoiceLineItem, Tax
@@ -31,5 +35,6 @@ __all__ = [
     "Job",
     "DocumentTemplate",
     "PublicDocumentTemplate",
+    "DocumentTemplateFile",
     "File"
 ]

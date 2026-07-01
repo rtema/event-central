@@ -1,0 +1,178 @@
+/* stylelint-disable font-family-no-missing-generic-family-keyword */
+/* stylelint-disable value-keyword-case */
+@page {
+  size: A4;
+  font-family: Source Sans Pro;
+  margin: 3cm;
+  margin-left: 2.5cm;
+  margin-right: 2cm;
+  margin-top: 2cm;
+  margin-bottom: 1cm;
+}
+
+html {
+  color: #000;
+  font-family: Source Sans Pro;
+  font-size: 11pt;
+  line-height: 1.2;
+}
+
+body {
+  margin: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+img {
+  width: 100%;
+  object-fit: contain;
+}
+
+img#top-image {
+  height: 2.5cm;
+  object-position: right center;
+}
+
+img#bottom-image {
+  padding-top: 0.5cm;
+  height: 2.5cm;
+  object-position: center;
+}
+
+header {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  margin-bottom: 0.846cm;
+}
+
+header > address {
+  width: 8cm;
+  min-height: 4.5cm;
+  margin-right: 2cm;
+}
+
+header > aside {
+  padding-top: 0.5cm;
+  min-height: 4cm;
+  font-size: 10pt;
+}
+
+address#from {
+  font-size: 8pt;
+  margin-bottom: 4pt;
+}
+
+address#to {
+  font-size: 10pt;
+}
+
+h1 {
+  font-size: 12pt;
+  margin-bottom: 12pt;
+}
+
+table#info,
+table#items,
+table#totals {
+  width: 16.5cm;
+  max-width: 16.5cm;
+  border-collapse: collapse;
+  font-size: 10pt;
+}
+
+table#info th,
+table#info td,
+table#items th,
+table#items td {
+  padding-left: 4pt;
+  padding-right: 4pt;
+  padding-top: 2pt;
+  padding-bottom: 2pt;
+}
+
+table#info,
+table#items {
+  margin-bottom: 12pt;
+}
+
+table#info th {
+  font-weight: 700;
+  border-bottom: solid 0.5pt #000;
+}
+
+table#items th,
+table#items td {
+  border-top: solid 0.2pt #000;
+}
+
+table#items th:last-of-type,
+table#items td:last-of-type {
+  text-align: right;
+}
+
+table#items th {
+  background-color: #000;
+  color: #fff;
+  font-weight: 700;
+}
+
+table#items td.net,
+table#items td.gross {
+  border-top: solid 1pt #000;
+  text-align: right;
+  font-weight: 700;
+}
+
+table#items td.tax {
+  border-top: solid 0.2pt #5e5e5e;
+  color: #5e5e5e;
+  text-align: right;
+}
+
+section#help-text {
+  font-size: 8pt;
+  margin-bottom: 12pt;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+footer {
+  display: flex;
+  flex-direction: column;
+}
+
+footer > dl {
+  width: 100%;
+  margin-bottom: 5pt;
+}
+
+footer > dl.list {
+  margin-bottom: 2pt;
+}
+
+footer > dl > dt {
+  min-width: 1cm;
+  display: inline-block;
+}
+
+footer > dl > dd {
+  display: inline-block;
+}
+
+footer > dl#payment {
+  justify-content: right;
+  text-align: right;
+  font-weight: 700;
+}
+
+footer > dl#legal {
+  text-align: center;
+  font-size: 8pt;
+}

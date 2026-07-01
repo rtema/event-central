@@ -1,0 +1,374 @@
+from collections.abc import Callable
+from datetime import datetime
+from typing import Any, TypeVar
+
+import pytz
+from babel import Locale
+from babel.dates import format_date
+from babel.numbers import format_currency
+from jinja2 import Undefined
+from jinja2.sandbox import SandboxedEnvironment
+from markupsafe import escape
+
+from src.document_templates.models import DocumentTemplate
+from src.events.models import Event
+from src.invoices.models import INVOICE_TYPE_CANCELLATION, INVOICE_TYPE_INVOICE, Invoice
+from src.orders.models import Order
+
+
+def now_utc(exact: bool = True):
+    """Get the current date/time in UTC.
+
+    :param exact: Set to ``False`` to set seconds/microseconds to 0.
+    :return: A timezone-aware `datetime` object
+    """
+    now = datetime.now(pytz.UTC)
+    if not exact:
+        now = now.replace(second=0, microsecond=0)
+    return now
+
+
+class PreserveUndefined(Undefined):
+    def __str__(self):
+        return f'{{{{ {self._undefined_name} }}}}'
+
+    def _child(self, suffix: str):
+        return PreserveUndefined(name=f'{self._undefined_name}{suffix}')
+
+    def __getattr__(self, name: str):
+        if name.startswith('_'):        # let internal attrs resolve normally
+            raise AttributeError(name)   # (guards against infinite recursion)
+        return self._child(f'.{name}')
+
+    def __getitem__(self, key: Any):
+        return self._child(f'.{key}' if isinstance(key, str) else f'[{key}]')
+
+
+T = TypeVar("T")
+Filter = Callable[..., Any]
+
+
+def _noop[T](value: T, *args: Any, **kwargs: Any) -> T:
+    return value
+
+
+class PermissiveFilters(dict[str, Filter]):
+    def __missing__(self, key: str) -> Filter:
+        return _noop
+
+    def get(self, key: str, default: Any = None) -> Filter:
+        return self[key]
+
+    def __contains__(self, key: object) -> bool:
+        return True
+
+
+class StrictSandbox(SandboxedEnvironment):
+    def is_safe_attribute(self, obj: Any, attr: Any, value: Any):
+        # Disallow all attribute access
+        return False
+
+    def is_safe_callable(self, obj: Any):
+        # Disallow calling any functions or objects
+        return False
+
+
+# Create a strict environment
+template_renderer_sandbox = StrictSandbox(undefined=PreserveUndefined)
+
+# Remove all filters to prevent even basic formatting
+template_renderer_sandbox.filters.clear()  # type: ignore
+
+# Use filter that does nothing to prevent errors when users specify filters
+template_renderer_sandbox.filters = PermissiveFilters()
+
+
+def generate_title(data: dict[str, str], locale: str) -> str:
+    title = ''
+    if 'title' in data:
+        if data['title'] == 'dr':
+            title = 'Dr.'
+        elif data['title'] == 'dr-ing':
+            title = 'Dr.-Ing.'
+        elif data['title'] == 'prof':
+            title = 'Prof.'
+        elif data['title'] == 'prof-dr':
+            title = 'Prof. Dr.'
+        elif data['title'] == 'prof-dr-ing':
+            title = 'Prof. Dr.-Ing.'
+        elif data['title'] == 'phd':
+            title = 'Ph.D.'
+
+    return title
+
+
+def generate_salutation(data: dict[str, str], locale: str) -> str:
+    salutation = ''
+    append_first_name = False
+    if locale == 'de':
+        if 'salutation' in data:
+            if data['salutation'] == 'mr':
+                salutation += 'Sehr geehrter Herr '
+            elif data['salutation'] == 'ms':
+                salutation += 'Sehr geehrte Frau '
+            else:
+                salutation += 'Hallo '
+                append_first_name = True
+
+        if 'title' in data and data['title'] != '':  # noqa: PLC1901
+            salutation += generate_title(data, locale)
+            salutation += ' '
+
+    else:  # noqa: PLR5501
+        if 'title' in data and data['title'] != '':  # noqa: PLC1901
+            title = generate_title(data, locale)
+            salutation += ' '
+
+            if title:
+                salutation += title
+                salutation += ' '
+            else:
+                salutation += 'Dear '
+                append_first_name = True
+        elif 'salutation' in data:
+            if data['salutation'] == 'mr':
+                salutation += 'Dear Mr. '
+            elif data['salutation'] == 'ms':
+                salutation += 'Dear Ms. '
+            else:
+                salutation += 'Dear '
+                append_first_name = True
+        else:
+            salutation += 'Dear '
+            append_first_name = True
+
+    if append_first_name and 'firstName' in data:
+        salutation += f'{escape(data["firstName"])} '
+
+    # add last name
+    salutation += escape(data.get('lastName', ''))
+
+    return salutation
+
+
+def generate_event_placeholders(event: Event | None, locale: str) -> dict[str, str]:
+    placeholders = {
+        'label': "",
+    }
+    if event:
+        placeholders['label'] = escape(event.label.get(locale, ''))
+
+    return placeholders
+
+
+def generate_order_placeholders(order: Order | None, locale: str) -> dict[str, str]:
+    placeholders = {
+        'externalShortId': '',
+        'link': '',
+        'salutation': '',
+        'name': '',
+        'invoiceNumbers': '',
+        'address': '',
+        'payments': '',
+    }
+    if order:
+        if order.external_short_id:
+            placeholders['externalShortId'] = escape(order.external_short_id)
+
+        if order.link:
+            placeholders['link'] = escape(order.link)
+
+        # if order.recipient:
+        #   placeholders['salutation'] = generate_salutation(order.recipient, locale)
+        # placeholders['name'] += f'{order.billing.get('firstName', '')} {
+        #     order.billing.get('lastName', '')}'
+
+        # # invoice numbers
+        # invoice_numbers = [
+        #     invoice.invoice_number for invoice in order.invoices]
+        # placeholders['invoiceNumbers'] = ', '.join(invoice_numbers)
+
+        # # build address
+        # placeholders['address'] += f'{order.billing.get('company', '')}<br>'
+        # placeholders['address'] += f'{placeholders['name']}<br>'
+        # if 'addressAddition' in order.billing and order.billing['addressAddition'] is not None:
+        #     placeholders['address'] += f'{order.billing.get('addressAddition', '')}<br>'
+        # placeholders['address'] += f'{order.billing.get('street', '')}<br>'
+        # placeholders['address'] += f'{order.billing.get('zip', '')} {order.billing.get('city', '')} <br>'
+        # resolved_locale = Locale(locale)
+        # placeholders[
+        #     'address'] += f'{resolved_locale.territories[order.billing.get('country', '')]}<br>'
+
+        # # build payments table
+        # for payment in order.payments:
+        #     if payment.status == PAYMENT_STATUS_SUCCESS and payment.type == PAYMENT_TYPE_PAYMENT:
+        #         method_name = ''
+        #         if payment.method == 'bank-transfer':
+        #             method_name = 'Überweisung' if locale == 'de' else 'Bank Transfer'
+        #         elif payment.method == 'card':
+        #             method_name = 'Kreditkarte' if locale == 'de' else 'Credit Card'
+        #         elif payment.method == 'paypal':
+        #             method_name = 'PayPal'
+        #         else:
+        #             method_name = 'Zahlung' if locale == 'de' else 'Payment'
+
+        #         placeholders['payments'] += f'<tr>\
+        #             <td>{format_date(payment.completed, 'medium', locale=locale)}</td>\
+        #             <td>{method_name}</td>\
+        #             <td>{format_currency(payment.amount,
+        #                                  currency=payment.currency,
+        #                                  locale='de_DE' if locale == 'de' else 'en_GB')}</td>\
+        #             </tr>'
+
+    return placeholders
+
+
+def generate_invoice_placeholders(invoice: Invoice | None, locale: str) -> dict[str, str]:
+    placeholders = {
+        'label': '',
+        'invoiceNumber': '',
+        'supplierAddressLine': '',
+        'customerAddress': '',
+        'customerName': '',
+        'orderNumber': '',
+        'vatNumber': '',
+        'issueDate': '',
+        'lines': '',
+        'totals': '',
+        'recipientName': '',
+        'recipientPurchaseOrderReference': '',
+        'recipientVatId': '',
+        'recipientAddress': ''
+    }
+
+    resolved_locale = Locale(locale)
+
+    if invoice:
+        # build label
+        if invoice.invoice_type == INVOICE_TYPE_CANCELLATION:
+            placeholders['label'] = 'Storno-Rechnung' if locale == 'de' else 'Credit Note'
+        elif invoice.invoice_type_code == INVOICE_TYPE_INVOICE:
+            placeholders['label'] = 'Rechnung' if locale == 'de' else 'Invoice'
+
+        # get basic data
+        placeholders['invoiceNumber'] = escape(invoice.invoice_number) or ""
+        placeholders['issueDate'] += format_date(
+            invoice.issue_date, 'medium', locale=invoice.locale)
+
+        # supplier data
+        if invoice.supplier:
+            placeholders['supplierAddressLine'] += ', '.join(
+                [
+                    escape(invoice.supplier.get('name', '')),
+                    escape(invoice.supplier.get('street', '')),
+                    escape(
+                        f'{invoice.supplier.get('zip', '')} {invoice.supplier.get('city', '')}'),
+                ]
+            )
+
+        # customer data
+        if invoice.recipient:
+            placeholders['recipientName'] += escape(
+                f'{invoice.recipient.get('contact_firstname', '')} \
+                  {invoice.recipient.get('contact_lastname', '')}'
+            )
+
+            placeholders['recipientPurchaseOrderReference'] += escape(
+                invoice.recipient.get('purchase_order_reference', '')
+            )
+
+            placeholders['recipientVatId'] += escape(
+                invoice.recipient.get('vat_id', ''))
+
+            placeholders['recipientAddress'] += f'{escape(invoice.recipient.get('line1', ''))}<br>'
+            line2 = invoice.recipient.get('line2', None)
+            if line2:
+                placeholders['recipientAddress'] += f'{escape(line2)}<br>'
+            line3 = invoice.recipient.get('line3', None)
+            if line3:
+                placeholders['recipientAddress'] += f'{escape(line3)}<br>'
+            placeholders['recipientAddress'] += \
+                f'{escape(invoice.recipient.get('zip', '')
+                          )} {escape(invoice.recipient.get('city', ''))}<br>'
+            placeholders['recipientAddress'] += \
+                f'{resolved_locale.territories[invoice.recipient.get('country', '').upper()]}'
+
+        # build items table
+        taxes: dict[str, float] = {}
+        for line_item in invoice.line_items:
+            quantity = f'{line_item.quantity:.4g}'
+            if quantity.endswith('.000'):
+                quantity = quantity.removesuffix('.000')
+            placeholders['lines'] += f'<tr>\
+              <td>{escape(quantity)}</td>\
+              <td>{escape(line_item.name).replace("\n", "<br>")}</td>\
+              <td>{format_currency(line_item.total_net,
+                                   currency=invoice.currency,
+                                   locale='de_DE' if locale == 'de' else 'en_GB')}</td>\
+                </tr>'
+
+            # compute tax line
+            tax_name = line_item.tax_exemption_reason
+            if not tax_name:
+                tax_name = line_item.tax.label.get(
+                    locale, '')
+            tax_name = f'{line_item.tax_rate:.1f}% {tax_name}'
+
+            if tax_name in taxes:
+                taxes[tax_name] += line_item.total_tax
+            else:
+                taxes[tax_name] = line_item.total_tax
+
+        # build totals table
+        placeholders['totals'] += f'<tr>\
+              <td class="net" colspan="2">{'Netto' if locale == 'de' else 'Subtotal'}</td>\
+              <td class="net">{format_currency(invoice.total_net,
+                                               currency=invoice.currency,
+                                               locale='de_DE' if locale == 'de' else 'en_GB')}</td>\
+              </tr>'
+
+        for tax_name in taxes:  # noqa: PLC0206
+            placeholders['totals'] += f'<tr>\
+              <td class="tax" colspan="2">{tax_name}</td>\
+              <td class="tax">{format_currency(taxes[tax_name],
+                                               currency=invoice.currency,
+                                               locale='de_DE' if locale == 'de' else 'en_GB')}</td>\
+              </tr>'
+
+        placeholders['totals'] += f'<tr>\
+              <td class="net" colspan="2">{'Brutto' if locale == 'de' else 'Total'}</td>\
+              <td class="net">{format_currency(invoice.total_gross,
+                                               currency=invoice.currency,
+                                               locale='de_DE' if locale == 'de' else 'en_GB')}</td>\
+              </tr>'
+    return placeholders
+
+
+def generate_document_template_placeholders(
+        document_template: DocumentTemplate,
+        locale: str
+) -> dict[str, str]:
+    placeholders = {
+        'timeOfGeneration': format_date(now_utc(), 'medium', locale=locale),
+    }
+
+    return placeholders
+
+
+def generate_image_placeholders(
+        document_template: DocumentTemplate,
+        locale: str
+) -> dict[str, str]:
+    placeholders: dict[str, str] = {}
+    # add placeholders for every image
+
+    for document_template_file in document_template.document_template_files:
+        if (document_template_file.type == "image"):
+
+            file = document_template_file.file
+
+            placeholders[document_template_file.key] = f'image://{document_template_file.id}'
+            placeholders[f'{document_template_file.key}Width'] = f'image://{file.width}'
+            placeholders[f'{document_template_file.key}Height'] = f'image://{file.height}'
+
+    return placeholders

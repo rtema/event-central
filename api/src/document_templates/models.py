@@ -19,9 +19,9 @@ from __future__ import annotations
 
 import uuid
 
-from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy import ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.core.db import Base
 from src.core.models import (
@@ -33,6 +33,7 @@ from src.core.models import (
     UUIDType,
     uuid_pk,
 )
+from src.files.models import File
 
 
 class DocumentTemplate(Base, CreatedAtMixin, CreatedByMixin):
@@ -50,11 +51,16 @@ class DocumentTemplate(Base, CreatedAtMixin, CreatedByMixin):
     html: Mapped[str | None] = mapped_column(Text, nullable=True)
     css: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    # Arrays of {"name", "file"} (fonts) / {"name", "file"|"link"} (images).
-    fonts: Mapped[list[dict[str, str]]] = mapped_column(
-        JSONB, nullable=False, default=list)
-    images: Mapped[list[dict[str, str]]] = mapped_column(
-        JSONB, nullable=False, default=list)
+    # Relationships
+    document_template_files: Mapped[list[DocumentTemplateFile]] = relationship(
+        back_populates="document_template"
+    )
+    invoices: Mapped[list["Invoice"]] = relationship(  # noqa: F821, UP037 # type: ignore
+        back_populates="document_template", lazy="selectin", order_by="Invoice.invoice_number"
+    )
+    public_document_templates: Mapped[list[PublicDocumentTemplate]] = relationship(
+        back_populates="document_template", lazy="selectin", order_by="PublicDocumentTemplate.id"
+    )
 
 
 class PublicDocumentTemplate(
@@ -74,3 +80,47 @@ class PublicDocumentTemplate(
     # MultiLanguageLabel
     label: Mapped[dict[str, str]] = mapped_column(
         JSONB, nullable=False, default=dict)
+
+    # Relationships
+    document_template: Mapped[DocumentTemplate] = relationship(
+        back_populates="public_document_templates", order_by="PublicDocumentTemplate.id")
+
+
+class DocumentTemplateFile(Base, CreatedAtMixin, CreatedByMixin):
+    __tablename__ = "document_template_files"
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+
+    document_template_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUIDType,
+        ForeignKey("document_templates.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    file_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUIDType,
+        ForeignKey("files.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
+    # Type of file ('image' or 'font')
+    type: Mapped[str] = mapped_column(String(256), nullable=False)
+
+    # Key
+    # the templates are jinja templates that will be rendered using weasyprint
+    # files can be referenced by {{ image.key }} and fonts by {{ font.key }}
+    # Therefore this key only needs to unique within a single template
+    key: Mapped[str] = mapped_column(String(2048), nullable=True, default=None)
+
+    # Name of the font
+    font_name: Mapped[str] = mapped_column(
+        String(256), nullable=True, default=None)
+
+    # Name of the font
+    font_weight: Mapped[int] = mapped_column(
+        Integer, nullable=True, default=None)
+
+    # Relationships
+    document_template: Mapped[DocumentTemplate] = relationship(
+        back_populates="document_template_files")
+    file: Mapped[File] = relationship()

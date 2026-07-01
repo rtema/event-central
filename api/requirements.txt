@@ -11,6 +11,7 @@ psycopg[binary]==3.3.4
 pydantic==2.13.4
 pydantic-settings==2.14.1
 email-validator==2.3.0
+pytz==2026.2
 
 # --- Auth ------------------------------------------------------------------
 PyJWT[crypto]==2.13.0
@@ -21,12 +22,20 @@ boto3==1.43.26
 boto3-stubs==1.43.28
 mypy-boto3-s3==1.43.14
 
+# --- File handling ---------------------------------------------------------
+# Requires system libraries (libmagic1) to be installed in the Docker image.
+python-magic==0.4.27
+
 # --- Document generation ------------------------
-# Requires system libraries (pango, cairo, etc.) installed in the Docker image.
+# Requires system libraries (pango, cairo, etc.) to be installed in the Docker image.
 weasyprint==66.0
+babel==2.18.0
+Jinja2==3.1.6
+qrcode==8.2
 
 # --- Spreadsheet export  -----------------------
 openpyxl==3.1.5
 
 # --- Smoke testing -----------------------------
+httpx==0.28.1
 httpx2==2.4.0

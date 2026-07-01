@@ -121,10 +121,8 @@ class ClamAVClient:
 
     def scan_stream(self, data: bytes | bytearray | BinaryIO) -> ClamAVScanResult:
         """Scan ``data`` (bytes or a binary file-like) via INSTREAM."""
-        if hasattr(data, "read"):
-            payload = data.read()
-        else:
-            payload = data
+        payload = data.read() if hasattr(data, "read") else data # type: ignore
+
         if not isinstance(payload, (bytes, bytearray)):
             raise TypeError("data must be bytes or a binary file-like object")
 
@@ -185,6 +183,7 @@ def clamav_validate_bytes(raw: bytes) -> ClamAVScanResult | None:
     or errors out we fail closed (raise ``AppError``) unless
     ``CLAMD_FAIL_OPEN`` is set.
     """
+    print(f'settings.clamav_timeout: {settings.clamav_timeout}')
     client = ClamAVClient(
         settings.clamav_host,
         settings.clamav_port,

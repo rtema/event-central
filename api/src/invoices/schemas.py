@@ -6,9 +6,10 @@ import datetime as dt
 import uuid
 from typing import Literal
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 
 from src.core.schemas import (
+    Base64Str,
     CamelModel,
     Currency,
     InvoiceRecipient,
@@ -125,14 +126,22 @@ class InvoicesListResponse(CamelModel):
 # Template fragments (embedded in the create request)
 # --------------------------------------------------------------------------- #
 class TemplateFont(CamelModel):
-    name: str | None = None
-    file: str | None = None  # base64
+    name: str
+    weight: int
+    file: Base64Str  # base64
 
 
 class TemplateImage(CamelModel):
-    name: str | None = None
-    file: str | None = None  # base64
+    key: str
+    file: Base64Str | None = None  # base64
     link: str | None = None  # https only
+
+    @model_validator(mode="after")
+    def check_file_xor_link(self):
+        # True when both are None or both are set — both are error cases
+        if (self.file is None) == (self.link is None):
+            raise ValueError("exactly one of 'file' or 'link' must be set")
+        return self
 
 
 class InvoiceTemplate(CamelModel):
@@ -141,6 +150,22 @@ class InvoiceTemplate(CamelModel):
     css: str | None = None
     fonts: list[TemplateFont] | None = None
     images: list[TemplateImage] | None = None
+
+    @model_validator(mode="after")
+    def check_template_source(self):
+        has_name = self.template_name is not None
+        has_html = self.html is not None
+        has_css = self.css is not None
+
+        if has_name and (has_html or has_css):
+            raise ValueError(
+                "set either 'template_name' or 'html'+'css', not both"
+            )
+        if not has_name and not (has_html and has_css):
+            raise ValueError(
+                "'html' and 'css' must both be set when 'template_name' is not"
+            )
+        return self
 
 
 # --------------------------------------------------------------------------- #
@@ -153,7 +178,7 @@ class InvoiceCreateAccountingEntity(CamelModel):
 
 
 class InvoiceCreateEvent(CamelModel):
-    id: str | None = None
+    id: str
     label: str | None = None
     start_dt: dt.datetime | None = None
     end_dt: dt.datetime | None = None
@@ -166,8 +191,8 @@ class InvoiceCreateEvent(CamelModel):
 
     @field_validator("id")
     @classmethod
-    def validate_id(cls, v: str | None) -> str | None:
-        if v is None:
+    def validate_id(cls, v: str) -> str | None:
+        if v is None:  # pyright: ignore[reportUnnecessaryComparison]
             return v
         if len(v) < 2:
             raise ValueError("id must be at least 2 characters")
@@ -198,18 +223,19 @@ class InvoiceCreateLineItem(CamelModel):
 
 
 class InvoiceCreateRequest(CamelModel):
-    external_order_id: str | None = None
+    external_order_id: str
+    external_order_short_id: str | None = None
     locale: Locale | None = None
-    currency: Currency | None = None
-    due_date: dt.datetime | None = None
+    currency: Currency
+    due_date: dt.datetime
     accounting_entity: InvoiceCreateAccountingEntity | None = None
-    event: InvoiceCreateEvent | None = None
-    links: InvoiceCreateLinks | None = None
-    supplier: InvoiceSupplier | None = None
+    event: InvoiceCreateEvent
+    links: InvoiceCreateLinks
+    supplier: InvoiceSupplier
     recipient: InvoiceRecipient
     tax_rates: list[InvoiceCreateTaxRate] | None = None
     line_items: list[InvoiceCreateLineItem] = Field(min_length=1)
-    invoice_template: InvoiceTemplate | None = None
+    invoice_template: InvoiceTemplate
 
 
 class InvoiceCreateResponse(CamelModel):

@@ -2,13 +2,27 @@
 
 from __future__ import annotations
 
-from typing import Literal
+import base64
+import binascii
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import AfterValidator, BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 
 Locale = Literal["de", "en"]
 Currency = Literal["EUR"]
+
+
+# Base64 encoded data
+def _validate_base64(value: str) -> str:
+    try:
+        # validate=True rejects any character outside the base64 alphabet
+        # instead of silently discarding it
+        base64.b64decode(value, validate=True)
+    except (binascii.Error, ValueError) as exc:
+        raise ValueError("must be valid base64-encoded data") from exc
+    return value
+Base64Str = Annotated[str, AfterValidator(_validate_base64)]
 
 
 class CamelModel(BaseModel):
@@ -52,16 +66,16 @@ def make_pagination(total: int, *, limit: int, offset: int) -> Pagination:
 class InvoiceSupplier(CamelModel):
     """Supplier (issuer) of the goods/services. Shared value object."""
 
-    legal_name: str | None = None
-    legal_registration: str | None = None
-    vat_id: str | None = None
-    iban: str | None = None
-    line1: str | None = None
+    legal_name: str
+    legal_registration: str
+    vat_id: str
+    iban: str
+    line1: str
     line2: str | None = None
     line3: str | None = None
-    city: str | None = None
+    city: str
     zip_code: str | None = None
-    country: str | None = None
+    country: str
     contact_name: str | None = None
     contact_phone: str | None = None
     contact_email: str | None = None
@@ -70,15 +84,18 @@ class InvoiceSupplier(CamelModel):
 class InvoiceRecipient(CamelModel):
     """Recipient (buyer) of the goods/services. Shared value object."""
 
-    line1: str | None = None
+    line1: str
     line2: str | None = None
     line3: str | None = None
-    city: str | None = None
+    city: str
     zip_code: str | None = None
-    country: str | None = None
-    contact_name: str | None = None
+    country: str
+    contact_salutation: str | None = None
+    contact_title: str | None = None
+    contact_firstname: str
+    contact_lastname: str | None = None
     contact_phone: str | None = None
-    contact_email: str | None = None
+    contact_email: str
     contact_cc_email: list[str] | None = None
     purchase_order_reference: str | None = None
     vat_id: str | None = None

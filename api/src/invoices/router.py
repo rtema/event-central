@@ -7,13 +7,15 @@ import uuid
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from src.auth.deps import AuthenticatedActor, require_all_scopes, require_any_scope
+from src.auth.deps import (
+    AuthenticatedActor,
+    get_authenticated_actor,
+    require_all_scopes,
+)
 from src.core.deps import PageParams, get_db, page_params
 from src.core.schemas import make_pagination
 from src.core.scopes import (
     SCOPE_INVOICES_READ_ALL,
-    SCOPE_INVOICES_WRITE_ALL,
-    SCOPE_INVOICES_WRITE_OWN,
 )
 from src.invoices import service
 from src.invoices.deps import require_invoice_scope
@@ -58,13 +60,12 @@ def list_invoices(
 def create_invoice(
     body: InvoiceCreateRequest,
     db: Session = Depends(get_db),
-    # The event-scoped write variant (invoices:write:{eventId}) is enforced in
-    # step 3, once the request's event is resolved during generation.
-    actor: AuthenticatedActor = Depends(
-        require_any_scope(SCOPE_INVOICES_WRITE_ALL, SCOPE_INVOICES_WRITE_OWN)
-    ),
+    # Any authenticated actor may attempt creation; the precise per-event scope
+    # (invoices:write:{all|own|<eventId>}) is enforced inside the service once
+    # the request's event has been resolved.
+    actor: AuthenticatedActor = Depends(get_authenticated_actor),
 ) -> InvoiceCreateResponse:
-    return service.create_invoice(db, payload=body.model_dump(exclude_unset=True), actor=actor.sub)
+    return service.create_invoice(db, payload=body.model_dump(exclude_unset=True), actor=actor)
 
 
 @router.post("/export", response_model=InvoicesExportResponse, summary="Export invoices")
