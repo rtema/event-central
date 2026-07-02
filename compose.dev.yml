@@ -75,6 +75,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+    restart: unless-stopped
   storage-primary:
     image: rustfs/rustfs:latest # pin to a tested tag for reproducibility
     environment:
@@ -145,6 +146,76 @@ services:
       - storage_secondary_user_secret
     networks:
       - storage-backend
+  
+  clamav:
+    image: clamav/clamav:1.4 # official Cisco-Talos image; pin to a current patch
+    restart: unless-stopped
+    volumes:
+      - clamav-data:/var/lib/clamav # persist the signature DB across restarts
+      - ./clamav/clamd.conf:/etc/clamav/clamd.conf:ro # raises stream/file limits
+    healthcheck:
+      # clamdcheck.sh ships in the official image and pings clamd.
+      test: ["CMD", "clamdcheck.sh"]
+      interval: 60s
+      timeout: 10s
+      retries: 5
+      start_period: 6m # first boot downloads + loads the signature DB (~minutes)
+    # clamd holds the whole signature set in RAM (~1.5-2 GB) and cannot swap it.
+    mem_limit: 3g
+    # Expose to the host ONLY if you also scan from outside the compose network:
+    ports:
+      - "${clamd_port}:8080"
+
+  validator-mustang:
+    build:
+      context: ./validator-mustang
+      # Bump these two together to move to a newer engine; find the SHA at
+      # https://repo1.maven.org/maven2/org/mustangproject/Mustang-CLI/
+      args:
+        MUSTANG_VERSION: "2.24.0"
+        MUSTANG_SHA256: "e4904ffa0afdce3f5836dceb927c440a05ed5d60386fdd37e17a4b2f7652edbf"
+    image: mustang-validator:2.24.0
+    restart: unless-stopped
+    ports:
+      - "${validator_mustang_port}:8080"
+    environment:
+      JAVA_MEM: "1G"
+      MAX_CONCURRENCY: "1"     # keep small: each validation is a fresh JVM
+      VALIDATE_TIMEOUT: "120"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          # veraPDF + JVM: give it headroom above JAVA_MEM.
+          memory: 2g
+  validator-kosit:
+    profiles: ["strict"]
+    build:
+      context: ./validator-kosit
+      # Bump these to move to newer official releases (find checksums next to the
+      # assets on the itplr-kosit GitHub releases pages).
+      args:
+        KOSIT_VALIDATOR_VERSION: "1.6.2"
+        KOSIT_VALIDATOR_SHA256: "244978514ad48f67c7573acfffc8f4fd73d81feda6f276710033f9913579857e"
+        XR_CONFIG_DATE: "2026-01-31"
+        XR_CONFIG_XR_VERSION: "3.0.2"
+        XR_CONFIG_SHA256: "6a5a5911a421b25fbc423f62f93f894df7b236f5d73ca4f84bb222a945082704"
+    image: kosit-xrechnung:1.6.2-2026-01-31
+    restart: unless-stopped
+    ports:
+      - "${validator_kosit_port}:8081"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8081/server/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 45s
+      retries: 5
+
 
 networks:
   storage-backend:
@@ -153,3 +224,4 @@ volumes:
   db-data:
   storage-primary-data:
   storage-secondary-data:
+  clamav-data:

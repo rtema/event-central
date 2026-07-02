@@ -51,6 +51,7 @@ from dotenv import dotenv_values
 from faker import Faker
 
 from src.generate_template import make_invoice_template
+from src.validate_invoices import validate_zugferd, validate_xrechnung
 
 # ======================================================================
 #  CONFIGURATION  -- edit these to match your environment.
@@ -980,6 +981,9 @@ def _validate_success(body: dict[str, Any], resp: requests.Response, report: Rep
     # --- the generated documents must actually be valid PDF / XML ---
     _validate_pdf(data.get("invoicePdf"), report)
     _validate_xml(data.get("invoiceXml"), report)
+
+    validate_zugferd(data.get("invoicePdf"), report)   # whole PDF
+    validate_xrechnung(data.get("invoiceXml"), report)  # the XML
 
 
 def _validate_pdf(b64: Any, report: Report) -> None:
