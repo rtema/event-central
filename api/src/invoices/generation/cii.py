@@ -53,6 +53,24 @@ def _date_str(parent: ET.Element, qname: str, value: dt.date) -> None:
     _sub(el, _q("udt", "DateTimeString"), value.strftime("%Y%m%d"), format="102")
 
 
+def _electronic_address(party: Party) -> tuple[str, str] | None:
+    """Resolve BT-34/BT-49 electronic address as ``(schemeID, value)``.
+
+    Prefers an explicit ``electronic_address`` on the party (with optional
+    ``electronic_address_scheme``, e.g. ``"0204"`` for a German Leitweg-ID);
+    otherwise falls back to the contact email under the EAS ``EM`` scheme.
+    PEPPOL rules R010/R020 require this on the buyer and seller respectively.
+    """
+    addr = getattr(party, "electronic_address", None)
+    if addr:
+        scheme = getattr(party, "electronic_address_scheme", None) or "EM"
+        return scheme, addr
+    email = getattr(party, "contact_email", None)
+    if email:
+        return "EM", email
+    return None
+
+
 def _party(parent: ET.Element, qname: str, party: Party, *, is_seller: bool) -> None:
     node = _sub(parent, qname)
     _sub(node, _q("ram", "Name"), party.name or "")
@@ -85,6 +103,14 @@ def _party(parent: ET.Element, qname: str, party: Party, *, is_seller: bool) -> 
     if party.city:
         _sub(addr, _q("ram", "CityName"), party.city)
     _sub(addr, _q("ram", "CountryID"), (party.country or "DE").upper())
+
+    # BT-34 (seller) / BT-49 (buyer) electronic address. Must sit between the
+    # postal address and the tax registration per the CII schema sequence.
+    endpoint = _electronic_address(party)
+    if endpoint is not None:
+        scheme, value = endpoint
+        uri = _sub(node, _q("ram", "URIUniversalCommunication"))
+        _sub(uri, _q("ram", "URIID"), value, schemeID=scheme)
 
     if party.vat_id:
         reg = _sub(node, _q("ram", "SpecifiedTaxRegistration"))
@@ -122,12 +148,26 @@ def _line_item(parent: ET.Element, line: DocumentLine) -> None:
     _sub(summation, _q("ram", "LineTotalAmount"), _amount(line.net))
 
 
-def build_cii_xml(doc: InvoiceDocument, *, spec_id: str = XRECHNUNG_SPEC_ID) -> bytes:
+# BT-23 Business process type. PEPPOL/EN16931 (rule PEPPOL-EN16931-R001) requires
+# this. The standard PEPPOL BIS Billing 3.0 value, also used by XRechnung.
+DEFAULT_BUSINESS_PROCESS = "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0"
+
+
+def build_cii_xml(
+    doc: InvoiceDocument,
+    *,
+    spec_id: str = XRECHNUNG_SPEC_ID,
+    business_process: str = DEFAULT_BUSINESS_PROCESS,
+) -> bytes:
     """Render ``doc`` as an EN16931 CII XML document (UTF-8 bytes)."""
     root = ET.Element(_q("rsm", "CrossIndustryInvoice"))
 
-    # 1) Document context — the guideline / CIUS this document conforms to.
+    # 1) Document context — the business process (BT-23) and guideline / CIUS
+    #    (BT-24) this document conforms to. BusinessProcess MUST come first per
+    #    the CII (D16B) schema sequence.
     ctx = _sub(root, _q("rsm", "ExchangedDocumentContext"))
+    process = _sub(ctx, _q("ram", "BusinessProcessSpecifiedDocumentContextParameter"))
+    _sub(process, _q("ram", "ID"), business_process)
     guideline = _sub(ctx, _q("ram", "GuidelineSpecifiedDocumentContextParameter"))
     _sub(guideline, _q("ram", "ID"), spec_id)
 

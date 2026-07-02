@@ -22,9 +22,7 @@ VAT_SCHEME = "VAT"
 # XRechnung 3.0 specification identifier (EN16931 BT-24). The same CII profile
 # is valid as the ZUGFeRD "XRECHNUNG" profile, so one document serves both the
 # standalone XRechnung XML and the PDF-embedded XML.
-XRECHNUNG_SPEC_ID = (
-    "urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0"
-)
+XRECHNUNG_SPEC_ID = "urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0"
 
 
 @dataclass(slots=True)

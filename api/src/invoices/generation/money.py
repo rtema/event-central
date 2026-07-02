@@ -137,22 +137,32 @@ def build_line(
 def build_tax_breakdown(lines: list[DocumentLine]) -> list[TaxBreakdownEntry]:
     """Group lines into EN16931 VAT subtotals (BG-23), one per category+rate.
 
-    The per-category VAT amount is the exact running sum of the corresponding
-    lines' already-rounded ``tax`` amounts (same for ``basis`` and ``net``).
+    Each subtotal's taxable ``basis`` (BT-116) is the running sum of the
+    constituent lines' already-rounded ``net`` amounts. The VAT ``amount``
+    (BT-117) is then derived from that finished basis as a *single* rounding of
+    ``basis × rate / 100`` — it is NOT the running sum of the per-line ``tax``
+    values.
 
-    A previous version recomputed the category amount as a fresh
-    ``basis × rate / 100`` rounding instead of summing the per-line amounts.
-    That reintroduces exactly the kind of drift ``build_line`` goes out of its
-    way to avoid at the line level: a single rounding applied to an aggregate
-    can differ from the sum of many independently-rounded per-line amounts by
-    much more than a cent once a category has more than a couple of lines
-    (there is no fixed per-category bound — the potential drift scales with
-    how many lines share that category/rate). Since invoice-level totals are
-    built from this breakdown, that drift showed up as
-    ``totalTax``/``totalGross`` no longer matching the sum of the invoice
-    lines. Summing the per-line amounts directly makes the header totals
-    reconcile with the lines exactly, by construction, regardless of how many
-    lines fall into each category.
+    This is mandated by EN16931 rule BR-CO-17: "VAT category tax amount
+    (BT-117) = VAT category taxable amount (BT-116) × (VAT category rate
+    (BT-119) / 100), rounded to two decimals." A conformance validator
+    (KoSIT / XRechnung) recomputes BT-117 exactly this way and rejects the
+    document if it differs, so BT-117 has to equal ``round(basis × rate)``.
+
+    Summing the per-line ``tax`` amounts instead — the previous approach here —
+    can drift from ``round(basis × rate)`` by a cent or more once a category
+    holds several lines, because each per-line ``tax`` was independently
+    rounded to the cent. That drift both violates BR-CO-17 and, via
+    ``totals()``, propagates into the header ``TaxTotalAmount`` /
+    ``GrandTotalAmount`` / ``DuePayableAmount``. It is exactly the bug behind a
+    payable of 10950.17 for a 19 % basis of 9201.83, where the compliant value
+    is ``round(9201.83 × 0.19) = 1748.35`` → grand total ``10950.18``.
+
+    Note EN16931 keeps no per-line VAT amount in the totals chain: a line
+    carries only its net (BT-131), and VAT is a strictly category-level
+    quantity. The per-line ``tax`` on :class:`DocumentLine` is retained only
+    for persistence/human-readable display and is deliberately not summed into
+    the category amount here.
     """
     groups: OrderedDict[tuple[str, str], TaxBreakdownEntry] = OrderedDict()
     for line in lines:
@@ -169,12 +179,17 @@ def build_tax_breakdown(lines: list[DocumentLine]) -> list[TaxBreakdownEntry]:
             )
             groups[key] = entry
         entry.basis = money(entry.basis + line.net)
-        entry.amount = money(entry.amount + line.tax)
         # Keep the first non-empty exemption reason seen for the category.
         if entry.exemption_reason is None and line.exemption_reason:
             entry.exemption_reason = line.exemption_reason
         if entry.exemption_reason_code is None and line.exemption_reason_code:
             entry.exemption_reason_code = line.exemption_reason_code
+
+    # BR-CO-17: once each category's taxable basis is fully accumulated, derive
+    # its VAT amount from that basis with a single rounding of basis × rate.
+    # (Exempt categories carry rate 0, so this yields 0.00 as required.)
+    for entry in groups.values():
+        entry.amount = money(entry.basis * entry.rate / Decimal("100"))
 
     return list(groups.values())
 
