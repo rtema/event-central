@@ -212,6 +212,9 @@ def make_invoice_template(rng: random.Random, locale: str) -> dict[str, Any]:
     logo = _fetch_image_file(f"logo-{rng.randrange(1_000_000)}", 240, 120)
     if logo:
         images.append({"key": "logo", "file": logo})  # 'link' left unset on purpose
+    footer = _fetch_image_file(f"footer-{rng.randrange(1_000_000)}", int(210/25.4 * 300), int(30/25.4 * 300))
+    if logo:
+        images.append({"key": "footer", "file": footer})  # 'link' left unset on purpose
 
     # --- assemble --------------------------------------------------------------
     html = _load_template("html", lang).safe_substitute()

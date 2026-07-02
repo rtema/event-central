@@ -7,7 +7,7 @@
 </head>
 
 <body>
-  <img id="top-image" src="{{ images.logo }}" alt="{{ event.label }}" width="100%" height="2.5cm">
+  <img id="top-image" src="{{ images.logo }}" alt="{{ event.label }}">
 
   <header>
     <address>
@@ -51,8 +51,14 @@
   <section id="help-text">
     (Please indicate when paying)
   </section>
+
   <main>
     <table id="items">
+      <colgroup>
+        <col class="col-qty">
+        <col class="col-name">
+        <col class="col-price">
+      </colgroup>
       <thead>
         <tr>
           <th>Quantity</th>
@@ -62,6 +68,8 @@
       </thead>
       <tbody>
         {{ invoice.lines }}
+      </tbody>
+      <tbody class="totals">
         {{ invoice.totals }}
       </tbody>
     </table>
@@ -90,13 +98,12 @@
       <dt>IBAN: </dt>
       <dd>{{ invoice.supplierIban }}</dd>
     </dl>
-
-    <dl id="legal">
-      {{ invoice.supplierLegal }}
-    </dl>
   </footer>
 
-  <img id="bottom-image" src="{{ images.logo }}" alt="{{ event.label }}" width="100%" height="2.5cm">
+  <div id="page-footer">
+    <div id="footer-legal">{{ invoice.supplierLegal }}</div>
+    <img id="bottom-image" src="{{ images.footer }}" alt="{{ event.label }}">
+  </div>
 </body>
 
 </html>

@@ -1,13 +1,35 @@
 /* stylelint-disable font-family-no-missing-generic-family-keyword */
 /* stylelint-disable value-keyword-case */
+
+/* --------------------------------------------------------------------------
+   Page setup
+   Content width stays 16.5cm (A4 21cm - 2.5cm left - 2cm right) so all
+   tables keep their original width. Top/bottom margins are enlarged to
+   reserve space for the repeating logo header and the repeating footer
+   (legal notice + logo).
+   -------------------------------------------------------------------------- */
 @page {
   size: A4;
   font-family: Source Sans Pro;
-  margin: 3cm;
   margin-left: 2.5cm;
   margin-right: 2cm;
-  margin-top: 2cm;
-  margin-bottom: 1cm;
+  margin-top: 3.3cm;
+  margin-bottom: 4.2cm;
+
+  /* Page numbers live in a margin box so counter(page)/counter(pages) update
+     correctly on every page (they do NOT update inside a position:fixed
+     element). Centered at the bottom of the page, above the footer block,
+     with padding around the text. */
+  @bottom-center {
+    content: "Seite " counter(page) " / " counter(pages);
+    font-family: Source Sans Pro;
+    font-size: 8pt;
+    color: #5e5e5e;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: top;
+    padding: 0.15cm 0.4cm;
+  }
 }
 
 html {
@@ -19,28 +41,62 @@ html {
 
 body {
   margin: 0;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
 }
 
-img {
-  width: 100%;
-  object-fit: contain;
-}
-
+/* --------------------------------------------------------------------------
+   Repeating logo header (top of every page).
+   position:fixed elements are painted on EVERY page in WeasyPrint. The
+   containing block is the page content box, so left/right are measured from
+   the content edges. Constraining the left edge to 10cm aligns the logo with
+   the "Kontakt" column (address block is 8cm + 2cm gap = 10cm), and it is
+   right-aligned to the content edge like the Kontakt block.
+   Adjust the `left` value if a wider logo needs more room. */
 img#top-image {
-  height: 2.5cm;
+  position: fixed;
+  top: -2.9cm;
+  right: 0;
+  /* Width matches the Kontakt column (content 16.5cm - 10cm offset = 6.5cm),
+     right-aligned to the content edge. The logo is scaled to fit inside this
+     box. Increase the width if a wider logo needs more room. */
+  width: 6.5cm;
+  height: 2.4cm;
+  object-fit: contain;
   object-position: right center;
 }
 
-img#bottom-image {
-  padding-top: 0.5cm;
-  height: 2.5cm;
+/* --------------------------------------------------------------------------
+   Repeating footer (bottom of every page): legal notice + logo.
+   Legal text is static on every page, so a fixed element is fine here
+   (unlike the page counter, which needs a margin box). Negative bottom pushes
+   it into the reserved bottom margin; content width spans the 16.5cm content
+   box.
+   -------------------------------------------------------------------------- */
+#page-footer {
+  position: fixed;
+  bottom: -3.7cm;
+  left: 0;
+  right: 0;
+  width: 100%;
+}
+
+#page-footer #footer-legal {
+  text-align: center;
+  font-size: 8pt;
+  color: #000;
+  margin-bottom: 0.25cm;
+}
+
+#page-footer img#bottom-image {
+  display: block;
+  width: 100%;
+  height: 2.4cm;
+  object-fit: contain;
   object-position: center;
 }
 
+/* --------------------------------------------------------------------------
+   Header block (sender/recipient address + contact aside)
+   -------------------------------------------------------------------------- */
 header {
   display: flex;
   flex-direction: row;
@@ -74,6 +130,9 @@ h1 {
   margin-bottom: 12pt;
 }
 
+/* --------------------------------------------------------------------------
+   Tables
+   -------------------------------------------------------------------------- */
 table#info,
 table#items,
 table#totals {
@@ -103,9 +162,34 @@ table#info th {
   border-bottom: solid 0.5pt #000;
 }
 
+/* Long registration numbers / names in the info table wrap instead of
+   pushing the table wider than the page. */
+table#info td {
+  overflow-wrap: anywhere;
+}
+
+/* --- Items table: fixed layout so long article names never widen or
+       overflow the table. The article column takes the remaining width. --- */
+table#items {
+  table-layout: fixed;
+}
+
+col.col-qty {
+  width: 1.8cm;
+}
+
+col.col-price {
+  width: 3cm;
+}
+/* col.col-name uses the remaining ~11.7cm automatically */
+
 table#items th,
 table#items td {
   border-top: solid 0.2pt #000;
+  vertical-align: top;
+  /* Break very long words / unbroken strings so they wrap within the cell. */
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
 
 table#items th:last-of-type,
@@ -117,6 +201,11 @@ table#items th {
   background-color: #000;
   color: #fff;
   font-weight: 700;
+}
+
+/* The black header row repeats automatically on each page in WeasyPrint. */
+table#items thead {
+  display: table-header-group;
 }
 
 table#items td.net,
@@ -132,25 +221,34 @@ table#items td.tax {
   text-align: right;
 }
 
+/* Keep the whole totals block (Netto / USt / Brutto) together on one page. */
+table#items tbody.totals {
+  break-inside: avoid;
+}
+
 section#help-text {
   font-size: 8pt;
   margin-bottom: 12pt;
 }
 
 main {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+  display: block;
 }
 
+/* --------------------------------------------------------------------------
+   In-flow footer (payment / bank notice) — appears once, after the items.
+   The legal notice is no longer here; it repeats at the bottom of every page
+   via #page-footer above. Each block stays intact across page breaks.
+   -------------------------------------------------------------------------- */
 footer {
-  display: flex;
-  flex-direction: column;
+  display: block;
+  margin-top: 12pt;
 }
 
 footer > dl {
   width: 100%;
   margin-bottom: 5pt;
+  break-inside: avoid;
 }
 
 footer > dl.list {
@@ -170,9 +268,4 @@ footer > dl#payment {
   justify-content: right;
   text-align: right;
   font-weight: 700;
-}
-
-footer > dl#legal {
-  text-align: center;
-  font-size: 8pt;
 }

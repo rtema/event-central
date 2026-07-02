@@ -307,9 +307,7 @@ def generate_invoice_placeholders(invoice: Invoice | None, locale: str) -> dict[
         # build items table
         taxes: dict[str, float] = {}
         for line_item in invoice.line_items:
-            quantity = f'{line_item.quantity:.4g}'
-            if quantity.endswith('.000'):
-                quantity = quantity.removesuffix('.000')
+            quantity = f"{line_item.quantity:.10f}".rstrip("0").rstrip(".")
             placeholders['lines'] += f'<tr>\
               <td>{escape(quantity)}</td>\
               <td>{escape(line_item.name).replace("\n", "<br>")}</td>\
