@@ -60,7 +60,6 @@ from src.invoices.schemas import (
     InvoiceLinkResponse,
     InvoiceOut,
     InvoicesExportResponse,
-    InvoiceTemplate,
 )
 from src.jobs.models import Job
 from src.orders.models import Order
@@ -83,8 +82,8 @@ def list_invoices(
     base = select(Invoice)
     count_stmt = select(func.count()).select_from(Invoice)
     if event_id is not None:
-        base = base.where(Invoice.event_id == event_id)
-        count_stmt = count_stmt.where(Invoice.event_id == event_id)
+        base = base.where(Invoice.order.event.id == event_id)
+        count_stmt = count_stmt.where(Invoice.order.event.id == event_id)
     if order_id is not None:
         base = base.where(Invoice.order_id == order_id)
         count_stmt = count_stmt.where(Invoice.order_id == order_id)
@@ -139,6 +138,29 @@ _PDF_CONTENT_TYPE = "application/pdf"
 _XML_CONTENT_TYPE = "application/xml"
 
 
+def _to_decimal(value: Any) -> Decimal:
+    """Safely coerce any numeric-ish input (float, int, str, Decimal, None) into
+    a Decimal without going through binary float noise.
+
+    Money-relevant values (prices, quantities, rates) coming off pydantic
+    request models are typically plain Python ``float``. Converting a float
+    straight into a ``Decimal`` (``Decimal(0.1)``) preserves the float's binary
+    imprecision (``Decimal('0.1000000000000000055511151231257827021181583404541015625')``).
+    Routing it through ``str()`` first (``Decimal(str(0.1))`` -> ``Decimal('0.1')``)
+    uses the value's shortest decimal repr instead, which is what every other
+    money-sensitive spot in this module already does (see ``cancel_order``).
+    This is the single conversion point for line/tax construction so that
+    everything downstream (build_line, classify_tax, tax breakdowns, totals)
+    operates on Decimals from the start instead of inheriting float rounding
+    error.
+    """
+    if value is None:
+        return Decimal("0")
+    if isinstance(value, Decimal):
+        return value
+    return Decimal(str(value))
+
+
 def _actor_identity(actor: AuthenticatedActor | str | None) -> tuple[str | None, set[str]]:
     """Accept either a full actor (with scopes) or a bare ``sub`` string."""
     if actor is None or isinstance(actor, str):
@@ -146,7 +168,7 @@ def _actor_identity(actor: AuthenticatedActor | str | None) -> tuple[str | None,
     return actor.sub, set(getattr(actor, "scopes", set()))
 
 
-def _multilanguage_label(value: str | dict[str, str] | None) -> dict[str, str]:
+def _multilanguage_label(value: str | dict[str, Any] | None) -> dict[str, str]:
     if value is None:
         return {}
     if isinstance(value, dict):
@@ -284,20 +306,37 @@ def _build_lines_and_taxes(
     invoice_id: uuid.UUID,
     actor_sub: str | None,
 ) -> tuple[list[InvoiceLineItem], list[Tax], list[DocumentLine]]:
-    """Persist Tax rows and InvoiceLineItem rows; build the generator's lines."""
+    """Persist Tax rows and InvoiceLineItem rows; build the generator's lines.
+
+    All money-relevant inputs (quantity, unit price, tax rate) are coerced to
+    Decimal via ``_to_decimal`` *before* they touch ``classify_tax``/``build_line``.
+    Previously ``rate`` and ``item.quantity``/``item.price_per_unit`` were passed
+    through as whatever type the request schema produced (typically ``float``,
+    since pydantic deserializes JSON numbers that way). That float noise then
+    fed into every downstream Decimal computation — line net/tax/gross, the tax
+    breakdown, and the invoice totals — producing cent-level rounding
+    discrepancies. It also got written verbatim into
+    ``InvoiceLineItem.quantity/price_per_unit/tax_rate``, so a later
+    cancellation would faithfully reproduce the same float-tainted values.
+    """
     tax_defs = {t.external_id: t for t in (req.tax_rates or [])}
     tax_rows: dict[str, Tax] = {}
     line_items: list[InvoiceLineItem] = []
     doc_lines: list[DocumentLine] = []
 
     for position, item in enumerate(req.line_items, start=1):
-        tdef = tax_defs.get(item.external_tax_id)
-        rate = tdef.rate if tdef else 0.0
-        ttype = (tdef.type if tdef else None) or "standard"
-        exemption = tdef.tax_exemption_reason if tdef else None
+        tax_definition = tax_defs.get(item.external_tax_id)
+        rate = _to_decimal(
+            tax_definition.rate) if tax_definition else Decimal("0")
+        tax_type = (
+            tax_definition.type if tax_definition else None) or "standard"
+        exemption = tax_definition.tax_exemption_reason if tax_definition else None
+
+        quantity = _to_decimal(item.quantity)
+        price_per_unit = _to_decimal(item.price_per_unit)
 
         category, eff_rate, reason, reason_code = classify_tax(
-            tax_type=ttype,
+            tax_type=tax_type,
             rate=rate,
             exemption_reason=exemption,
             exemption_reason_code=None,
@@ -306,8 +345,8 @@ def _build_lines_and_taxes(
         line = build_line(
             position=position,
             name=item.name,
-            quantity=item.quantity,
-            price_per_unit_gross=item.price_per_unit,
+            quantity=quantity,
+            price_per_unit_gross=price_per_unit,
             category=category,
             rate=eff_rate,
             exemption_reason=reason,
@@ -318,31 +357,29 @@ def _build_lines_and_taxes(
         doc_lines.append(line)
 
         # Persist (or reuse) the Tax row for this external id.
-        tax_row = None
-        if item.external_tax_id is not None:
-            tax_row = tax_rows.get(item.external_tax_id)
-            if tax_row is None:
-                label = tdef.label if tdef else item.external_tax_id
-                tax_row = Tax(
-                    invoice_id=invoice_id,
-                    external_id=item.external_tax_id,
-                    rate=eff_rate,
-                    label=_multilanguage_label(label),
-                    type=ttype,
-                    tax_exemption_reason=reason if category == "E" else None,
-                    created_by=actor_sub or "system",
-                )
-                db.add(tax_row)
-                db.flush()
-                tax_rows[item.external_tax_id] = tax_row
+        tax_row = tax_rows.get(item.external_tax_id)
+        if tax_row is None:
+            label = tax_definition.label if tax_definition else item.external_tax_id
+            tax_row = Tax(
+                invoice_id=invoice_id,
+                external_id=item.external_tax_id,
+                rate=eff_rate,
+                label=_multilanguage_label(label),
+                type=tax_type,
+                tax_exemption_reason=reason if category == "E" else None,
+                created_by=actor_sub or "system",
+            )
+            db.add(tax_row)
+            db.flush()
+            tax_rows[item.external_tax_id] = tax_row
 
         line_items.append(
             InvoiceLineItem(
                 invoice_id=invoice_id,
                 tax_id=tax_row.id if tax_row else None,
                 position=position,
-                quantity=item.quantity,
-                price_per_unit=item.price_per_unit,
+                quantity=quantity,
+                price_per_unit=price_per_unit,
                 name=item.name,
                 ticket=item.ticket.model_dump(by_alias=True, exclude_none=True)
                 if item.ticket
@@ -555,7 +592,6 @@ def create_invoice(
             "de") or (event.label or {}).get("en"),
     )
 
-    template = req.invoice_template
     pdf_bytes, xml_bytes = _generate_and_store_documents(
         invoice,
         doc,
@@ -659,7 +695,7 @@ def cancel_order(
         raise NotFoundError("order has no invoices to cancel")
 
     event = db.get(Event, order.event_id)
-    balance = money(sum((Decimal(str(inv.total_gross))
+    balance = money(sum((_to_decimal(inv.total_gross)
                     for inv in invoices), Decimal("0.00")))
 
     # Newest-first ordering for "last issued".
@@ -686,7 +722,6 @@ def cancel_order(
 
     cancellation = Invoice(
         order_id=order.id,
-        event_id=source.event_id,
         locale=source.locale,
         accounting_entity=prefix,
         accounting_number=assigned.accounting_number,
@@ -709,14 +744,14 @@ def cancel_order(
     # Negate each source line into the cancellation document + persisted lines.
     doc_lines: list[DocumentLine] = []
     for src_line in source.line_items:
-        qty = -Decimal(str(src_line.quantity))
+        qty = -_to_decimal(src_line.quantity)
         category = src_line.tax_category or "S"
-        rate = Decimal(str(src_line.tax_rate or 0))
+        rate = _to_decimal(src_line.tax_rate)
         line = build_line(
             position=src_line.position,
             name=src_line.name,
             quantity=qty,
-            price_per_unit_gross=src_line.price_per_unit,
+            price_per_unit_gross=_to_decimal(src_line.price_per_unit),
             category=category,
             rate=rate,
             exemption_reason=src_line.tax_exemption_reason,
@@ -729,7 +764,7 @@ def cancel_order(
                 tax_id=None,
                 position=src_line.position,
                 quantity=qty,
-                price_per_unit=src_line.price_per_unit,
+                price_per_unit=_to_decimal(src_line.price_per_unit),
                 name=src_line.name,
                 ticket=src_line.ticket,
                 tax_category=category,
@@ -771,19 +806,22 @@ def cancel_order(
         order_external_id=order.external_id,
         payment_link=order.payment_link,
         order_link=order.link,
-        event_id=source.event_id,
         event_label=(event.label or {}).get("de") if event else None,
         notes=[f"Storno zur Rechnung {source.invoice_number}"],
     )
 
-    pdf_bytes, xml_bytes = _generate_and_store_documents(cancellation, doc)
+    # resolve/create document template
+    document_template = ordered[-1].document_template
+
+    pdf_bytes, xml_bytes = _generate_and_store_documents(
+        cancellation, doc, document_template)
     order.status = "cancelled"
     db.flush()
 
     return _build_response(
         cancellation,
         order,
-        event,
+        event=cancellation.order.event,
         pdf_b64=base64.b64encode(pdf_bytes).decode("ascii"),
         xml_b64=base64.b64encode(xml_bytes).decode("ascii"),
     )

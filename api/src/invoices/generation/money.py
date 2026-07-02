@@ -67,15 +67,55 @@ def build_line(
     exemption_reason_code: str | None = None,
     ticket_label: str | None = None,
 ) -> DocumentLine:
-    """Compute a single line's net/tax/gross from a VAT-inclusive unit price."""
+    """Compute a single line's net/tax/gross from a VAT-inclusive unit price.
+
+    IMPORTANT — rounding order: the line's gross total is derived as
+    ``quantity * unit_gross``, rounded to the cent exactly once. Net and tax
+    are then derived *from that already-rounded gross total*
+    (``net = gross / factor``, ``tax = gross - net``) rather than from a
+    per-unit net price that gets rounded before being multiplied by quantity.
+
+    Rounding the *unit* net price first (``net_unit = round(unit_gross /
+    factor)``) and then multiplying by quantity was the previous approach, and
+    it's wrong: 19%/7% VAT divisions essentially never terminate, so
+    ``net_unit`` almost always carries a sub-cent rounding error. Multiplying
+    that error by ``quantity`` scales it up — for large quantities the line's
+    reconstructed gross (``net_unit * qty`` grossed back up) can drift by many
+    cents from ``quantity * price_per_unit_gross``, which is the amount that
+    was actually charged. Rounding the total once, up front, keeps
+    ``gross == quantity * price_per_unit_gross`` exactly and makes
+    ``net + tax == gross`` hold by construction (via subtraction) instead of
+    by coincidence.
+
+    Note the SAME principle applies to ``price_per_unit_gross`` itself: it must
+    stay full-precision (not pre-rounded to cents via ``money()``) until *after*
+    it has been multiplied by quantity. The incoming unit price is not
+    guaranteed to already be a whole number of cents (e.g. a unit price of
+    ``0.5592`` split across a bulk quantity) — rounding it to ``0.56`` before
+    multiplying by ``7`` gives ``3.92``, while the amount actually charged is
+    ``7 * 0.5592 = 3.9144 -> 3.91``. Rounding the unit price early silently
+    changes the total by a cent. Only ``gross`` (the product) gets rounded;
+    the unit price is kept as an exact ``Decimal`` all the way through the
+    multiplication.
+
+    ``net_unit_price`` is still computed and returned (documents display it),
+    but purely for presentation — it is never used to derive the totals below.
+    """
     qty = Decimal(str(quantity))
-    unit_gross = money(price_per_unit_gross)
+    # Full precision — do NOT round this before multiplying by qty.
+    raw_unit_gross = Decimal(str(price_per_unit_gross))
     factor = Decimal("1") + (rate / Decimal("100"))
 
-    net_unit = money(unit_gross / factor) if factor != 0 else unit_gross
-    net = money(net_unit * qty)
-    tax = money(net * rate / Decimal("100"))
-    gross = money(net + tax)
+    # Single rounding point for the line total — must equal qty * unit price
+    # computed at full precision, matching what was actually charged.
+    gross = money(raw_unit_gross * qty)
+
+    net = money(gross / factor) if factor != 0 else gross
+    tax = money(gross - net)  # by construction: net + tax == gross, always
+
+    # Presentation-only rounded unit price / net-unit price; not used above.
+    unit_gross = money(raw_unit_gross)
+    net_unit = money(raw_unit_gross / factor) if factor != 0 else unit_gross
 
     return DocumentLine(
         position=position,
@@ -97,8 +137,22 @@ def build_line(
 def build_tax_breakdown(lines: list[DocumentLine]) -> list[TaxBreakdownEntry]:
     """Group lines into EN16931 VAT subtotals (BG-23), one per category+rate.
 
-    The per-category VAT amount is recomputed as ``basis × rate / 100`` (rounded)
-    rather than summed from the lines, so it satisfies BR-S-08 / BR-E-08.
+    The per-category VAT amount is the exact running sum of the corresponding
+    lines' already-rounded ``tax`` amounts (same for ``basis`` and ``net``).
+
+    A previous version recomputed the category amount as a fresh
+    ``basis × rate / 100`` rounding instead of summing the per-line amounts.
+    That reintroduces exactly the kind of drift ``build_line`` goes out of its
+    way to avoid at the line level: a single rounding applied to an aggregate
+    can differ from the sum of many independently-rounded per-line amounts by
+    much more than a cent once a category has more than a couple of lines
+    (there is no fixed per-category bound — the potential drift scales with
+    how many lines share that category/rate). Since invoice-level totals are
+    built from this breakdown, that drift showed up as
+    ``totalTax``/``totalGross`` no longer matching the sum of the invoice
+    lines. Summing the per-line amounts directly makes the header totals
+    reconcile with the lines exactly, by construction, regardless of how many
+    lines fall into each category.
     """
     groups: OrderedDict[tuple[str, str], TaxBreakdownEntry] = OrderedDict()
     for line in lines:
@@ -115,14 +169,13 @@ def build_tax_breakdown(lines: list[DocumentLine]) -> list[TaxBreakdownEntry]:
             )
             groups[key] = entry
         entry.basis = money(entry.basis + line.net)
+        entry.amount = money(entry.amount + line.tax)
         # Keep the first non-empty exemption reason seen for the category.
         if entry.exemption_reason is None and line.exemption_reason:
             entry.exemption_reason = line.exemption_reason
         if entry.exemption_reason_code is None and line.exemption_reason_code:
             entry.exemption_reason_code = line.exemption_reason_code
 
-    for entry in groups.values():
-        entry.amount = money(entry.basis * entry.rate / Decimal("100"))
     return list(groups.values())
 
 
