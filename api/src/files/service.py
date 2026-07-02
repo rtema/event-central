@@ -305,7 +305,7 @@ def get_files_by_hash(
     *,
     include_deleted: bool = False,
 ) -> list[File]:
-    """All files matching a content hash (useful for dedup before storing)."""
+    """All files matching a content hash (useful for deduplicate before storing)."""
     stmt = select(File).where(File.hash == hash)
     if not include_deleted:
         stmt = stmt.where(File.deleted_at.is_(None))

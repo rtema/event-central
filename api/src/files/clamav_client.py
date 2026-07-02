@@ -17,6 +17,7 @@ from __future__ import annotations
 import logging
 import socket
 import struct
+import time
 from dataclasses import dataclass
 from typing import BinaryIO
 
@@ -62,19 +63,66 @@ class ClamAVScanResult:
 
 
 class ClamAVClient:
-    """Stateless clamd client; each call opens its own short-lived connection."""
+    """Stateless clamd client; each call opens its own short-lived connection.
 
-    def __init__(self, host: str, port: int, timeout: float = 60.0) -> None:
+    ``timeout`` is a wall-clock budget for the *entire* exchange (connect +
+    send + reply), not a per-operation deadline. Each blocking socket operation
+    is re-armed with the time remaining against a single monotonic deadline, so
+    a slow or stalled clamd cannot keep resetting the clock and run forever.
+    """
+
+    def __init__(
+        self,
+        host: str,
+        port: int,
+        timeout: float = 60.0,
+        connect_timeout: float | None = None,
+    ) -> None:
+        # A None/0 timeout would silently put the socket into blocking-forever
+        # or non-blocking mode, defeating the whole point — fail loudly instead.
+        if not timeout or timeout <= 0:
+            raise ValueError(
+                f"clamav timeout must be positive, got {timeout!r}")
         self._host = host
         self._port = port
-        self._timeout = timeout
+        self._timeout = float(timeout)
+        # Connecting to an unreachable/filtered clamd should fail fast rather
+        # than burn the whole scan budget, so cap the connect phase separately.
+        # NOTE: this cap applies PER resolved address inside create_connection,
+        # so worst case is connect_timeout * (number of A/AAAA records).
+        if connect_timeout is None:
+            connect_timeout = min(self._timeout, 5.0)
+        if connect_timeout <= 0:
+            raise ValueError(
+                f"clamav connect_timeout must be positive, got {connect_timeout!r}"
+            )
+        self._connect_timeout = float(connect_timeout)
 
     # -- connection helpers ------------------------------------------------- #
 
-    def _connect(self) -> socket.socket:
+    def _arm(self, sock: socket.socket, deadline: float) -> None:
+        """Set the socket timeout to the time remaining before ``deadline``."""
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise ClamAVError(
+                "clamd scan exceeded timeout budget",
+                error="clamav_timeout",
+                http_status=status.HTTP_504_GATEWAY_TIMEOUT,
+            )
+        sock.settimeout(remaining)
+
+    def _connect(self, deadline: float) -> socket.socket:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise ClamAVError(
+                "clamd timeout budget exhausted before connect",
+                error="clamav_timeout",
+                http_status=status.HTTP_504_GATEWAY_TIMEOUT,
+            )
         try:
             sock = socket.create_connection(
-                (self._host, self._port), timeout=self._timeout
+                (self._host, self._port),
+                timeout=min(self._connect_timeout, remaining),
             )
         except OSError as exc:
             raise ClamAVError(
@@ -82,13 +130,12 @@ class ClamAVClient:
                 error="clamav_unreachable",
                 http_status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             ) from exc
-        sock.settimeout(self._timeout)
         return sock
 
-    @staticmethod
-    def _read_reply(sock: socket.socket) -> str:
+    def _read_reply(self, sock: socket.socket, deadline: float) -> str:
         buf = bytearray()
         while True:
+            self._arm(sock, deadline)
             try:
                 chunk = sock.recv(4096)
             except OSError as exc:
@@ -107,44 +154,70 @@ class ClamAVClient:
     # -- public API --------------------------------------------------------- #
 
     def ping(self) -> bool:
-        with self._connect() as sock:
-            try:
-                sock.sendall(b"zPING\x00")
-                reply = self._read_reply(sock)
-            except OSError as exc:
-                raise ClamAVError(
-                    "clamd ping failed",
-                    error="clamav_ping_failed",
-                    http_status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                ) from exc
+        deadline = time.monotonic() + self._timeout
+        sock = self._connect(deadline)
+        try:
+            self._arm(sock, deadline)
+            sock.sendall(b"zPING\x00")
+            reply = self._read_reply(sock, deadline)
+        except OSError as exc:
+            raise ClamAVError(
+                "clamd ping failed",
+                error="clamav_ping_failed",
+                http_status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            ) from exc
+        finally:
+            sock.close()
         return reply == "PONG"
 
     def scan_stream(self, data: bytes | bytearray | BinaryIO) -> ClamAVScanResult:
         """Scan ``data`` (bytes or a binary file-like) via INSTREAM."""
-        payload = data.read() if hasattr(data, "read") else data # type: ignore
+        payload = data.read() if hasattr(data, "read") else data  # type: ignore
 
         if not isinstance(payload, (bytes, bytearray)):
             raise TypeError("data must be bytes or a binary file-like object")
 
-        with self._connect() as sock:
-            try:
-                sock.sendall(b"zINSTREAM\x00")
-                view = memoryview(bytes(payload))
-                for start in range(0, len(view), _CHUNK_SIZE):
-                    chunk = view[start:start + _CHUNK_SIZE]
-                    sock.sendall(struct.pack("!I", len(chunk)))
-                    sock.sendall(chunk)
-                sock.sendall(_END_CHUNK)
-                raw = self._read_reply(sock)
-            except OSError as exc:
-                # clamd closes the socket mid-stream when StreamMaxLength is
-                # exceeded; treat any I/O failure as a scan error.
-                raise ClamAVError(
-                    "clamd connection failed during scan",
-                    error="clamav_connection_interrupted",
-                    http_status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                ) from exc
+        # Per-phase timing so we can see where wall-clock time actually goes
+        # (connect vs send vs recv). Logged at DEBUG on every scan.
+        t0 = time.monotonic()
+        deadline = t0 + self._timeout
+        sock = self._connect(deadline)
+        t_connected = time.monotonic()
+        try:
+            self._arm(sock, deadline)
+            sock.sendall(b"zINSTREAM\x00")
+            view = memoryview(bytes(payload))
+            for start in range(0, len(view), _CHUNK_SIZE):
+                chunk = view[start:start + _CHUNK_SIZE]
+                self._arm(sock, deadline)
+                sock.sendall(struct.pack("!I", len(chunk)))
+                sock.sendall(chunk)
+            self._arm(sock, deadline)
+            sock.sendall(_END_CHUNK)
+            t_sent = time.monotonic()
+            raw = self._read_reply(sock, deadline)
+            t_replied = time.monotonic()
+        except OSError as exc:
+            # clamd closes the socket mid-stream when StreamMaxLength is
+            # exceeded; treat any I/O failure as a scan error.
+            raise ClamAVError(
+                "clamd connection failed during scan",
+                error="clamav_connection_interrupted",
+                http_status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            ) from exc
+        finally:
+            sock.close()
 
+        log.debug(
+            "clamd scan phases: connect=%.3fs send=%.3fs recv=%.3fs total=%.3fs "
+            "(payload=%d bytes, timeout=%.1fs)",
+            t_connected - t0,
+            t_sent - t_connected,
+            t_replied - t_sent,
+            t_replied - t0,
+            len(payload),
+            self._timeout,
+        )
         return self._parse(raw)
 
     @staticmethod
@@ -179,22 +252,26 @@ def clamav_validate_bytes(raw: bytes) -> ClamAVScanResult | None:
     """Stream ``raw`` to the ClamAV container and reject on detection.
 
     clamd runs as a separate service reached over TCP via our own small client.
-    A positive detection raises ``FileRejected``. If the scanner is unreachable
-    or errors out we fail closed (raise ``AppError``) unless
-    ``CLAMD_FAIL_OPEN`` is set.
+    A positive detection raises ``AppError``. If the scanner is unreachable
+    or errors out we currently return ``None`` (fail open) and log a warning.
     """
-    print(f'settings.clamav_timeout: {settings.clamav_timeout}')
     client = ClamAVClient(
         settings.clamav_host,
         settings.clamav_port,
-        timeout=settings.clamav_timeout
+        timeout=settings.clamav_timeout,
     )
-    
+
+    start = time.monotonic()
     try:
         result = client.scan_stream(raw)
     except ClamAVError as exc:
+        elapsed = time.monotonic() - start
         log.warning(
-            "ClamAV scan failed: %s", exc)
+            "ClamAV scan failed after %.3fs (timeout=%s): %s",
+            elapsed,
+            settings.clamav_timeout,
+            exc,
+        )
 
         # scan could not be performed, return no result
         return None
@@ -204,7 +281,7 @@ def clamav_validate_bytes(raw: bytes) -> ClamAVScanResult | None:
         raise AppError(
             f"Malware detected: {result.signature}",
             error="invalid_file",
-            http_status=400
+            http_status=400,
         )
 
     # return scan result

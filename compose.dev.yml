@@ -148,23 +148,20 @@ services:
       - storage-backend
   
   clamav:
-    image: clamav/clamav:1.4 # official Cisco-Talos image; pin to a current patch
+    image: clamav/clamav:1.4 
     restart: unless-stopped
     volumes:
-      - clamav-data:/var/lib/clamav # persist the signature DB across restarts
-      - ./clamav/clamd.conf:/etc/clamav/clamd.conf:ro # raises stream/file limits
+      - clamav-data:/var/lib/clamav 
+      - ./clamav/clamd.conf:/etc/clamav/clamd.conf:ro
     healthcheck:
-      # clamdcheck.sh ships in the official image and pings clamd.
       test: ["CMD", "clamdcheck.sh"]
       interval: 60s
       timeout: 10s
       retries: 5
       start_period: 6m # first boot downloads + loads the signature DB (~minutes)
-    # clamd holds the whole signature set in RAM (~1.5-2 GB) and cannot swap it.
-    mem_limit: 3g
-    # Expose to the host ONLY if you also scan from outside the compose network:
+    mem_limit: 4g
     ports:
-      - "${clamd_port}:8080"
+      - "${clamd_port}:3310"
 
   validator-mustang:
     build:

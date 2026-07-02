@@ -154,8 +154,8 @@ class Settings(BaseSettings):
 
     # -- Malware scanning ---------------------------------------------------
     # To protect from unwanted files, allow malware scanning
-    clamav_host: str = "clamav"
-    clamav_port: int = 3310
+    clamav_host: str = "localhost"
+    clamav_port: int = 7460
     clamav_timeout: float = 10.0
 
     # -- Observability (OpenObserve log shipping; optional) -----------------
