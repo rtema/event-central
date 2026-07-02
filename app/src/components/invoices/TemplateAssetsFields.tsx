@@ -8,12 +8,12 @@ import {
   Paper,
   Stack,
   Text,
-  Textarea,
   TextInput,
   Title,
 } from "@mantine/core";
 import { IconPlus, IconTrash, IconUpload } from "@tabler/icons-react";
 import type { UseFormReturnType } from "@mantine/form";
+import { CodeEditor } from "../ui/CodeEditor";
 import { fileToBase64 } from "../utils/format";
 
 export interface TemplateImageForm {
@@ -49,22 +49,24 @@ export function TemplateAssetsFields<T extends TemplateAssetsValues>({
 
   return (
     <Stack>
-      <Textarea
+      <CodeEditor
+        language="html"
         label={t`HTML template`}
         description={t`Rendered with WeasyPrint; use {{ }} for Jinja variables.`}
-        autosize
         minRows={6}
         maxRows={18}
-        styles={{ input: { fontFamily: "var(--mantine-font-family-monospace)" } }}
-        {...form.getInputProps("html")}
+        value={values.html}
+        onChange={(v) => form.setFieldValue("html" as never, v as never)}
+        error={form.errors.html}
       />
-      <Textarea
+      <CodeEditor
+        language="css"
         label={t`CSS`}
-        autosize
         minRows={4}
         maxRows={14}
-        styles={{ input: { fontFamily: "var(--mantine-font-family-monospace)" } }}
-        {...form.getInputProps("css")}
+        value={values.css}
+        onChange={(v) => form.setFieldValue("css" as never, v as never)}
+        error={form.errors.css}
       />
 
       <Stack gap="xs">

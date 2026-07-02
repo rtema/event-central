@@ -1,0 +1,38 @@
+# Event Central Admin — Apache configuration for a single-page React app.
+# Place the built `dist/` contents at your document root; this file ships in
+# `dist/.htaccess` automatically (Vite copies everything under public/).
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Never rewrite requests that map to a real file or directory
+  # (JS/CSS bundles, images, fonts, etc.).
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # History-API fallback: send every other route to index.html so the
+  # client-side router (react-router) can handle deep links like
+  # /users/123 on a full page reload.
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# --- Caching ---------------------------------------------------------------
+<IfModule mod_headers.c>
+  # Vite emits content-hashed asset filenames, so they can be cached forever.
+  <FilesMatch "\.(?:js|mjs|css|woff2?|ttf|eot|svg|png|jpe?g|gif|webp|ico)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  # The HTML entry point must always be revalidated so new deploys are picked
+  # up immediately.
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
+
+# --- SPA fallback without mod_rewrite (e.g. some shared hosts) --------------
+# If mod_rewrite is unavailable, serving index.html for 404s also works:
+<IfModule !mod_rewrite.c>
+  ErrorDocument 404 /index.html
+</IfModule>

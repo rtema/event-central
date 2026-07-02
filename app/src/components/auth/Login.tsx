@@ -12,12 +12,10 @@ import {
   Stack,
   Text,
   TextInput,
-  ThemeIcon,
   Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
-import { IconReceipt2 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import {
@@ -27,6 +25,7 @@ import {
 } from "../../api/auth";
 import { toRequestError } from "../../api/client";
 import { useAuth } from "../auth/useAuth";
+import { TemaLogo } from "../ui/TemaLogo";
 
 type Mode = "password" | "code";
 
@@ -42,7 +41,7 @@ export function Login() {
 
   const from =
     (location.state as { from?: { pathname: string } } | null)?.from?.pathname ??
-    "/users";
+    "/de/home";
 
   useEffect(() => {
     if (status === "authenticated") navigate(from, { replace: true });
@@ -127,7 +126,7 @@ export function Login() {
         style={{
           flex: 1,
           background:
-            "linear-gradient(155deg, var(--mantine-color-pine-9), var(--mantine-color-pine-6))",
+            "linear-gradient(155deg, var(--mantine-color-tema-9), var(--mantine-color-tema-6))",
           color: "white",
           display: "flex",
           flexDirection: "column",
@@ -135,9 +134,7 @@ export function Login() {
         }}
       >
         <Group gap="sm">
-          <ThemeIcon variant="white" color="pine" size={38} radius="md">
-            <IconReceipt2 size={22} />
-          </ThemeIcon>
+          <TemaLogo height={34} variant="mono" monoColor="#ffffff" />
           <Text fw={700} fz="lg">
             Event Central
           </Text>

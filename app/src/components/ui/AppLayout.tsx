@@ -9,7 +9,6 @@ import {
   NavLink,
   ScrollArea,
   Text,
-  ThemeIcon,
   Title,
   UnstyledButton,
 } from "@mantine/core";
@@ -20,7 +19,6 @@ import {
   IconFileInvoice,
   IconLogout,
   IconPercentage,
-  IconReceipt2,
   IconShoppingCart,
   IconTemplate,
   IconUsers,
@@ -29,6 +27,7 @@ import { Outlet, NavLink as RouterNavLink, useLocation, useNavigate } from "reac
 import { useAuth } from "../auth/useAuth";
 import { ColorSchemeToggle } from "./ColorSchemeToggle";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { TemaLogo } from "./TemaLogo";
 
 export function AppLayout() {
 
@@ -41,7 +40,7 @@ export function AppLayout() {
 
   const handleLogout = async () => {
     await logout();
-    navigate("/login", { replace: true });
+    navigate(`/${i18n.locale}/login`, { replace: true });
   };
 
   const initials =
@@ -62,11 +61,9 @@ export function AppLayout() {
         <Group h="100%" px="md" justify="space-between">
           <Group gap="sm">
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
-            <ThemeIcon variant="light" size={34} radius="md">
-              <IconReceipt2 size={20} />
-            </ThemeIcon>
+            <TemaLogo height={32} />
             <Box>
-              <Title order={3} lh={1}>
+              <Title order={4} lh={1} fw={650}>
                 Event Central
               </Title>
               <Text size="xs" c="dimmed" lh={1}>
@@ -82,7 +79,7 @@ export function AppLayout() {
               <Menu.Target>
                 <UnstyledButton aria-label={t`Account menu`}>
                   <Group gap="xs">
-                    <Avatar color="pine" radius="xl" size={32}>
+                    <Avatar color="tema" radius="xl" size={32}>
                       {initials}
                     </Avatar>
                   </Group>

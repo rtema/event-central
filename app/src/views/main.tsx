@@ -1,3 +1,4 @@
+import "../fonts/fonts.css";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 

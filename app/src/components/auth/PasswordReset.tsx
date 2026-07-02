@@ -87,7 +87,7 @@ export function PasswordReset() {
         title: t`Password updated`,
         message: t`You can now sign in with your new password.`,
       });
-      navigate("/login", { replace: true });
+      navigate(`${i18n.locale}/login`, { replace: true });
     } catch (err) {
       fail(err);
     } finally {

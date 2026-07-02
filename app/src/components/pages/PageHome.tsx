@@ -5,15 +5,14 @@ import {
   Text,
   Title
 } from "@mantine/core";
+import { TemaLogo } from "../ui/TemaLogo";
 
 export function PageHome() {
 
   return (
     <Center mih="60dvh">
-      <Stack align="center" gap="xs">
-        <Text fw={700} fz={48} c="dimmed">
-          Tema Technologie Marketing AG
-        </Text>
+      <Stack align="center" gap="md">
+        <TemaLogo height={88} />
         <Title order={2}>
           <Trans>Event Central</Trans>
         </Title>

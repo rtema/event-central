@@ -5,10 +5,12 @@ import {
   Badge,
   Box,
   Button,
+  Center,
   Code,
   CopyButton,
   Group,
   Modal,
+  Paper,
   Select,
   Stack,
   Table,
@@ -31,6 +33,7 @@ import { toRequestError } from "../../api/client";
 import type { UserAuth, UserAuthMethod } from "../../api/types";
 import { usersApi } from "../../api/users";
 import { QueryState } from "../ui/QueryState";
+import { QrCodeSvg } from "../ui/QrCodeSvg";
 import { formatDateTime } from "../utils/datetime";
 import { useUserAuth } from "./userHooks";
 
@@ -45,7 +48,42 @@ const METHOD_LABELS: Record<UserAuthMethod, string> = {
 /** Methods whose secret is shown exactly once after creation. */
 const ONE_TIME_SECRET: UserAuthMethod[] = ["api-token", "backup-code", "otp"];
 
-export function UserAuthMethodsTab({ userId }: { userId: string }) {
+/** Issuer shown in the authenticator app and embedded in the otpauth URI. */
+const OTP_ISSUER = "Event Central";
+
+/**
+ * Builds the `otpauth://totp/...` URI an authenticator app expects. If the API
+ * already returns a full otpauth URI we use it verbatim; otherwise we treat the
+ * secret as a raw base32 TOTP key and assemble the URI ourselves.
+ */
+function buildOtpUri(secret: string, label: string): string {
+  if (secret.trim().toLowerCase().startsWith("otpauth://")) return secret.trim();
+  const account = label.trim() || "user";
+  const issuer = encodeURIComponent(OTP_ISSUER);
+  const path = `${issuer}:${encodeURIComponent(account)}`;
+  return `otpauth://totp/${path}?secret=${encodeURIComponent(secret.trim())}&issuer=${issuer}`;
+}
+
+/** Extracts the base32 secret a user would type in manually. */
+function manualSecret(secret: string): string {
+  const s = secret.trim();
+  if (s.toLowerCase().startsWith("otpauth://")) {
+    try {
+      return new URL(s).searchParams.get("secret") ?? s;
+    } catch {
+      return s;
+    }
+  }
+  return s;
+}
+
+export function UserAuthMethodsTab({
+  userId,
+  accountLabel = "",
+}: {
+  userId: string;
+  accountLabel?: string;
+}) {
   const { t } = useLingui();
   const { data, error, isLoading, mutate } = useUserAuth(userId);
   const [createOpen, setCreateOpen] = useState(false);
@@ -267,12 +305,21 @@ export function UserAuthMethodsTab({ userId }: { userId: string }) {
               {...form.getInputProps("secret")}
             />
           )}
-          {ONE_TIME_SECRET.includes(form.values.method) && (
+          {form.values.method === "otp" ? (
             <Text size="xs" c="dimmed">
               <Trans>
-                A secret will be generated and shown once after creation.
+                A QR code and setup key will be generated and shown once after
+                creation, ready to scan into an authenticator app.
               </Trans>
             </Text>
+          ) : (
+            ONE_TIME_SECRET.includes(form.values.method) && (
+              <Text size="xs" c="dimmed">
+                <Trans>
+                  A secret will be generated and shown once after creation.
+                </Trans>
+              </Text>
+            )
           )}
           <Group justify="flex-end">
             <Button variant="default" onClick={() => setCreateOpen(false)}>
@@ -288,7 +335,11 @@ export function UserAuthMethodsTab({ userId }: { userId: string }) {
       <Modal
         opened={Boolean(revealed)}
         onClose={() => setRevealed(null)}
-        title={t`Copy this secret now`}
+        title={
+          revealed?.method === "otp"
+            ? t`Set up authenticator app`
+            : t`Copy this secret now`
+        }
         centered
       >
         <Stack>
@@ -297,34 +348,83 @@ export function UserAuthMethodsTab({ userId }: { userId: string }) {
               This value is shown only once and cannot be retrieved later.
             </Trans>
           </Alert>
-          <Box>
-            <Text size="xs" c="dimmed" mb={4}>
-              {revealed && METHOD_LABELS[revealed.method]}
-            </Text>
-            <Group gap="xs" wrap="nowrap">
-              <Code block style={{ flex: 1, wordBreak: "break-all" }}>
-                {revealed?.secret}
-              </Code>
-              <CopyButton value={revealed?.secret ?? ""}>
-                {({ copied, copy }) => (
-                  <Tooltip label={copied ? t`Copied` : t`Copy`}>
-                    <ActionIcon
-                      variant="light"
-                      color={copied ? "pine" : "gray"}
-                      onClick={copy}
-                      aria-label={t`Copy`}
-                    >
-                      {copied ? (
-                        <IconCheck size={16} />
-                      ) : (
-                        <IconCopy size={16} />
-                      )}
-                    </ActionIcon>
-                  </Tooltip>
-                )}
-              </CopyButton>
-            </Group>
-          </Box>
+
+          {revealed?.method === "otp" && revealed.secret ? (
+            <Stack gap="md">
+              <Text size="sm" c="dimmed">
+                <Trans>
+                  Scan this QR code with an authenticator app (Google
+                  Authenticator, Microsoft Authenticator, 1Password, …).
+                </Trans>
+              </Text>
+              <Center>
+                <Paper withBorder p="sm" radius="md" bg="white">
+                  <QrCodeSvg
+                    value={buildOtpUri(revealed.secret, accountLabel)}
+                    size={224}
+                  />
+                </Paper>
+              </Center>
+              <Box>
+                <Text size="xs" c="dimmed" mb={4}>
+                  <Trans>Can't scan? Enter this key manually:</Trans>
+                </Text>
+                <Group gap="xs" wrap="nowrap">
+                  <Code block style={{ flex: 1, wordBreak: "break-all" }}>
+                    {manualSecret(revealed.secret)}
+                  </Code>
+                  <CopyButton value={manualSecret(revealed.secret)}>
+                    {({ copied, copy }) => (
+                      <Tooltip label={copied ? t`Copied` : t`Copy`}>
+                        <ActionIcon
+                          variant="light"
+                          color={copied ? "pine" : "gray"}
+                          onClick={copy}
+                          aria-label={t`Copy`}
+                        >
+                          {copied ? (
+                            <IconCheck size={16} />
+                          ) : (
+                            <IconCopy size={16} />
+                          )}
+                        </ActionIcon>
+                      </Tooltip>
+                    )}
+                  </CopyButton>
+                </Group>
+              </Box>
+            </Stack>
+          ) : (
+            <Box>
+              <Text size="xs" c="dimmed" mb={4}>
+                {revealed && METHOD_LABELS[revealed.method]}
+              </Text>
+              <Group gap="xs" wrap="nowrap">
+                <Code block style={{ flex: 1, wordBreak: "break-all" }}>
+                  {revealed?.secret}
+                </Code>
+                <CopyButton value={revealed?.secret ?? ""}>
+                  {({ copied, copy }) => (
+                    <Tooltip label={copied ? t`Copied` : t`Copy`}>
+                      <ActionIcon
+                        variant="light"
+                        color={copied ? "pine" : "gray"}
+                        onClick={copy}
+                        aria-label={t`Copy`}
+                      >
+                        {copied ? (
+                          <IconCheck size={16} />
+                        ) : (
+                          <IconCopy size={16} />
+                        )}
+                      </ActionIcon>
+                    </Tooltip>
+                  )}
+                </CopyButton>
+              </Group>
+            </Box>
+          )}
+
           <Group justify="flex-end">
             <Button onClick={() => setRevealed(null)}>
               <Trans>Done</Trans>

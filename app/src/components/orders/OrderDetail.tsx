@@ -192,7 +192,7 @@ export function OrderDetail() {
             title: t`Order cancelled`,
             message: res.invoice?.invoiceNumber ?? res.invoice?.id,
           });
-          if (res.invoice?.id) navigate(`/invoices/${res.invoice.id}`);
+          if (res.invoice?.id) navigate(`/${i18n.locale}/invoices/${res.invoice.id}`);
         } catch (err) {
           notifications.show({
             color: "red",

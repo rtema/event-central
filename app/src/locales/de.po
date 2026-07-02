@@ -21,7 +21,11 @@ msgstr "{von}–{bis}"
 msgid "{from}–{to} of {total}"
 msgstr "{von}–{bis} von {insgesamt}"
 
-#: src/components/users/UserAuthMethodsTab.tsx:272
+#: src/components/users/UserAuthMethodsTab.tsx:310
+msgid "A QR code and setup key will be generated and shown once after creation, ready to scan into an authenticator app."
+msgstr "Nach der Erstellung werden ein QR-Code und ein Einrichtungsschlüssel generiert und einmalig angezeigt, die dann in eine Authentifizierungs-App eingescannt werden können."
+
+#: src/components/users/UserAuthMethodsTab.tsx:318
 msgid "A secret will be generated and shown once after creation."
 msgstr "Ein Geheimnis wird erzeugt und nach dem Erstellen einmalig angezeigt."
 
@@ -29,7 +33,7 @@ msgstr "Ein Geheimnis wird erzeugt und nach dem Erstellen einmalig angezeigt."
 msgid "Access has been updated for this user."
 msgstr "Die Zugriffsrechte für diesen Benutzer wurden aktualisiert."
 
-#: src/components/ui/AppLayout.tsx:81
+#: src/components/ui/AppLayout.tsx:80
 msgid "Account menu"
 msgstr "Kontomenü"
 
@@ -50,13 +54,13 @@ msgstr "Buchungsnummer"
 msgid "Accounting prefix is required"
 msgstr "Ein Buchhaltungspräfix ist erforderlich"
 
-#: src/components/users/UserAuthMethodsTab.tsx:190
+#: src/components/users/UserAuthMethodsTab.tsx:228
 #: src/components/users/UserDetail.tsx:121
 #: src/components/users/UsersTable.tsx:83
 msgid "Active"
 msgstr "Aktiv"
 
-#: src/components/users/UserAuthMethodsTab.tsx:243
+#: src/components/users/UserAuthMethodsTab.tsx:281
 msgid "Add auth method"
 msgstr "Anmeldemethode hinzufügen"
 
@@ -64,11 +68,11 @@ msgstr "Anmeldemethode hinzufügen"
 msgid "Add email and press Enter"
 msgstr "E-Mail-Adresse eingeben und die Eingabetaste drücken"
 
-#: src/components/invoices/TemplateAssetsFields.tsx:208
+#: src/components/invoices/TemplateAssetsFields.tsx:210
 msgid "Add font"
 msgstr "Schriftart hinzufügen"
 
-#: src/components/invoices/TemplateAssetsFields.tsx:144
+#: src/components/invoices/TemplateAssetsFields.tsx:146
 msgid "Add image"
 msgstr "Bild hinzufügen"
 
@@ -76,7 +80,7 @@ msgstr "Bild hinzufügen"
 msgid "Add line item"
 msgstr "Einzelposten hinzufügen"
 
-#: src/components/users/UserAuthMethodsTab.tsx:146
+#: src/components/users/UserAuthMethodsTab.tsx:184
 msgid "Add method"
 msgstr "Methode hinzufügen"
 
@@ -116,7 +120,7 @@ msgstr "Betrag (EUR)"
 msgid "Applied tax rates"
 msgstr "Angewandte Steuersätze"
 
-#: src/components/users/UserAuthMethodsTab.tsx:86
+#: src/components/users/UserAuthMethodsTab.tsx:124
 msgid "Auth method added"
 msgstr "Anmeldemethode hinzugefügt"
 
@@ -154,12 +158,16 @@ msgstr "Zurück zu den Benutzern"
 msgid "Browse issued invoices, generate new ones and export."
 msgstr "Ausgestellte Rechnungen anzeigen, neue Rechnungen erstellen und exportieren."
 
+#: src/components/users/UserAuthMethodsTab.tsx:370
+msgid "Can't scan? Enter this key manually:"
+msgstr "Das Scannen funktioniert nicht? Geben Sie diesen Schlüssel manuell ein:"
+
 #: src/components/document-templates/DocumentTemplatesList.tsx:110
 #: src/components/invoices/InvoiceCreate.tsx:764
 #: src/components/invoices/InvoicesList.tsx:84
 #: src/components/orders/OrderDetail.tsx:149
-#: src/components/users/UserAuthMethodsTab.tsx:112
-#: src/components/users/UserAuthMethodsTab.tsx:279
+#: src/components/users/UserAuthMethodsTab.tsx:150
+#: src/components/users/UserAuthMethodsTab.tsx:326
 #: src/components/users/UserDetail.tsx:59
 #: src/components/users/UsersList.tsx:115
 msgid "Cancel"
@@ -191,7 +199,7 @@ msgstr "Sprache ändern"
 msgid "Check the form"
 msgstr "Überprüfen Sie das Formular"
 
-#: src/components/auth/Login.tsx:100
+#: src/components/auth/Login.tsx:99
 #: src/components/auth/PasswordReset.tsx:66
 msgid "Check your inbox"
 msgstr "Prüfen Sie Ihren Posteingang"
@@ -233,16 +241,19 @@ msgstr "Ansprechpartner"
 msgid "Contact phone"
 msgstr "Kontaktnummer"
 
-#: src/components/users/UserAuthMethodsTab.tsx:310
+#: src/components/users/UserAuthMethodsTab.tsx:378
+#: src/components/users/UserAuthMethodsTab.tsx:408
 msgid "Copied"
 msgstr "Kopiert"
 
-#: src/components/users/UserAuthMethodsTab.tsx:310
-#: src/components/users/UserAuthMethodsTab.tsx:315
+#: src/components/users/UserAuthMethodsTab.tsx:378
+#: src/components/users/UserAuthMethodsTab.tsx:383
+#: src/components/users/UserAuthMethodsTab.tsx:408
+#: src/components/users/UserAuthMethodsTab.tsx:413
 msgid "Copy"
 msgstr "Kopieren"
 
-#: src/components/users/UserAuthMethodsTab.tsx:291
+#: src/components/users/UserAuthMethodsTab.tsx:341
 msgid "Copy this secret now"
 msgstr "Kopieren Sie dieses Geheimnis jetzt"
 
@@ -250,7 +261,7 @@ msgstr "Kopieren Sie dieses Geheimnis jetzt"
 msgid "Correlation ID"
 msgstr "Korrelations-ID"
 
-#: src/components/users/UserAuthMethodsTab.tsx:93
+#: src/components/users/UserAuthMethodsTab.tsx:131
 msgid "Could not add auth method"
 msgstr "Anmeldemethode konnte nicht hinzugefügt werden"
 
@@ -282,7 +293,7 @@ msgstr "Benutzer konnte nicht erstellt werden"
 msgid "Could not delete"
 msgstr "Löschen nicht möglich"
 
-#: src/components/users/UserAuthMethodsTab.tsx:126
+#: src/components/users/UserAuthMethodsTab.tsx:164
 msgid "Could not disable"
 msgstr "Deaktivieren nicht möglich"
 
@@ -298,7 +309,7 @@ msgstr "Wiederherstellen nicht möglich"
 msgid "Could not save"
 msgstr "Speichern nicht möglich"
 
-#: src/components/users/UserDataTab.tsx:75
+#: src/components/users/UserDataTab.tsx:78
 msgid "Could not save data"
 msgstr "Daten konnten nicht gespeichert werden"
 
@@ -315,7 +326,7 @@ msgstr "Die Vorlage konnte nicht aktualisiert werden"
 msgid "Country (ISO 2-letter)"
 msgstr "Land (ISO-2-Buchstaben-Code)"
 
-#: src/components/users/UserAuthMethodsTab.tsx:282
+#: src/components/users/UserAuthMethodsTab.tsx:329
 msgid "Create"
 msgstr "Erstellen"
 
@@ -332,12 +343,12 @@ msgid "Create user"
 msgstr "Benutzer erstellen"
 
 #: src/components/document-templates/DocumentTemplateDetail.tsx:43
-#: src/components/document-templates/DocumentTemplatesList.tsx:234
+#: src/components/document-templates/DocumentTemplatesList.tsx:236
 #: src/components/events/EventDetail.tsx:49
 #: src/components/events/EventDetail.tsx:80
 #: src/components/orders/OrderDetail.tsx:253
 #: src/components/orders/OrdersList.tsx:57
-#: src/components/users/UserAuthMethodsTab.tsx:166
+#: src/components/users/UserAuthMethodsTab.tsx:204
 #: src/components/users/UserDetail.tsx:129
 #: src/components/users/UsersTable.tsx:66
 msgid "Created"
@@ -349,7 +360,7 @@ msgid "Created by"
 msgstr "Erstellt von"
 
 #: src/components/document-templates/DocumentTemplateDetail.tsx:70
-#: src/components/invoices/TemplateAssetsFields.tsx:62
+#: src/components/invoices/TemplateAssetsFields.tsx:64
 msgid "CSS"
 msgstr "CSS"
 
@@ -365,7 +376,7 @@ msgstr "Dunkler Modus"
 msgid "Data"
 msgstr "Daten"
 
-#: src/components/users/UserDataTab.tsx:69
+#: src/components/users/UserDataTab.tsx:72
 msgid "Data saved"
 msgstr "Daten gespeichert"
 
@@ -389,30 +400,30 @@ msgstr "Gelöscht"
 msgid "Description"
 msgstr "Beschreibung"
 
-#: src/components/document-templates/DocumentTemplatesList.tsx:269
+#: src/components/document-templates/DocumentTemplatesList.tsx:271
 msgid "Design the documents generated for invoices."
 msgstr "Gestalten Sie die für Rechnungen erstellten Dokumente."
 
-#: src/components/users/UserAuthMethodsTab.tsx:169
+#: src/components/users/UserAuthMethodsTab.tsx:207
 msgid "Detail"
 msgstr "Detail"
 
-#: src/components/users/UserAuthMethodsTab.tsx:112
-#: src/components/users/UserAuthMethodsTab.tsx:219
-#: src/components/users/UserAuthMethodsTab.tsx:224
+#: src/components/users/UserAuthMethodsTab.tsx:150
+#: src/components/users/UserAuthMethodsTab.tsx:257
+#: src/components/users/UserAuthMethodsTab.tsx:262
 msgid "Disable"
 msgstr "Deaktivieren"
 
-#: src/components/users/UserAuthMethodsTab.tsx:103
+#: src/components/users/UserAuthMethodsTab.tsx:141
 msgid "Disable auth method"
 msgstr "Anmeldemethode deaktivieren"
 
-#: src/components/users/UserAuthMethodsTab.tsx:120
-#: src/components/users/UserAuthMethodsTab.tsx:194
+#: src/components/users/UserAuthMethodsTab.tsx:158
+#: src/components/users/UserAuthMethodsTab.tsx:232
 msgid "Disabled"
 msgstr "Deaktiviert"
 
-#: src/components/document-templates/DocumentTemplatesList.tsx:266
+#: src/components/document-templates/DocumentTemplatesList.tsx:268
 msgid "Document templates"
 msgstr "Dokumentvorlagen"
 
@@ -420,7 +431,7 @@ msgstr "Dokumentvorlagen"
 msgid "Documents archive (.zip)"
 msgstr "Dokumentenarchiv (.zip)"
 
-#: src/components/users/UserAuthMethodsTab.tsx:330
+#: src/components/users/UserAuthMethodsTab.tsx:430
 msgid "Done"
 msgstr "Fertig"
 
@@ -445,7 +456,7 @@ msgstr "Fällig"
 msgid "Due date"
 msgstr "Fälligkeitsdatum"
 
-#: src/components/ui/AppLayout.tsx:71
+#: src/components/ui/AppLayout.tsx:70
 msgid "E-invoicing console"
 msgstr "Konsole für die elektronische Rechnungsstellung"
 
@@ -459,7 +470,7 @@ msgstr "z. B. Dr."
 msgid "e.g. Mr, Ms"
 msgstr "z. B. Herr, Frau"
 
-#: src/components/auth/Login.tsx:187
+#: src/components/auth/Login.tsx:184
 #: src/components/auth/PasswordReset.tsx:120
 #: src/components/invoices/InvoiceDetail.tsx:179
 #: src/components/invoices/InvoiceDetail.tsx:191
@@ -471,15 +482,15 @@ msgstr "z. B. Herr, Frau"
 msgid "Email"
 msgstr "E-Mail"
 
-#: src/components/auth/Login.tsx:182
+#: src/components/auth/Login.tsx:179
 msgid "Email code"
 msgstr "Code per E-Mail"
 
-#: src/components/users/UserAuthMethodsTab.tsx:264
+#: src/components/users/UserAuthMethodsTab.tsx:302
 msgid "Email or phone number"
 msgstr "E-Mail oder Telefonnummer"
 
-#: src/components/invoices/TemplateAssetsFields.tsx:128
+#: src/components/invoices/TemplateAssetsFields.tsx:130
 msgid "Embedded upload attached."
 msgstr "Der Upload ist im Anhang beigefügt."
 
@@ -492,7 +503,7 @@ msgstr "Ende"
 msgid "English"
 msgstr "Deutsch"
 
-#: src/components/auth/Login.tsx:54
+#: src/components/auth/Login.tsx:53
 #: src/components/auth/PasswordReset.tsx:36
 #: src/components/users/UserProfileTab.tsx:33
 #: src/components/users/UsersList.tsx:45
@@ -503,15 +514,15 @@ msgstr "Geben Sie eine gültige E-Mail-Adresse ein"
 msgid "Enter an amount greater than zero"
 msgstr "Geben Sie einen Wert größer als Null ein"
 
-#: src/components/users/UserAuthMethodsTab.tsx:62
+#: src/components/users/UserAuthMethodsTab.tsx:100
 msgid "Enter an email or phone number"
 msgstr "Geben Sie eine E-Mail-Adresse oder Telefonnummer ein"
 
-#: src/components/auth/Login.tsx:58
+#: src/components/auth/Login.tsx:57
 msgid "Enter the code"
 msgstr "Geben Sie den Code ein"
 
-#: src/components/auth/Login.tsx:219
+#: src/components/auth/Login.tsx:216
 msgid "Enter the code we emailed you."
 msgstr "Geben Sie den Code ein, den wir Ihnen per E-Mail gesendet haben."
 
@@ -523,6 +534,10 @@ msgstr "Veranstaltung"
 #: src/components/invoices/InvoiceCreate.tsx:374
 msgid "Event & basics"
 msgstr "Veranstaltung & Grundlagen"
+
+#: src/components/pages/PageHome.tsx:17
+msgid "Event Central"
+msgstr "Veranstaltungszentrum"
 
 #: src/components/invoices/InvoiceCreate.tsx:395
 msgid "Event end"
@@ -545,7 +560,7 @@ msgid "Event start"
 msgstr "Veranstaltungsbeginn"
 
 #: src/components/events/EventsList.tsx:76
-#: src/components/ui/AppLayout.tsx:131
+#: src/components/ui/AppLayout.tsx:130
 msgid "Events"
 msgstr "Veranstaltungen"
 
@@ -606,16 +621,16 @@ msgstr "Vorname ist erforderlich"
 msgid "First number"
 msgstr "Erste Zahl"
 
-#: src/components/invoices/TemplateAssetsFields.tsx:158
+#: src/components/invoices/TemplateAssetsFields.tsx:160
 msgid "Font name (as used in CSS)"
 msgstr "Schriftartname (wie in CSS verwendet)"
 
 #: src/components/document-templates/DocumentTemplateDetail.tsx:46
-#: src/components/invoices/TemplateAssetsFields.tsx:151
+#: src/components/invoices/TemplateAssetsFields.tsx:153
 msgid "Fonts"
 msgstr "Schriftarten"
 
-#: src/components/auth/Login.tsx:205
+#: src/components/auth/Login.tsx:202
 msgid "Forgot your password?"
 msgstr "Passwort vergessen?"
 
@@ -632,8 +647,12 @@ msgid "German"
 msgstr "Deutsch"
 
 #: src/components/pages/NotFoundPage.tsx:19
-msgid "Go to users"
-msgstr "Zu den Benutzern"
+msgid "Go to home page"
+msgstr "Zur Startseite"
+
+#: src/components/pages/NotFoundPage.tsx:19
+#~ msgid "Go to users"
+#~ msgstr "Zu den Benutzern"
 
 #: src/components/users/UserScopesTab.tsx:89
 msgid "Granted scopes"
@@ -657,7 +676,7 @@ msgstr "Verlauf"
 msgid "HTML"
 msgstr "HTML"
 
-#: src/components/invoices/TemplateAssetsFields.tsx:53
+#: src/components/invoices/TemplateAssetsFields.tsx:54
 msgid "HTML template"
 msgstr "HTML-Vorlage"
 
@@ -666,8 +685,8 @@ msgstr "HTML-Vorlage"
 msgid "IBAN"
 msgstr "IBAN"
 
-#: src/components/document-templates/DocumentTemplatesList.tsx:161
-#: src/components/document-templates/DocumentTemplatesList.tsx:228
+#: src/components/document-templates/DocumentTemplatesList.tsx:162
+#: src/components/document-templates/DocumentTemplatesList.tsx:230
 msgid "ID"
 msgstr "ID"
 
@@ -676,13 +695,13 @@ msgid "If the address exists, a reset link is on its way."
 msgstr "Falls die Adresse existiert, ist ein Link zum Zurücksetzen unterwegs."
 
 #: src/components/document-templates/DocumentTemplateDetail.tsx:50
-#: src/components/invoices/TemplateAssetsFields.tsx:72
+#: src/components/invoices/TemplateAssetsFields.tsx:74
 msgid "Images"
 msgstr "Bilder"
 
 #: src/components/users/UserDataTab.tsx:55
-msgid "Invalid JSON — please fix the syntax."
-msgstr "Ungültiges JSON – bitte korrigieren Sie die Syntax."
+#~ msgid "Invalid JSON — please fix the syntax."
+#~ msgstr "Ungültiges JSON – bitte korrigieren Sie die Syntax."
 
 #: src/components/ui/StatusBadge.tsx:34
 msgid "Invoice"
@@ -699,7 +718,7 @@ msgstr "Rechnung erstellt"
 
 #: src/components/invoices/InvoicesList.tsx:169
 #: src/components/orders/OrderDetail.tsx:280
-#: src/components/ui/AppLayout.tsx:115
+#: src/components/ui/AppLayout.tsx:114
 msgid "Invoices"
 msgstr "Rechnungen"
 
@@ -713,7 +732,7 @@ msgstr "Ausgestellt"
 msgid "Keep order"
 msgstr "Für Ordnung sorgen"
 
-#: src/components/document-templates/DocumentTemplatesList.tsx:164
+#: src/components/document-templates/DocumentTemplatesList.tsx:165
 #: src/components/invoices/InvoiceCreate.tsx:586
 #: src/components/invoices/InvoiceDetail.tsx:292
 #: src/components/taxes/TaxesList.tsx:21
@@ -759,7 +778,7 @@ msgstr "Einzelposten"
 msgid "Line total"
 msgstr "Gesamtsumme"
 
-#: src/components/invoices/TemplateAssetsFields.tsx:86
+#: src/components/invoices/TemplateAssetsFields.tsx:88
 msgid "Link (https)"
 msgstr "Link (https)"
 
@@ -767,11 +786,11 @@ msgstr "Link (https)"
 msgid "Links & template"
 msgstr "Links & Vorlage"
 
-#: src/components/invoices/TemplateAssetsFields.tsx:80
+#: src/components/invoices/TemplateAssetsFields.tsx:82
 msgid "lowercase"
 msgstr "Kleinbuchstaben"
 
-#: src/components/auth/Login.tsx:150
+#: src/components/auth/Login.tsx:147
 msgid "Manage accounts, sign-in methods and access scopes for the e-invoicing platform."
 msgstr "Verwalten Sie Konten, Anmeldemethoden und Zugriffsberechtigungen für die E-Rechnungs-Plattform."
 
@@ -782,12 +801,12 @@ msgstr "Verwalten Sie Konten, Anmeldemethoden und Zugriff."
 #: src/components/orders/OrderDetail.tsx:140
 #: src/components/orders/OrderDetail.tsx:362
 #: src/components/payments/PaymentsList.tsx:42
-#: src/components/users/UserAuthMethodsTab.tsx:160
-#: src/components/users/UserAuthMethodsTab.tsx:248
+#: src/components/users/UserAuthMethodsTab.tsx:198
+#: src/components/users/UserAuthMethodsTab.tsx:286
 msgid "Method"
 msgstr "Methode"
 
-#: src/components/invoices/TemplateAssetsFields.tsx:79
+#: src/components/invoices/TemplateAssetsFields.tsx:81
 #: src/components/users/UsersTable.tsx:47
 msgid "Name"
 msgstr "Name"
@@ -813,7 +832,7 @@ msgstr "Neues Passwort"
 msgid "New public template"
 msgstr "Neue öffentliche Vorlage"
 
-#: src/components/document-templates/DocumentTemplatesList.tsx:140
+#: src/components/document-templates/DocumentTemplatesList.tsx:141
 msgid "New template"
 msgstr "Neue Vorlage"
 
@@ -826,7 +845,7 @@ msgstr "Neuer Benutzer"
 msgid "Next"
 msgstr "Weiter"
 
-#: src/components/users/UserDataTab.tsx:110
+#: src/components/users/UserDataTab.tsx:113
 msgid "No data has been stored for this user yet."
 msgstr "Für diesen Benutzer wurden noch keine Daten gespeichert."
 
@@ -866,11 +885,11 @@ msgstr "Es wurden noch keine Zahlungen erfasst."
 msgid "No payments yet."
 msgstr "Bisher keine Zahlungen."
 
-#: src/components/document-templates/DocumentTemplatesList.tsx:152
+#: src/components/document-templates/DocumentTemplatesList.tsx:153
 msgid "No public templates yet."
 msgstr "Es gibt noch keine öffentlichen Vorlagen."
 
-#: src/components/document-templates/DocumentTemplatesList.tsx:219
+#: src/components/document-templates/DocumentTemplatesList.tsx:221
 msgid "No rendered templates yet."
 msgstr "Es sind noch keine gerenderten Vorlagen vorhanden."
 
@@ -931,7 +950,7 @@ msgstr "Bestell-Link"
 
 #: src/components/events/EventDetail.tsx:87
 #: src/components/orders/OrdersList.tsx:70
-#: src/components/ui/AppLayout.tsx:123
+#: src/components/ui/AppLayout.tsx:122
 msgid "Orders"
 msgstr "Bestellungen"
 
@@ -947,13 +966,13 @@ msgstr "Seite nicht gefunden"
 msgid "Paid"
 msgstr "Bezahlt"
 
-#: src/components/auth/Login.tsx:181
-#: src/components/auth/Login.tsx:196
-#: src/components/users/UserAuthMethodsTab.tsx:263
+#: src/components/auth/Login.tsx:178
+#: src/components/auth/Login.tsx:193
+#: src/components/users/UserAuthMethodsTab.tsx:301
 msgid "Password"
 msgstr "Passwort"
 
-#: src/components/auth/Login.tsx:56
+#: src/components/auth/Login.tsx:55
 msgid "Password is required"
 msgstr "Passwort ist erforderlich"
 
@@ -981,7 +1000,7 @@ msgstr "Zahlung verbucht"
 
 #: src/components/orders/OrderDetail.tsx:283
 #: src/components/payments/PaymentsList.tsx:88
-#: src/components/ui/AppLayout.tsx:139
+#: src/components/ui/AppLayout.tsx:138
 msgid "Payments"
 msgstr "Zahlungen"
 
@@ -992,6 +1011,10 @@ msgstr "PDF (ZUGFeRD)"
 #: src/components/invoices/InvoiceCreate.tsx:238
 msgid "Pick a tax rate"
 msgstr "Wählen Sie einen Steuersatz"
+
+#: src/components/pages/PageHome.tsx:20
+msgid "Please use the sidebar to navigate to your desired topic."
+msgstr "Bitte nutzen Sie die Seitenleiste, um zum gewünschten Thema zu gelangen."
 
 #: src/components/invoices/InvoiceDetail.tsx:207
 msgid "PO reference"
@@ -1024,15 +1047,15 @@ msgid "Provider"
 msgstr "Anbieter"
 
 #: src/components/document-templates/DocumentTemplateDetail.tsx:42
-#: src/components/document-templates/DocumentTemplatesList.tsx:231
+#: src/components/document-templates/DocumentTemplatesList.tsx:233
 msgid "Public ID"
 msgstr "Öffentliche ID"
 
-#: src/components/document-templates/DocumentTemplatesList.tsx:276
+#: src/components/document-templates/DocumentTemplatesList.tsx:278
 msgid "Public templates"
 msgstr "Öffentliche Vorlagen"
 
-#: src/components/document-templates/DocumentTemplatesList.tsx:131
+#: src/components/document-templates/DocumentTemplatesList.tsx:132
 msgid "Public templates can be referenced by ID when creating invoices."
 msgstr "Bei der Rechnungserstellung kann auf öffentliche Vorlagen anhand ihrer ID verwiesen werden."
 
@@ -1092,11 +1115,11 @@ msgstr "Wird bei der Rechnungserstellung anhand einer Vorlage herangezogen."
 msgid "Refund"
 msgstr "Rückerstattung"
 
-#: src/components/invoices/TemplateAssetsFields.tsx:191
+#: src/components/invoices/TemplateAssetsFields.tsx:193
 msgid "Remove font"
 msgstr "Schriftart entfernen"
 
-#: src/components/invoices/TemplateAssetsFields.tsx:120
+#: src/components/invoices/TemplateAssetsFields.tsx:122
 msgid "Remove image"
 msgstr "Bild entfernen"
 
@@ -1108,16 +1131,16 @@ msgstr "Einzelposten entfernen"
 msgid "Remove tax rate"
 msgstr "Steuersatz entfernen"
 
-#: src/components/document-templates/DocumentTemplatesList.tsx:279
+#: src/components/document-templates/DocumentTemplatesList.tsx:281
 msgid "Rendered templates"
 msgstr "Gerenderte Vorlagen"
 
-#: src/components/invoices/TemplateAssetsFields.tsx:54
+#: src/components/invoices/TemplateAssetsFields.tsx:55
 msgid "Rendered with WeasyPrint; use {{ }} for Jinja variables."
 msgstr "Erstellt mit WeasyPrint; verwende {{ }} für Jinja-Variablen."
 
-#: src/components/invoices/TemplateAssetsFields.tsx:110
-#: src/components/invoices/TemplateAssetsFields.tsx:181
+#: src/components/invoices/TemplateAssetsFields.tsx:112
+#: src/components/invoices/TemplateAssetsFields.tsx:183
 msgid "Replace"
 msgstr "Ersetzen"
 
@@ -1127,7 +1150,7 @@ msgstr "Ersetzen"
 msgid "Required"
 msgstr "Erforderlich"
 
-#: src/components/auth/Login.tsx:234
+#: src/components/auth/Login.tsx:231
 msgid "Resend code"
 msgstr "Code erneut senden"
 
@@ -1149,7 +1172,7 @@ msgstr "Anrede"
 msgid "Save changes"
 msgstr "Änderungen speichern"
 
-#: src/components/users/UserDataTab.tsx:133
+#: src/components/users/UserDataTab.tsx:138
 msgid "Save data"
 msgstr "Daten speichern"
 
@@ -1169,7 +1192,11 @@ msgstr "Gespeichert"
 msgid "Saving publishes a new rendered version for this public template. Uploaded fonts and images are only re-sent if you attach them again."
 msgstr "Durch das Speichern wird eine neu gerenderte Version dieser öffentlichen Vorlage veröffentlicht. Hochgeladene Schriftarten und Bilder werden nur dann erneut gesendet, wenn Sie sie erneut anhängen."
 
-#: src/components/users/UserDataTab.tsx:95
+#: src/components/users/UserAuthMethodsTab.tsx:355
+msgid "Scan this QR code with an authenticator app (Google Authenticator, Microsoft Authenticator, 1Password, …)."
+msgstr "Scannen Sie diesen QR-Code mit einer Authentifizierungs-App (Google Authenticator, Microsoft Authenticator, 1Password, …)."
+
+#: src/components/users/UserDataTab.tsx:98
 msgid "Schemaless data used by apps. Saving replaces the whole object — no server-side merge is performed."
 msgstr "Schemalose Daten, die von Apps genutzt werden. Beim Speichern wird das gesamte Objekt ersetzt – serverseitig wird nichts zusammengeführt."
 
@@ -1209,7 +1236,7 @@ msgstr "Steuersätze suchen"
 msgid "Select every scope this user should have. Removing a scope here revokes it; the change history is kept on the server."
 msgstr "Wählen Sie alle Berechtigungen aus, die dieser Benutzer haben soll. Das Entfernen einer Berechtigung widerruft sie; der Änderungsverlauf bleibt auf dem Server erhalten."
 
-#: src/components/auth/Login.tsx:214
+#: src/components/auth/Login.tsx:211
 msgid "Send code"
 msgstr "Code senden"
 
@@ -1221,24 +1248,28 @@ msgstr "Link zum Zurücksetzen senden"
 msgid "Set a new password for your account."
 msgstr "Legen Sie ein neues Passwort für Ihr Konto fest."
 
-#: src/components/auth/Login.tsx:166
-#: src/components/auth/Login.tsx:202
+#: src/components/users/UserAuthMethodsTab.tsx:340
+msgid "Set up authenticator app"
+msgstr "Authentifizierungs-App einrichten"
+
+#: src/components/auth/Login.tsx:163
+#: src/components/auth/Login.tsx:199
 msgid "Sign in"
 msgstr "Anmelden"
 
-#: src/components/auth/Login.tsx:66
+#: src/components/auth/Login.tsx:65
 msgid "Sign in failed"
 msgstr "Anmeldung fehlgeschlagen"
 
-#: src/components/ui/AppLayout.tsx:102
+#: src/components/ui/AppLayout.tsx:101
 msgid "Sign out"
 msgstr "Abmelden"
 
-#: src/components/users/UserAuthMethodsTab.tsx:139
+#: src/components/users/UserAuthMethodsTab.tsx:177
 msgid "Sign-in methods configured for this user."
 msgstr "Für diesen Benutzer konfigurierte Anmeldemethoden."
 
-#: src/components/ui/AppLayout.tsx:91
+#: src/components/ui/AppLayout.tsx:90
 msgid "Signed in"
 msgstr "Angemeldet"
 
@@ -1273,7 +1304,7 @@ msgstr "Beginnt"
 
 #: src/components/events/EventDetail.tsx:43
 #: src/components/orders/OrdersList.tsx:51
-#: src/components/users/UserAuthMethodsTab.tsx:163
+#: src/components/users/UserAuthMethodsTab.tsx:201
 #: src/components/users/UsersTable.tsx:73
 msgid "Status"
 msgstr "Status"
@@ -1298,7 +1329,7 @@ msgstr "Grund für die Steuerbefreiung"
 
 #: src/components/invoices/InvoiceCreate.tsx:562
 #: src/components/taxes/TaxesList.tsx:77
-#: src/components/ui/AppLayout.tsx:155
+#: src/components/ui/AppLayout.tsx:154
 msgid "Tax rates"
 msgstr "Steuersätze"
 
@@ -1322,7 +1353,7 @@ msgstr "Vorlagenname"
 msgid "Template updated"
 msgstr "Vorlage aktualisiert"
 
-#: src/components/ui/AppLayout.tsx:147
+#: src/components/ui/AppLayout.tsx:146
 msgid "Templates"
 msgstr "Vorlagen"
 
@@ -1330,16 +1361,16 @@ msgstr "Vorlagen"
 msgid "The page you are looking for doesn't exist."
 msgstr "Die gesuchte Seite existiert nicht."
 
-#: src/components/users/UserDataTab.tsx:59
+#: src/components/users/UserDataTab.tsx:62
 msgid "The top level must be a JSON object."
 msgstr "Die oberste Ebene muss ein JSON-Objekt sein."
 
-#: src/components/document-templates/DocumentTemplatesList.tsx:207
+#: src/components/document-templates/DocumentTemplatesList.tsx:209
 msgid "The underlying rendered templates. Each version is immutable."
 msgstr "Die zugrunde liegenden gerenderten Vorlagen. Jede Version ist unveränderlich."
 
 #. placeholder {0}: METHOD_LABELS[item.method]
-#: src/components/users/UserAuthMethodsTab.tsx:106
+#: src/components/users/UserAuthMethodsTab.tsx:144
 msgid "This disables the {0} method. Auth methods cannot be edited — disabling keeps the history intact."
 msgstr "Dies deaktiviert die Methode {0}. Anmeldemethoden können nicht bearbeitet werden – durch das Deaktivieren bleibt der Verlauf erhalten."
 
@@ -1356,7 +1387,7 @@ msgstr "Dies löscht {0} vorläufig. Der Benutzer kann später wiederhergestellt
 msgid "This template has no inline HTML or CSS."
 msgstr "Diese Vorlage enthält kein Inline-HTML oder Inline-CSS."
 
-#: src/components/users/UserAuthMethodsTab.tsx:296
+#: src/components/users/UserAuthMethodsTab.tsx:347
 msgid "This value is shown only once and cannot be retrieved later."
 msgstr "Dieser Wert wird nur einmal angezeigt und kann später nicht abgerufen werden."
 
@@ -1411,18 +1442,18 @@ msgstr "Stückpreis"
 msgid "Update password"
 msgstr "Passwort aktualisieren"
 
-#: src/components/document-templates/DocumentTemplatesList.tsx:167
-#: src/components/users/UserDataTab.tsx:102
+#: src/components/document-templates/DocumentTemplatesList.tsx:168
+#: src/components/users/UserDataTab.tsx:105
 msgid "Updated"
 msgstr "Aktualisiert"
 
-#: src/components/invoices/TemplateAssetsFields.tsx:110
-#: src/components/invoices/TemplateAssetsFields.tsx:181
+#: src/components/invoices/TemplateAssetsFields.tsx:112
+#: src/components/invoices/TemplateAssetsFields.tsx:183
 msgid "Upload"
 msgstr "Hochladen"
 
 #: src/components/auth/PasswordReset.tsx:39
-#: src/components/users/UserAuthMethodsTab.tsx:60
+#: src/components/users/UserAuthMethodsTab.tsx:98
 msgid "Use at least 8 characters"
 msgstr "Verwenden Sie mindestens 8 Zeichen"
 
@@ -1430,11 +1461,11 @@ msgstr "Verwenden Sie mindestens 8 Zeichen"
 msgid "Use lowercase letters, numbers, '-' and '_' only"
 msgstr "Verwende ausschließlich Kleinbuchstaben, Zahlen, „-“ und „_“"
 
-#: src/components/auth/Login.tsx:169
+#: src/components/auth/Login.tsx:166
 msgid "Use your Event Central credentials."
 msgstr "Verwenden Sie Ihre Event-Central-Anmeldedaten."
 
-#: src/components/auth/Login.tsx:147
+#: src/components/auth/Login.tsx:144
 msgid "User administration"
 msgstr "Benutzerverwaltung"
 
@@ -1443,7 +1474,7 @@ msgstr "Benutzerverwaltung"
 msgid "User created"
 msgstr "Benutzer erstellt"
 
-#: src/components/users/UserDataTab.tsx:70
+#: src/components/users/UserDataTab.tsx:73
 msgid "User data has been replaced."
 msgstr "Die Benutzerdaten wurden ersetzt."
 
@@ -1455,7 +1486,7 @@ msgstr "Benutzer gelöscht"
 msgid "User restored"
 msgstr "Benutzer wiederhergestellt"
 
-#: src/components/ui/AppLayout.tsx:163
+#: src/components/ui/AppLayout.tsx:162
 #: src/components/users/UsersList.tsx:135
 msgid "Users"
 msgstr "Benutzer"
@@ -1468,7 +1499,7 @@ msgstr "Benutzer"
 msgid "VAT ID"
 msgstr "Umsatzsteuer-Identifikationsnummer"
 
-#: src/components/auth/Login.tsx:231
+#: src/components/auth/Login.tsx:228
 msgid "Verify and sign in"
 msgstr "Bestätigen und anmelden"
 
@@ -1477,7 +1508,7 @@ msgid "View order"
 msgstr "Bestellung anzeigen"
 
 #. placeholder {0}: form.values.email
-#: src/components/auth/Login.tsx:101
+#: src/components/auth/Login.tsx:100
 msgid "We sent a one-time code to {0}."
 msgstr "Wir haben einen Einmalcode an {0} gesendet."
 

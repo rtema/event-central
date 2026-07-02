@@ -188,7 +188,7 @@ export function UserDetail() {
                 <UserProfileTab user={user} />
               </Tabs.Panel>
               <Tabs.Panel value="auth" pt="lg">
-                <UserAuthMethodsTab userId={userId} />
+                <UserAuthMethodsTab userId={userId} accountLabel={user.email} />
               </Tabs.Panel>
               <Tabs.Panel value="scopes" pt="lg">
                 <UserScopesTab userId={userId} disabled={deleted} />

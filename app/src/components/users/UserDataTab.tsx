@@ -5,13 +5,13 @@ import {
   Group,
   Stack,
   Text,
-  Textarea,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
 import { IconDeviceFloppy, IconInfoCircle } from "@tabler/icons-react";
 import { useEffect, useMemo, useState } from "react";
 import { toRequestError } from "../../api/client";
 import { usersApi } from "../../api/users";
+import { CodeEditor } from "../ui/CodeEditor";
 import { formatDateTime } from "../utils/datetime";
 import { useUserData } from "./userHooks";
 
@@ -39,12 +39,15 @@ export function UserDataTab({
 
   const initial = useMemo(() => pretty(data?.data ?? {}), [data]);
   const [text, setText] = useState(initial);
-  const [jsonError, setJsonError] = useState<string | null>(null);
+  // syntaxError comes live from the editor; semanticError is the "must be an
+  // object" rule enforced on save.
+  const [syntaxError, setSyntaxError] = useState<string | null>(null);
+  const [semanticError, setSemanticError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     setText(initial);
-    setJsonError(null);
+    setSemanticError(null);
   }, [initial]);
 
   const onSave = async () => {
@@ -52,14 +55,14 @@ export function UserDataTab({
     try {
       parsed = JSON.parse(text || "{}");
     } catch {
-      setJsonError(t`Invalid JSON — please fix the syntax.`);
+      // The editor already shows the precise syntax error inline.
       return;
     }
     if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
-      setJsonError(t`The top level must be a JSON object.`);
+      setSemanticError(t`The top level must be a JSON object.`);
       return;
     }
-    setJsonError(null);
+    setSemanticError(null);
     setSaving(true);
     try {
       await usersApi.setData(userId, parsed);
@@ -111,23 +114,25 @@ export function UserDataTab({
         </Alert>
       )}
 
-      <Textarea
-        autosize
+      <CodeEditor
+        language="json"
+        value={text}
+        onChange={(v) => {
+          setText(v);
+          if (semanticError) setSemanticError(null);
+        }}
+        onValidityChange={setSyntaxError}
+        error={semanticError}
         minRows={10}
         maxRows={24}
-        spellCheck={false}
         disabled={disabled || isLoading}
-        styles={{ input: { fontFamily: "var(--mantine-font-family-monospace)" } }}
-        value={text}
-        error={jsonError}
-        onChange={(e) => setText(e.currentTarget.value)}
       />
 
       <Group justify="flex-end">
         <Button
           leftSection={<IconDeviceFloppy size={16} />}
           loading={saving}
-          disabled={disabled}
+          disabled={disabled || Boolean(syntaxError)}
           onClick={() => void onSave()}
         >
           <Trans>Save data</Trans>
