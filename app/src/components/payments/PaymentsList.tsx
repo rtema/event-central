@@ -16,7 +16,7 @@ import { formatMoney } from "../utils/format";
 const LIMIT = 100;
 
 export function PaymentsList() {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const [offset, setOffset] = useState(0);
   const { data, error, isLoading } = usePayments({
     limit: LIMIT,
@@ -51,7 +51,7 @@ export function PaymentsList() {
           info.getValue<string>() ? (
             <Anchor
               component={Link}
-              to={`/orders/${info.getValue<string>()}`}
+              to={`/${i18n.locale}/orders/${info.getValue<string>()}`}
               size="sm"
               onClick={(e) => e.stopPropagation()}
             >

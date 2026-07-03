@@ -23,9 +23,9 @@ import { DataTable } from "../ui/DataTable";
 import { Pager } from "../ui/Pager";
 import { QueryState } from "../ui/QueryState";
 import { InvoiceTypeBadge } from "../ui/StatusBadge";
-import { useInvoices } from "./invoicingHooks";
 import { formatDate } from "../utils/datetime";
 import { formatMoney } from "../utils/format";
+import { useInvoices } from "./invoicingHooks";
 
 const LIMIT = 100;
 
@@ -129,7 +129,7 @@ export function InvoicesList() {
       {
         id: "recipient",
         header: t`Recipient`,
-        accessorFn: (i) => i.recipient?.contactName ?? "",
+        accessorFn: (i) => `${i.recipient?.contactFirstname} ${i.recipient?.contactLastname}`,
         cell: (info) => (
           <Text size="sm">{info.getValue<string>() || "—"}</Text>
         ),

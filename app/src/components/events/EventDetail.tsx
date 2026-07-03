@@ -35,7 +35,7 @@ export function EventDetail() {
       {
         id: "recipient",
         header: t`Recipient`,
-        accessorFn: (o) => o.recipient?.contactName ?? "",
+        accessorFn: (o) => `${o.recipient?.contactLastname} ${o.recipient?.contactLastname}`,
         cell: (info) => <Text size="sm">{info.getValue<string>() || "—"}</Text>,
       },
       {
@@ -57,7 +57,7 @@ export function EventDetail() {
 
   return (
     <Stack>
-      <Anchor component={Link} to="/events" size="sm">
+      <Anchor component={Link} to={`/${i18n.locale}/events`} size="sm">
         <Group gap={4}>
           <IconArrowLeft size={14} />
           <Trans>Back to events</Trans>

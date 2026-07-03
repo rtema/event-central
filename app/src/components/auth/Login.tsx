@@ -198,7 +198,7 @@ export function Login() {
                 <Button loading={submitting} onClick={() => void submitPassword()}>
                   <Trans>Sign in</Trans>
                 </Button>
-                <Anchor component={Link} to="/reset" size="sm" ta="center">
+                <Anchor component={Link} to={`/${i18n.locale}/reset`} size="sm" ta="center">
                   <Trans>Forgot your password?</Trans>
                 </Anchor>
               </>

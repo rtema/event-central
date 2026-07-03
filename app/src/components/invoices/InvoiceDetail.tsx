@@ -62,7 +62,7 @@ export function InvoiceDetail() {
 
   return (
     <Stack>
-      <Anchor component={Link} to="/invoices" size="sm">
+      <Anchor component={Link} to={`/${i18n.locale}/invoices`} size="sm">
         <Group gap={4}>
           <IconArrowLeft size={14} />
           <Trans>Back to invoices</Trans>
@@ -162,6 +162,7 @@ export function InvoiceDetail() {
                     { label: t`Legal name`, value: invoice.supplier?.legalName },
                     { label: t`VAT ID`, value: invoice.supplier?.vatId },
                     { label: t`IBAN`, value: invoice.supplier?.iban },
+                    { label: t`Bank Name`, value: invoice.supplier?.bankName },
                     {
                       label: t`Address`,
                       value: [
@@ -187,7 +188,7 @@ export function InvoiceDetail() {
                 <FieldGrid
                   cols={1}
                   fields={[
-                    { label: t`Contact`, value: invoice.recipient?.contactName },
+                    { label: t`Contact`, value: `${invoice.recipient?.contactFirstname} ${invoice.recipient?.contactLastname}` },
                     { label: t`Email`, value: invoice.recipient?.contactEmail },
                     { label: t`VAT ID`, value: invoice.recipient?.vatId },
                     {

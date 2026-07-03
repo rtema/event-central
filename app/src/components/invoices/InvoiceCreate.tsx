@@ -344,7 +344,7 @@ export function InvoiceCreate() {
 
   return (
     <Stack maw={900} mx="auto" w="100%">
-      <Anchor component={Link} to="/invoices" size="sm">
+      <Anchor component={Link} to={`/${i18n.locale}/invoices`} size="sm">
         <Group gap={4}>
           <IconArrowLeft size={14} />
           <Trans>Back to invoices</Trans>

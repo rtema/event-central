@@ -43,7 +43,7 @@ export function OrdersList() {
       {
         id: "recipient",
         header: t`Recipient`,
-        accessorFn: (o) => o.recipient?.contactName ?? "",
+        accessorFn: (o) => `${o.recipient?.contactLastname} ${o.recipient?.contactLastname}`,
         cell: (info) => <Text size="sm">{info.getValue<string>() || "—"}</Text>,
       },
       {

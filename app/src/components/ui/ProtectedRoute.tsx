@@ -1,3 +1,4 @@
+import { useLingui } from "@lingui/react/macro";
 import { Center, Loader } from "@mantine/core";
 import { Navigate, Outlet, useLocation } from "react-router";
 import { useAuth } from "../auth/useAuth";
@@ -5,6 +6,7 @@ import { useAuth } from "../auth/useAuth";
 export function ProtectedRoute() {
   const { status } = useAuth();
   const location = useLocation();
+  const { i18n } = useLingui()
 
   if (status === "loading") {
     return (
@@ -15,7 +17,7 @@ export function ProtectedRoute() {
   }
 
   if (status === "unauthenticated") {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    return <Navigate to={`/${i18n.locale}/login`} replace state={{ from: location }} />;
   }
 
   return <Outlet />;

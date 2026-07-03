@@ -149,7 +149,7 @@ export function PasswordReset() {
             )}
           </Button>
 
-          <Anchor component={Link} to="/login" size="sm" ta="center">
+          <Anchor component={Link} to={`/${i18n.locale}/login`} size="sm" ta="center">
             <Trans>Back to sign in</Trans>
           </Anchor>
         </Stack>

@@ -241,6 +241,7 @@ export interface InvoiceSupplier {
   legalRegistration?: string;
   vatId?: string;
   iban?: string;
+  bankName?: string;
   line1?: string;
   line2?: string;
   line3?: string;
@@ -259,7 +260,10 @@ export interface InvoiceRecipient {
   city?: string;
   zipCode?: string;
   country?: string;
-  contactName?: string;
+  contactSalutation?: string;
+  contactTitle?: string;
+  contactFirstname?: string;
+  contactLastname?: string;
   contactPhone?: string;
   contactEmail?: string;
   contactCcEmail?: string[];

@@ -205,7 +205,7 @@ export function OrderDetail() {
 
   return (
     <Stack>
-      <Anchor component={Link} to="/orders" size="sm">
+      <Anchor component={Link} to={`/${i18n.locale}/orders`} size="sm">
         <Group gap={4}>
           <IconArrowLeft size={14} />
           <Trans>Back to orders</Trans>
@@ -247,7 +247,7 @@ export function OrderDetail() {
               <FieldGrid
                 cols={{ base: 1, sm: 3 }}
                 fields={[
-                  { label: t`Recipient`, value: order.recipient?.contactName },
+                  { label: t`Recipient`, value: `${order.recipient?.contactFirstname} ${order.recipient?.contactLastname}` },
                   { label: t`Email`, value: order.recipient?.contactEmail },
                   { label: t`VAT ID`, value: order.recipient?.vatId },
                   { label: t`Created`, value: formatDateTime(order.createdAt) },
