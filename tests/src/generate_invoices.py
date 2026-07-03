@@ -51,7 +51,7 @@ from dotenv import dotenv_values
 from faker import Faker
 
 from src.generate_template import make_invoice_template
-from src.validate_invoices import validate_zugferd, validate_xrechnung
+from src.validate_invoices import validate_xrechnung, validate_zugferd
 
 # ======================================================================
 #  CONFIGURATION  -- edit these to match your environment.
@@ -462,6 +462,11 @@ def _make_supplier(rng: random.Random, fake: Faker) -> dict[str, Any]:
         "legalRegistration": f"Handelsregister {city}, HRB {rng.randint(1000, 99999)}",
         "vatId": "DE" + "".join(rng.choice(string.digits) for _ in range(9)),
         "iban": fake.iban(),
+        "bankName": fake.random_element(elements=[
+            "Deutsche Bank", "Commerzbank", "DZ Bank", "KfW", "Sparkasse",
+            "Volksbank", "Postbank", "ING", "DKB", "HypoVereinsbank",
+            "LBBW", "BayernLB", "NORD/LB", "N26", "comdirect", "Targobank",
+        ]),
         "line1": company,
         "line2": fake.street_address(),
         "city": city,
@@ -971,9 +976,9 @@ def _validate_success(body: dict[str, Any], resp: requests.Response, report: Rep
             report.errors.append(
                 f"invoice totalGross ({inv_gross}) != sum of lines ({round2(sum_gross)})")
     if (inv_net is not None and
-            inv_tax is not None and
-            inv_gross is not None and
-                not close(inv_gross, inv_net + inv_tax, TIGHT_TOLERANCE)
+                inv_tax is not None and
+                inv_gross is not None and
+            not close(inv_gross, inv_net + inv_tax, TIGHT_TOLERANCE)
             ):
         report.errors.append(
             f"invoice totalNet+totalTax ({round2(inv_net + inv_tax)}) != totalGross ({inv_gross})")

@@ -31,7 +31,7 @@ def require_invoice_scope(action: str):
         granted = authenticated_actor.scopes
 
         all_scope = scope_utils.build_scope("invoices", action, "all")
-        event_scope = scope_utils.build_scope("invoices", action, invoice.event_id)
+        event_scope = scope_utils.build_scope("invoices", action, invoice.order.event_id)
         own_scope = f"invoices:{action}:own"
 
         allowed = scope_utils.has_any(granted, [all_scope, event_scope]) or (

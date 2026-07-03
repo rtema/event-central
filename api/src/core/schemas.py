@@ -70,6 +70,7 @@ class InvoiceSupplier(CamelModel):
     legal_registration: str
     vat_id: str
     iban: str
+    bank_name: str
     line1: str
     line2: str | None = None
     line3: str | None = None

@@ -237,7 +237,7 @@ def generate_invoice_placeholders(invoice: Invoice | None, locale: str) -> dict[
         'supplierAddressLine': '',
         'supplierContact': '',
         'supplierIban': '',
-        'supplierBank': '',
+        'supplierBankName': '',
         'supplierLegal': '',
 
     }
@@ -271,6 +271,9 @@ def generate_invoice_placeholders(invoice: Invoice | None, locale: str) -> dict[
 
             placeholders['supplierIban'] += escape(
                 invoice.supplier.get('iban', ''))
+            
+            placeholders['supplierBankName'] += escape(
+                invoice.supplier.get('bankName', ''))
 
             supplier_contact: list[str | None] = [
                 'Kontakt:' if locale == 'de' else 'Contact:',

@@ -26,6 +26,7 @@ all of which have container-friendly defaults.
 
 from __future__ import annotations
 
+import base64
 import json
 import os
 import subprocess
@@ -33,6 +34,7 @@ import tempfile
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import parse_qsl
 
 MUSTANG_JAR = os.environ.get("MUSTANG_JAR", "/opt/Mustang-CLI.jar")
 MUSTANG_VERSION = os.environ.get("MUSTANG_VERSION", "unknown")
@@ -97,6 +99,38 @@ def _run_mustang(raw: bytes, kind: str, *, notices: bool) -> tuple[int, str, str
             pass
 
 
+def _run_extract(pdf: bytes) -> tuple[bool, bytes, str]:
+    """Extract the embedded Factur-X / ZUGFeRD XML from a PDF.
+
+    Runs ``Mustang --action extract --source <pdf> --out <xml>`` (non-interactive
+    because both paths are supplied) and returns ``(found, xml_bytes, log)``.
+    """
+    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as fin:
+        fin.write(pdf)
+        pdf_path = fin.name
+    out_path = pdf_path + ".xml"
+    try:
+        proc = subprocess.run(
+            [
+                "java", f"-Xmx{JAVA_MEM}", "-Djava.awt.headless=true",
+                "-Dfile.encoding=UTF-8", "-jar", MUSTANG_JAR,
+                "--action", "extract", "--source", pdf_path, "--out", out_path,
+            ],
+            capture_output=True, text=True, timeout=VALIDATE_TIMEOUT,
+        )
+        if Path(out_path).exists():
+            data = Path(out_path).read_bytes()
+            if data.strip():
+                return True, data, proc.stderr
+        return False, b"", proc.stderr
+    finally:
+        for p in (pdf_path, out_path):
+            try:
+                Path(p).unlink()
+            except OSError:
+                pass
+
+
 def _overall_valid(report_xml: str, returncode: int) -> bool:
     """Trust the report's top-level <summary status=.../> when present.
 
@@ -121,7 +155,7 @@ class Handler(BaseHTTPRequestHandler):
     server_version = "MustangShim/1.0"
 
     # Silence the default noisy per-request logging; keep it terse.
-    def log_message(self, fmt: str, *args: object) -> None:  # noqa: A003
+    def log_message(self, format: str, *args: object) -> None:
         pass
 
     def _send_json(self, code: int, payload: dict[str, object]) -> None:
@@ -145,7 +179,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         path, _, query = self.path.partition("?")
-        if path != "/validate":
+        if path not in ("/validate", "/extract"):
             self._send_json(404, {"error": "not found"})
             return
 
@@ -159,10 +193,12 @@ class Handler(BaseHTTPRequestHandler):
 
         raw = self.rfile.read(length)
 
-        params = dict(
-            p.split("=", 1) if "=" in p else (p, "")
-            for p in query.split("&") if p
-        )
+        params: dict[str, str] = dict(parse_qsl(query, keep_blank_values=True))
+
+        if path == "/extract":
+            self._handle_extract(raw)
+            return
+
         kind = (params.get("kind") or _sniff_kind(raw)).lower()
         if kind not in ("pdf", "xml"):
             kind = _sniff_kind(raw)
@@ -201,6 +237,36 @@ class Handler(BaseHTTPRequestHandler):
             "engine": "mustang",
             "version": MUSTANG_VERSION,
             "report_xml": report_xml,
+        })
+
+    def _handle_extract(self, pdf: bytes) -> None:
+        """Extract the embedded Factur-X/ZUGFeRD XML from a posted PDF."""
+        if pdf[:5] != b"%PDF-" and b"%PDF-" not in pdf[:1024]:
+            self._send_json(400, {"error": "body is not a PDF"})
+            return
+        acquired = _slots.acquire(timeout=VALIDATE_TIMEOUT)
+        if not acquired:
+            self._send_json(503, {"error": "validator busy, try again"})
+            return
+        try:
+            found, xml, _stderr = _run_extract(pdf)
+        except subprocess.TimeoutExpired:
+            self._send_json(504, {"error": "extraction timed out"})
+            return
+        except Exception as exc:  # pragma: no cover - defensive
+            self._send_json(500, {"error": f"extractor crashed: {exc}"})
+            return
+        finally:
+            _slots.release()
+
+        if not found:
+            # Not an error: some PDFs simply carry no embedded invoice XML.
+            self._send_json(200, {"found": False, "engine": "mustang"})
+            return
+        self._send_json(200, {
+            "found": True,
+            "engine": "mustang",
+            "xml_b64": base64.b64encode(xml).decode("ascii"),
         })
 
 

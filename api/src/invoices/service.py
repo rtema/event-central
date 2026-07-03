@@ -761,7 +761,6 @@ def cancel_order(
         db.add(
             InvoiceLineItem(
                 invoice_id=cancellation.id,
-                tax_id=None,
                 position=src_line.position,
                 quantity=qty,
                 price_per_unit=_to_decimal(src_line.price_per_unit),
@@ -775,6 +774,7 @@ def cancel_order(
                 total_net=line.net,
                 total_tax=line.tax,
                 total_gross=line.gross,
+                tax=src_line.tax
             )
         )
     db.flush()
@@ -788,7 +788,7 @@ def cancel_order(
     supplier_snapshot = source.supplier or {}
     recipient_snapshot = source.recipient or {}
     doc = InvoiceDocument(
-        invoice_number=cancellation.invoice_number,
+        invoice_number=cancellation.invoice_number, # type: ignore
         invoice_type="cancellation",
         invoice_type_code=CANCELLATION_TYPE_CODE,
         issue_date=now.date(),
