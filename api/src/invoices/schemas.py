@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import datetime as dt
 import uuid
-from typing import Literal
+from decimal import Decimal
+from typing import Annotated, Literal
 
-from pydantic import Field, field_validator, model_validator
+from pydantic import Field, StringConstraints, field_validator, model_validator
 
 from src.core.schemas import (
     Base64Str,
@@ -207,25 +208,35 @@ class InvoiceCreateLinks(CamelModel):
 
 
 class InvoiceCreateTaxRate(CamelModel):
-    external_id: str
-    rate: float = Field(ge=0, le=100)
-    label: str
-    type: TaxType | None = None
+    external_id: str = Field(min_length=1)
+    # Percentage. Decimal (not float) to avoid binary-float drift; bounded to
+    # 0..100 and at most 2 decimals to match the `taxes.rate` Numeric(5, 2)
+    # column and EN16931 rate handling.
+    rate: Decimal = Field(ge=0, le=100, max_digits=5, decimal_places=2)
+    label: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+    type: TaxType
     tax_exemption_reason: str | None = None
 
 
 class InvoiceCreateLineItem(CamelModel):
-    quantity: float
-    price_per_unit: float
-    external_tax_id: str
-    name: str
+    # Quantity: strictly positive, at most 3 decimals (matches the
+    # `invoice_line_items.quantity` Numeric(14, 3) column). Decimal, not float,
+    # so the value that reaches the money/CII layer is exactly what was sent.
+    quantity: Decimal = Field(gt=0, max_digits=14, decimal_places=3)
+    # VAT-inclusive gross unit price (per the API spec). Non-negative and at
+    # most 2 decimals: sub-cent unit prices are rejected here rather than being
+    # silently truncated on persistence (`price_per_unit` is Numeric(14, 2)) and
+    # then diverging from the amount used during document generation.
+    price_per_unit: Decimal = Field(ge=0, max_digits=14, decimal_places=2)
+    external_tax_id: str = Field(min_length=1)
+    name: str = Field(min_length=1)
     ticket: InvoiceLineItemTicketMetadata | None = None
 
 
 class InvoiceCreateRequest(CamelModel):
-    external_order_id: str
+    external_order_id: str = Field(min_length=1)
     external_order_short_id: str | None = None
-    locale: Locale | None = None
+    locale: Locale
     currency: Currency
     due_date: dt.datetime
     accounting_entity: InvoiceCreateAccountingEntity | None = None
@@ -233,9 +244,39 @@ class InvoiceCreateRequest(CamelModel):
     links: InvoiceCreateLinks
     supplier: InvoiceSupplier
     recipient: InvoiceRecipient
-    tax_rates: list[InvoiceCreateTaxRate] | None = None
+    tax_rates: list[InvoiceCreateTaxRate]
     line_items: list[InvoiceCreateLineItem] = Field(min_length=1)
     invoice_template: InvoiceTemplate
+
+    @model_validator(mode="after")
+    def check_tax_rate_references(self):
+        """Within-request tax integrity.
+
+        Tax rates supplied inline must have unique ``externalId``s, and every
+        line item must reference one of them. When ``tax_rates`` is omitted the
+        service resolves ``externalTaxId`` against persisted tax rows, so that
+        referential check (and the EN16931 BR-S-02 "seller VAT id required for
+        standard-rated lines" rule, which depends on the resolved rate) is
+        enforced in the service layer instead.
+        """
+        if not self.tax_rates:
+            return self
+
+        rate_ids: set[str] = set()
+        for tr in self.tax_rates:
+            if tr.external_id in rate_ids:
+                raise ValueError(
+                    f"duplicate tax rate externalId '{tr.external_id}'"
+                )
+            rate_ids.add(tr.external_id)
+
+        for idx, line in enumerate(self.line_items):
+            if line.external_tax_id not in rate_ids:
+                raise ValueError(
+                    f"lineItems[{idx}] references unknown externalTaxId "
+                    f"'{line.external_tax_id}'"
+                )
+        return self
 
 
 class InvoiceCreateResponse(CamelModel):

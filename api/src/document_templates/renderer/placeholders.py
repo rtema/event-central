@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from datetime import datetime
+from decimal import Decimal
 from typing import Any, TypeVar
 
 import pytz
@@ -308,7 +309,7 @@ def generate_invoice_placeholders(invoice: Invoice | None, locale: str) -> dict[
             placeholders['recipientAddress'] += '<br> '.join([escape(x) for x in recipient_address if x is not None])  # noqa: E501
 
         # build items table
-        taxes: dict[str, float] = {}
+        taxes: dict[str, Decimal] = {}
         for line_item in invoice.line_items:
             quantity = f"{line_item.quantity:.10f}".rstrip("0").rstrip(".")
             placeholders['lines'] += f'<tr>\

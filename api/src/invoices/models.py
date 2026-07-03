@@ -6,7 +6,7 @@ Tables
                             ``external_id`` is the id the caller supplied and is
                             unique within an order/invoice.
 * ``invoices``            — the invoice header (supplier/recipient snapshots,
-                            numbering, totals). ``event_id`` is denormalised
+                            numbering, totals). ``event_id`` is denormalized
                             from the order for per-event scoping and reporting.
 * ``invoice_line_items``  — the priced lines, each pointing at a tax row.
 
@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import datetime as dt
 import uuid
+from decimal import Decimal
 
 from sqlalchemy import ForeignKey, Integer, Numeric, String, Text
 from sqlalchemy.dialects.postgresql import JSONB
@@ -47,14 +48,11 @@ class Tax(Base, CreatedAtMixin, CreatedByMixin):
     __tablename__ = "taxes"
 
     id: Mapped[uuid.UUID] = uuid_pk()
-    invoice_id: Mapped[uuid.UUID] = mapped_column(
-        UUIDType, ForeignKey("invoices.id", ondelete="CASCADE"), index=True, nullable=False
-    )
 
     # Id supplied to the API when this tax rate was created (unique per invoice).
     external_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
-    rate: Mapped[float] = mapped_column(
+    rate: Mapped[Decimal] = mapped_column(
         Numeric(5, 2), nullable=False, default=0)
 
     # MultiLanguageLabel
@@ -111,11 +109,11 @@ class Invoice(Base, CreatedAtMixin, CreatedByMixin):
     recipient: Mapped[dict[str, str] | None] = mapped_column(
         JSONB, nullable=True, default=None)
 
-    total_net: Mapped[float] = mapped_column(
+    total_net: Mapped[Decimal] = mapped_column(
         Numeric(14, 2), nullable=False, default=0)
-    total_tax: Mapped[float] = mapped_column(
+    total_tax: Mapped[Decimal] = mapped_column(
         Numeric(14, 2), nullable=False, default=0)
-    total_gross: Mapped[float] = mapped_column(
+    total_gross: Mapped[Decimal] = mapped_column(
         Numeric(14, 2), nullable=False, default=0)
 
     # Object-storage keys for the generated documents (populated in step 3).
@@ -146,9 +144,9 @@ class InvoiceLineItem(Base):
     )
 
     position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    quantity: Mapped[float] = mapped_column(
+    quantity: Mapped[Decimal] = mapped_column(
         Numeric(14, 3), nullable=False, default=0)
-    price_per_unit: Mapped[float] = mapped_column(
+    price_per_unit: Mapped[Decimal] = mapped_column(
         Numeric(14, 2), nullable=False, default=0)
     name: Mapped[str] = mapped_column(String(512), nullable=False, default="")
 
@@ -156,9 +154,9 @@ class InvoiceLineItem(Base):
     ticket: Mapped[dict[str, str] | None] = mapped_column(
         JSONB, nullable=True, default=None)
 
-    # Tax breakdown captured on the line (mirrors the spec's read model).
+    # Tax breakdown captured on the line
     tax_category: Mapped[str | None] = mapped_column(String(8), nullable=True)
-    tax_rate: Mapped[float | None] = mapped_column(
+    tax_rate: Mapped[Decimal | None] = mapped_column(
         Numeric(5, 2), nullable=True)
     tax_scheme: Mapped[str | None] = mapped_column(String(16), nullable=True)
     tax_exemption_reason: Mapped[str |
@@ -166,11 +164,11 @@ class InvoiceLineItem(Base):
     tax_exemption_reason_code: Mapped[str | None] = mapped_column(
         String(64), nullable=True)
 
-    total_net: Mapped[float] = mapped_column(
+    total_net: Mapped[Decimal] = mapped_column(
         Numeric(14, 2), nullable=False, default=0)
-    total_tax: Mapped[float] = mapped_column(
+    total_tax: Mapped[Decimal] = mapped_column(
         Numeric(14, 2), nullable=False, default=0)
-    total_gross: Mapped[float] = mapped_column(
+    total_gross: Mapped[Decimal] = mapped_column(
         Numeric(14, 2), nullable=False, default=0)
 
     # Relationships

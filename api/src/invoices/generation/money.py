@@ -1,14 +1,33 @@
 """Monetary and VAT computation for invoice generation.
 
-All arithmetic uses :class:`~decimal.Decimal` with banker-free ``ROUND_HALF_UP``
+All arithmetic uses :class:`~decimal.Decimal` with commercial ``ROUND_HALF_UP``
 to two decimals, matching how invoice software and EN16931 validators expect
 amounts to round.
 
-Per the API spec the incoming ``pricePerUnit`` is **VAT-inclusive**, so the net
-unit price is derived from the gross. Document totals are built bottom-up from
-the VAT breakdown (taxable amount per category × rate), which is what EN16931's
-business rules (BR-CO-*, BR-S-08, BR-E-08) require — not from a naive sum of
-gross line amounts.
+EN16931 is a **net-based** standard at the line level, and the KoSIT / PEPPOL
+validators enforce that. The chain the validators recompute is:
+
+* BT-146 item net price          = round(gross_unit_price / (1 + rate/100))
+* BT-131 invoice line net amount = round(BT-129 quantity * BT-146)   [PEPPOL-EN16931-R120]
+* BT-116 category taxable amount = sum of the BT-131 in that category  [BR-S-08 / BR-E-08]
+* BT-117 category VAT amount     = round(BT-116 * rate / 100)          [BR-CO-17]
+* BT-109 total without VAT       = sum of BT-116
+* BT-110 total VAT               = sum of BT-117
+* BT-112 total with VAT          = BT-109 + BT-110                      [BR-CO-15]
+* BT-115 amount due              = BT-112 (no prepaid / rounding here)  [BR-CO-16]
+
+The incoming ``pricePerUnit`` is VAT-inclusive (per the API spec), so the net
+unit price is derived from it. Everything downstream is then built from the net
+side, exactly as the validator recomputes it.
+
+Note on gross fidelity: because EN16931 carries no per-line gross amount, the
+invoice's reconstructed gross total (BT-112 = net + VAT) can differ by up to a
+couple of cents from a naive ``sum(quantity * gross_unit_price)`` when net-unit
+rounding compounds across large quantities. That is inherent to the net-based
+model — the validators reject the gross-anchored alternative (see R120) — and is
+the standard, accepted behavior. If exact reconciliation with the charged gross
+is ever required, express BT-146 at higher precision or add a BT-114 rounding
+amount; do not re-anchor the line net to the gross.
 """
 
 from __future__ import annotations
@@ -17,8 +36,9 @@ from collections import OrderedDict
 from decimal import ROUND_HALF_UP, Decimal
 
 from src.invoices.generation.model import DocumentLine, TaxBreakdownEntry
+from src.invoices.models import Tax
 
-_CENTS = Decimal("0.01")
+CENTS = Decimal("0.01")
 
 # Default human-readable exemption reason for the German "Verein" case when the
 # caller supplies neither a reason text nor a code (EN16931 BR-E-10 needs one).
@@ -28,31 +48,25 @@ DEFAULT_EXEMPTION_REASON = "Steuerbefreite Leistung gemäß § 4 UStG"
 def money(value: object) -> Decimal:
     """Coerce to a 2-decimal Decimal, robust against float inputs."""
     d = value if isinstance(value, Decimal) else Decimal(str(value))
-    return d.quantize(_CENTS, rounding=ROUND_HALF_UP)
+    return d.quantize(CENTS, rounding=ROUND_HALF_UP)
 
 
-def _rate(value: object) -> Decimal:
-    return Decimal(str(value)).quantize(_CENTS, rounding=ROUND_HALF_UP)
+def rate(value: object) -> Decimal:
+    return Decimal(str(value)).quantize(CENTS, rounding=ROUND_HALF_UP)
 
 
-def classify_tax(
-    *,
-    tax_type: str | None,
-    rate: object,
-    exemption_reason: str | None,
-    exemption_reason_code: str | None,
+def classify_tax(tax: Tax
 ) -> tuple[str, Decimal, str | None, str | None]:
     """Resolve (category, effective_rate, reason, reason_code) for a tax rate.
 
     ``exempt-verein`` (or any zero rate) maps to EN16931 category ``E`` at 0 %
     with an exemption reason; everything else is standard-rated ``S``.
     """
-    r = _rate(rate)
-    is_exempt = (tax_type == "exempt-verein") or r == Decimal("0.00")
+    is_exempt = (tax.type == "exempt-verein") or tax.rate == Decimal("0.00")
     if is_exempt:
-        reason = exemption_reason or DEFAULT_EXEMPTION_REASON
-        return "E", Decimal("0.00"), reason, exemption_reason_code
-    return "S", r, None, None
+        reason = tax.tax_exemption_reason or DEFAULT_EXEMPTION_REASON
+        return "E", tax.rate, reason, None
+    return "S", tax.rate, None, None
 
 
 def build_line(
@@ -61,75 +75,60 @@ def build_line(
     name: str,
     quantity: object,
     price_per_unit_gross: object,
-    category: str,
-    rate: Decimal,
-    exemption_reason: str | None = None,
-    exemption_reason_code: str | None = None,
+    tax_category: str,
+    tax_rate: Decimal,
+    tax_exemption_reason: str | None = None,
+    tax_exemption_reason_code: str | None = None,
     ticket_label: str | None = None,
 ) -> DocumentLine:
     """Compute a single line's net/tax/gross from a VAT-inclusive unit price.
 
-    IMPORTANT — rounding order: the line's gross total is derived as
-    ``quantity * unit_gross``, rounded to the cent exactly once. Net and tax
-    are then derived *from that already-rounded gross total*
-    (``net = gross / factor``, ``tax = gross - net``) rather than from a
-    per-unit net price that gets rounded before being multiplied by quantity.
+    The computation follows EN16931's net-based line model so that the emitted
+    XML passes PEPPOL-EN16931-R120 and the KoSIT Schematron total checks:
 
-    Rounding the *unit* net price first (``net_unit = round(unit_gross /
-    factor)``) and then multiplying by quantity was the previous approach, and
-    it's wrong: 19%/7% VAT divisions essentially never terminate, so
-    ``net_unit`` almost always carries a sub-cent rounding error. Multiplying
-    that error by ``quantity`` scales it up — for large quantities the line's
-    reconstructed gross (``net_unit * qty`` grossed back up) can drift by many
-    cents from ``quantity * price_per_unit_gross``, which is the amount that
-    was actually charged. Rounding the total once, up front, keeps
-    ``gross == quantity * price_per_unit_gross`` exactly and makes
-    ``net + tax == gross`` hold by construction (via subtraction) instead of
-    by coincidence.
+    1. ``net_unit_price`` (BT-146) = round(gross_unit_price / (1 + rate/100)).
+    2. ``net`` (BT-131) = round(quantity * net_unit_price).
 
-    Note the SAME principle applies to ``price_per_unit_gross`` itself: it must
-    stay full-precision (not pre-rounded to cents via ``money()``) until *after*
-    it has been multiplied by quantity. The incoming unit price is not
-    guaranteed to already be a whole number of cents (e.g. a unit price of
-    ``0.5592`` split across a bulk quantity) — rounding it to ``0.56`` before
-    multiplying by ``7`` gives ``3.92``, while the amount actually charged is
-    ``7 * 0.5592 = 3.9144 -> 3.91``. Rounding the unit price early silently
-    changes the total by a cent. Only ``gross`` (the product) gets rounded;
-    the unit price is kept as an exact ``Decimal`` all the way through the
-    multiplication.
+    R120 requires ``BT-131 == round(BT-129 * BT-146)`` exactly, so the line net
+    MUST be derived from the *same* rounded net unit price that is written to
+    the XML — not from a rounded gross total. Deriving the net from a rounded
+    gross (``round(round(qty*gross_unit)/factor)``) is what produced the earlier
+    ``R120`` failures and the payable-total drift, because that value does not
+    equal ``round(qty * net_unit_price)``.
 
-    ``net_unit_price`` is still computed and returned (documents display it),
-    but purely for presentation — it is never used to derive the totals below.
+    ``tax`` and ``gross`` are retained per line for persistence / human-readable
+    display only. They are NEVER summed into the document totals: VAT is a
+    strictly category-level quantity in EN16931 (see :func:`build_tax_breakdown`
+    and :func:`totals`).
     """
     qty = Decimal(str(quantity))
-    # Full precision — do NOT round this before multiplying by qty.
     raw_unit_gross = Decimal(str(price_per_unit_gross))
-    factor = Decimal("1") + (rate / Decimal("100"))
+    factor = Decimal("1") + (tax_rate / Decimal("100"))
 
-    # Single rounding point for the line total — must equal qty * unit price
-    # computed at full precision, matching what was actually charged.
-    gross = money(raw_unit_gross * qty)
+    # BT-146 item net price: single rounding of the VAT-inclusive unit price.
+    net_unit = money(raw_unit_gross / factor) if factor != 0 else money(raw_unit_gross)
 
-    net = money(gross / factor) if factor != 0 else gross
-    tax = money(gross - net)  # by construction: net + tax == gross, always
+    # BT-131 line net amount = round(quantity * BT-146). Exact match with what
+    # the validator recomputes from the emitted quantity and net unit price.
+    net = money(net_unit * qty)
 
-    # Presentation-only rounded unit price / net-unit price; not used above.
-    unit_gross = money(raw_unit_gross)
-    net_unit = money(raw_unit_gross / factor) if factor != 0 else unit_gross
+    # Per-line VAT / gross — informational only (not part of the totals chain).
+    tax = money(net * tax_rate / Decimal("100"))
+    gross = money(net + tax)
 
     return DocumentLine(
         position=position,
         name=name,
         quantity=qty,
-        price_per_unit_gross=unit_gross,
+        price_per_unit_gross=money(raw_unit_gross),
         net_unit_price=net_unit,
         net=net,
         tax=tax,
         gross=gross,
-        tax_category=category,
-        tax_rate=rate,
-        exemption_reason=exemption_reason,
-        exemption_reason_code=exemption_reason_code,
+        tax_category=tax_category,
+        tax_rate=tax_rate,
+        exemption_reason=tax_exemption_reason,
+        exemption_reason_code=tax_exemption_reason_code,
         ticket_label=ticket_label,
     )
 
@@ -137,32 +136,21 @@ def build_line(
 def build_tax_breakdown(lines: list[DocumentLine]) -> list[TaxBreakdownEntry]:
     """Group lines into EN16931 VAT subtotals (BG-23), one per category+rate.
 
-    Each subtotal's taxable ``basis`` (BT-116) is the running sum of the
-    constituent lines' already-rounded ``net`` amounts. The VAT ``amount``
-    (BT-117) is then derived from that finished basis as a *single* rounding of
-    ``basis × rate / 100`` — it is NOT the running sum of the per-line ``tax``
+    Each subtotal's taxable ``basis`` (BT-116) is the sum of the constituent
+    lines' already-rounded ``net`` amounts (BT-131). The VAT ``amount`` (BT-117)
+    is then derived from that finished basis as a *single* rounding of
+    ``basis * rate / 100`` — it is NOT the running sum of the per-line ``tax``
     values.
 
-    This is mandated by EN16931 rule BR-CO-17: "VAT category tax amount
-    (BT-117) = VAT category taxable amount (BT-116) × (VAT category rate
-    (BT-119) / 100), rounded to two decimals." A conformance validator
-    (KoSIT / XRechnung) recomputes BT-117 exactly this way and rejects the
-    document if it differs, so BT-117 has to equal ``round(basis × rate)``.
+    This is mandated by EN16931 rule BR-CO-17: "VAT category tax amount (BT-117)
+    = VAT category taxable amount (BT-116) * (VAT category rate (BT-119) / 100),
+    rounded to two decimals." The KoSIT / XRechnung validator recomputes BT-117
+    exactly this way and rejects the document if it differs.
 
-    Summing the per-line ``tax`` amounts instead — the previous approach here —
-    can drift from ``round(basis × rate)`` by a cent or more once a category
-    holds several lines, because each per-line ``tax`` was independently
-    rounded to the cent. That drift both violates BR-CO-17 and, via
-    ``totals()``, propagates into the header ``TaxTotalAmount`` /
-    ``GrandTotalAmount`` / ``DuePayableAmount``. It is exactly the bug behind a
-    payable of 10950.17 for a 19 % basis of 9201.83, where the compliant value
-    is ``round(9201.83 × 0.19) = 1748.35`` → grand total ``10950.18``.
-
-    Note EN16931 keeps no per-line VAT amount in the totals chain: a line
-    carries only its net (BT-131), and VAT is a strictly category-level
-    quantity. The per-line ``tax`` on :class:`DocumentLine` is retained only
-    for persistence/human-readable display and is deliberately not summed into
-    the category amount here.
+    Summing per-line ``tax`` instead can drift from ``round(basis * rate)`` by a
+    cent or more once a category holds several lines, because each per-line
+    ``tax`` was independently rounded; that drift both violates BR-CO-17 and
+    propagates via :func:`totals` into the header totals.
     """
     groups: OrderedDict[tuple[str, str], TaxBreakdownEntry] = OrderedDict()
     for line in lines:
@@ -185,9 +173,8 @@ def build_tax_breakdown(lines: list[DocumentLine]) -> list[TaxBreakdownEntry]:
         if entry.exemption_reason_code is None and line.exemption_reason_code:
             entry.exemption_reason_code = line.exemption_reason_code
 
-    # BR-CO-17: once each category's taxable basis is fully accumulated, derive
-    # its VAT amount from that basis with a single rounding of basis × rate.
-    # (Exempt categories carry rate 0, so this yields 0.00 as required.)
+    # BR-CO-17: derive each category's VAT amount from its finished basis with a
+    # single rounding of basis * rate. (Exempt categories carry rate 0 -> 0.00.)
     for entry in groups.values():
         entry.amount = money(entry.basis * entry.rate / Decimal("100"))
 
@@ -195,7 +182,12 @@ def build_tax_breakdown(lines: list[DocumentLine]) -> list[TaxBreakdownEntry]:
 
 
 def totals(breakdown: list[TaxBreakdownEntry]) -> tuple[Decimal, Decimal, Decimal]:
-    """Return (total_net, total_tax, total_gross) from the VAT breakdown."""
+    """Return (total_net, total_tax, total_gross) from the VAT breakdown.
+
+    BT-109 = sum of BT-116, BT-110 = sum of BT-117, BT-112 = BT-109 + BT-110
+    (BR-CO-15). With no document-level allowances/charges, BT-109 also equals
+    the sum of line net amounts (BT-106), satisfying BR-CO-13.
+    """
     total_net = money(sum((e.basis for e in breakdown), Decimal("0.00")))
     total_tax = money(sum((e.amount for e in breakdown), Decimal("0.00")))
     total_gross = money(total_net + total_tax)

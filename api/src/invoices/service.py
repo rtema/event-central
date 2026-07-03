@@ -13,7 +13,7 @@ from __future__ import annotations
 import base64
 import datetime as dt
 import uuid
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import func, select
@@ -45,6 +45,7 @@ from src.invoices.generation.model import (
     VAT_SCHEME,
 )
 from src.invoices.generation.money import (
+    CENTS,
     build_line,
     build_tax_breakdown,
     classify_tax,
@@ -112,8 +113,8 @@ def get_invoice_line_items(db: Session, invoice_id: uuid.UUID) -> list[InvoiceLi
 
 def get_invoice_taxes(db: Session, invoice_id: uuid.UUID) -> list[Tax]:
     get_invoice(db, invoice_id)  # 404 if missing
-    stmt = select(Tax).where(Tax.invoice_id ==
-                             invoice_id).order_by(Tax.created_at.asc())
+    stmt = select(Tax).join(InvoiceLineItem, InvoiceLineItem.tax_id == Tax.id).where(
+        InvoiceLineItem.invoice_id == invoice_id).distinct().order_by(Tax.rate.asc())
     return list(db.execute(stmt).scalars().all())
 
 
@@ -284,6 +285,10 @@ def _resolve_order(
             )
         ).scalar_one_or_none()
         if existing is not None:
+
+            # update recipient snapshot to keep everything in sync
+            existing.recipient = recipient_snapshot
+
             return existing
 
     order = Order(
@@ -300,12 +305,92 @@ def _resolve_order(
     return order
 
 
+def _resolve_tax_rates(
+    db: Session, req: InvoiceCreateRequest, actor_sub: str | None
+) -> dict[str, Tax]:
+    """Reuse existing tax_rates or create if necessary."""
+
+    # hold the resolved tax rates
+    resolved_tax_rates: dict[str, Tax] = {}
+
+    # get the locale
+    locale = req.locale
+
+    # get list of all referenced tax rates
+    used_tax_rates: set[str] = set()
+    for line_item in req.line_items:
+        used_tax_rates.add(line_item.external_tax_id)
+
+    # validate no tax rate is specified more than once
+    specified_tax_rates: set[str] = set()
+    for tax_rate in req.tax_rates:
+        if tax_rate.external_id in specified_tax_rates:
+            raise ValueError(
+                f"Tax rate '{tax_rate.external_id}' is specified more than once")
+        specified_tax_rates.add(tax_rate.external_id)
+
+    # validate all tax rates are specified
+    if not used_tax_rates.issubset(specified_tax_rates):
+        unspecified_tax_rates: list[str] = list(
+            used_tax_rates - specified_tax_rates)
+        unspecified_tax_rates.sort()
+        raise ValueError(f"The following tax rates are not specified: \
+                        {', '.join(unspecified_tax_rates)}")
+
+    # get or create all the tax rates
+    commit_changes = False
+    for tax_rate in req.tax_rates:
+        # skip over all unused tax rates to not pollute the database
+        if tax_rate.external_id not in used_tax_rates:
+            continue
+
+        # determine the rate
+        rate = Decimal(str(tax_rate.rate)).quantize(
+            CENTS, rounding=ROUND_HALF_UP)
+
+        # try to get the existing tax rate
+        existing = db.execute(
+            select(Tax).where(
+                Tax.external_id == tax_rate.external_id,
+                Tax.rate == rate,
+                Tax.label[locale].astext == tax_rate.label,
+                Tax.type == tax_rate.type,
+                Tax.tax_exemption_reason == tax_rate.tax_exemption_reason
+            )
+        ).scalar() # do not use scalar_one_or_none(): 
+        # if deduplication had an issue: do not throw an error here, it does not do any harm
+        if existing:
+            # everything matches
+            resolved_tax_rates[tax_rate.external_id] = existing
+
+        # create a new tax rate
+        created = Tax(
+            external_id=tax_rate.external_id,
+            rate=rate,
+            label=_multilanguage_label(tax_rate.label),
+            type=tax_rate.type,
+            tax_exemption_reason=tax_rate.tax_exemption_reason,
+            created_by=actor_sub or "system",
+        )
+        db.add(created)
+        commit_changes = True
+        resolved_tax_rates[tax_rate.external_id] = created
+
+    # commit changes to db
+    if commit_changes:
+        db.flush()
+
+    # return the dict
+    return resolved_tax_rates
+
+
 def _build_lines_and_taxes(
     db: Session,
     req: InvoiceCreateRequest,
-    invoice_id: uuid.UUID,
+    invoice: Invoice,
+    tax_rates: dict[str, Tax],
     actor_sub: str | None,
-) -> tuple[list[InvoiceLineItem], list[Tax], list[DocumentLine]]:
+) -> tuple[list[InvoiceLineItem], list[DocumentLine]]:
     """Persist Tax rows and InvoiceLineItem rows; build the generator's lines.
 
     All money-relevant inputs (quantity, unit price, tax rate) are coerced to
@@ -319,64 +404,38 @@ def _build_lines_and_taxes(
     ``InvoiceLineItem.quantity/price_per_unit/tax_rate``, so a later
     cancellation would faithfully reproduce the same float-tainted values.
     """
-    tax_defs = {t.external_id: t for t in (req.tax_rates or [])}
-    tax_rows: dict[str, Tax] = {}
     line_items: list[InvoiceLineItem] = []
     doc_lines: list[DocumentLine] = []
 
     for position, item in enumerate(req.line_items, start=1):
-        tax_definition = tax_defs.get(item.external_tax_id)
-        rate = _to_decimal(
-            tax_definition.rate) if tax_definition else Decimal("0")
-        tax_type = (
-            tax_definition.type if tax_definition else None) or "standard"
-        exemption = tax_definition.tax_exemption_reason if tax_definition else None
-
         quantity = _to_decimal(item.quantity)
         price_per_unit = _to_decimal(item.price_per_unit)
 
-        category, eff_rate, reason, reason_code = classify_tax(
-            tax_type=tax_type,
-            rate=rate,
-            exemption_reason=exemption,
-            exemption_reason_code=None,
-        )
+        (
+            tax_category,
+            tax_rate,
+            tax_exemption_reason,
+            tax_exemption_reason_code
+        ) = classify_tax(tax_rates[item.external_tax_id])
 
         line = build_line(
             position=position,
             name=item.name,
             quantity=quantity,
             price_per_unit_gross=price_per_unit,
-            category=category,
-            rate=eff_rate,
-            exemption_reason=reason,
-            exemption_reason_code=reason_code,
+            tax_category=tax_category,
+            tax_rate=tax_rate,
+            tax_exemption_reason=tax_exemption_reason,
+            tax_exemption_reason_code=tax_exemption_reason_code,
             ticket_label=(
                 item.ticket.external_ticket_option_label if item.ticket else None),
         )
         doc_lines.append(line)
 
-        # Persist (or reuse) the Tax row for this external id.
-        tax_row = tax_rows.get(item.external_tax_id)
-        if tax_row is None:
-            label = tax_definition.label if tax_definition else item.external_tax_id
-            tax_row = Tax(
-                invoice_id=invoice_id,
-                external_id=item.external_tax_id,
-                rate=eff_rate,
-                label=_multilanguage_label(label),
-                type=tax_type,
-                tax_exemption_reason=reason if category == "E" else None,
-                created_by=actor_sub or "system",
-            )
-            db.add(tax_row)
-            db.flush()
-            tax_rows[item.external_tax_id] = tax_row
-
         line_items.append(
             InvoiceLineItem(
-                invoice_id=invoice_id,
-                tax_id=tax_row.id if tax_row else None,
+                invoice=invoice,
+                tax=tax_rates[item.external_tax_id],
                 position=position,
                 quantity=quantity,
                 price_per_unit=price_per_unit,
@@ -384,18 +443,18 @@ def _build_lines_and_taxes(
                 ticket=item.ticket.model_dump(by_alias=True, exclude_none=True)
                 if item.ticket
                 else None,
-                tax_category=category,
-                tax_rate=eff_rate,
+                tax_category=tax_category,
+                tax_rate=tax_rate,
                 tax_scheme=VAT_SCHEME,
-                tax_exemption_reason=reason if category == "E" else None,
-                tax_exemption_reason_code=reason_code,
+                tax_exemption_reason=tax_exemption_reason if tax_category == "E" else None,
+                tax_exemption_reason_code=tax_exemption_reason_code,
                 total_net=line.net,
                 total_tax=line.tax,
                 total_gross=line.gross,
             )
         )
 
-    return line_items, list(tax_rows.values()), doc_lines
+    return line_items, doc_lines
 
 
 def _generate_and_store_documents(
@@ -507,6 +566,9 @@ def create_invoice(
     # resolve/create order.
     order = _resolve_order(db, event_id, req, actor_sub)
 
+    # resolve/create tax rates
+    tax_rates = _resolve_tax_rates(db, req, actor_sub)
+
     # resolve/create document template
     document_template = resolve_document_template(
         db, req.invoice_template, actor_sub)
@@ -529,7 +591,7 @@ def create_invoice(
     # generate the invoice
     invoice = Invoice(
         order_id=order.id,
-        locale=(req.locale or "de"),
+        locale=req.locale,
         accounting_entity=prefix,
         accounting_number=assigned.accounting_number,
         invoice_number=assigned.invoice_number,
@@ -554,8 +616,8 @@ def create_invoice(
     db.flush()
 
     # Lines + taxes.
-    line_items, _taxes, doc_lines = _build_lines_and_taxes(
-        db, req, invoice.id, actor_sub)
+    line_items, doc_lines = _build_lines_and_taxes(
+        db, req, invoice, tax_rates, actor_sub)
     for li in line_items:
         db.add(li)
     db.flush()
@@ -695,6 +757,9 @@ def cancel_order(
         raise NotFoundError("order has no invoices to cancel")
 
     event = db.get(Event, order.event_id)
+    if event is None:
+        raise NotFoundError("event does not exist")
+
     balance = money(sum((_to_decimal(inv.total_gross)
                     for inv in invoices), Decimal("0.00")))
 
@@ -752,10 +817,10 @@ def cancel_order(
             name=src_line.name,
             quantity=qty,
             price_per_unit_gross=_to_decimal(src_line.price_per_unit),
-            category=category,
-            rate=rate,
-            exemption_reason=src_line.tax_exemption_reason,
-            exemption_reason_code=src_line.tax_exemption_reason_code,
+            tax_category=category,
+            tax_rate=rate,
+            tax_exemption_reason=src_line.tax_exemption_reason,
+            tax_exemption_reason_code=src_line.tax_exemption_reason_code,
         )
         doc_lines.append(line)
         db.add(
@@ -788,7 +853,7 @@ def cancel_order(
     supplier_snapshot = source.supplier or {}
     recipient_snapshot = source.recipient or {}
     doc = InvoiceDocument(
-        invoice_number=cancellation.invoice_number, # type: ignore
+        invoice_number=cancellation.invoice_number,  # type: ignore
         invoice_type="cancellation",
         invoice_type_code=CANCELLATION_TYPE_CODE,
         issue_date=now.date(),
