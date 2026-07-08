@@ -15,25 +15,29 @@ import hashlib
 import re
 import uuid
 from io import BytesIO
-from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from src.core.errors import AppError, ConflictError, NotFoundError
+from src.core.schemas import make_multilanguage_label
 from src.document_templates.models import (
     DocumentTemplate,
     DocumentTemplateFile,
     PublicDocumentTemplate,
 )
+from src.document_templates.schemas import (
+    PublicDocumentTemplateCreateRequest,
+    PublicDocumentTemplateUpdateRequest,
+)
 from src.files.models import File
-from src.files.service import create_file, get_files_by_hash
+from src.files.service import create_file, get_file, get_files_by_hash
 from src.invoices.schemas import InvoiceTemplate
 
 # Public ids (slugs): lower-case letters, digits, '-' and '_'.
 _SLUG_REGEX = re.compile(r"^[a-z0-9_-]{3,128}$")
 
-Spec = tuple[str, str, str | None, int | None, File]
+ReferencedFile = tuple[str, str, str | None, int | None, File]
 
 
 def _now() -> dt.datetime:
@@ -48,9 +52,14 @@ def _validate_slug(slug: str) -> None:
         )
 
 
+def _generate_font_key(name: str, weight: int) -> str:
+    return f"{re.sub(r'[^a-z]', '', name.lower())}-{weight}"
+
 # --------------------------------------------------------------------------- #
 # Private templates (read-only via the API)
 # --------------------------------------------------------------------------- #
+
+
 def list_document_templates(
     db: Session, *, limit: int, offset: int
 ) -> tuple[list[DocumentTemplate], int]:
@@ -99,55 +108,144 @@ def get_public_document_template(db: Session, public_id: str) -> PublicDocumentT
 
 
 def create_public_document_template(
-    db: Session, *, public_id: str, body: dict[str, Any], actor: str | None
+    db: Session,
+    *,
+    public_document_template_id: str,
+    body: PublicDocumentTemplateCreateRequest,
+    actor: str
 ) -> PublicDocumentTemplate:
-    _validate_slug(public_id)
-    if db.get(PublicDocumentTemplate, public_id) is not None:
+    _validate_slug(public_document_template_id)
+    if db.get(PublicDocumentTemplate, public_document_template_id) is not None:
         raise ConflictError(
-            f"public document template {public_id!r} already exists")
+            f"public document template {public_document_template_id!r} already exists")
 
-    concrete = DocumentTemplate(
-        public_document_template_id=public_id,
-        html=body.get("html"),
-        css=body.get("css"),
-        created_by=actor,
-    )
-    db.add(concrete)
-    db.flush()
-
-    public = PublicDocumentTemplate(
-        id=public_id,
-        document_template_id=concrete.id,
+    public_document_template = PublicDocumentTemplate(
+        id=public_document_template_id,
+        locale=body.locale,
         label={},
     )
-    db.add(public)
+    db.add(public_document_template)
     db.flush()
-    return public
+
+    # create the file
+    public_document_template = update_public_document_template(
+        db,
+        public_document_template_id,
+        body=body,
+        actor=actor
+    )
+    return public_document_template
 
 
 def update_public_document_template(
-    db: Session, public_id: str, *, body: dict[str, Any], actor: str | None
+    db: Session,
+    public_document_template_id: str,
+    *,
+    body: PublicDocumentTemplateUpdateRequest | PublicDocumentTemplateCreateRequest,
+    actor: str
 ) -> PublicDocumentTemplate:
-    public = get_public_document_template(db, public_id)
+    public_document_template = get_public_document_template(
+        db, public_document_template_id)
 
-    # Versioned update: provision a new concrete template and repoint the slug.
-    concrete = DocumentTemplate(
-        public_document_template_id=public_id,
-        html=body.get("html"),
-        css=body.get("css"),
+    # get / deduplicate files
+    seen_files: dict[str, File] = {}
+    seen_keys: dict[tuple[str, str, int | None], uuid.UUID] = {}
+    referenced_files: list[ReferencedFile] = []
+
+    for image in body.images or []:
+        file: File
+        if image.file:
+            raw = base64.b64decode(image.file)
+            file = _resolve_file(
+                db, raw, created_by=actor, seen=seen_files)
+        elif image.file_id:
+            tmp = get_file(db, image.file_id)
+            if tmp is None:
+                raise NotFoundError(f"file not found: {image.file_id}")
+            if tmp.type != "image":
+                raise NotFoundError(
+                    f"file referenced as image is no image: {image.file_id}")
+            file = tmp
+        else:
+            raise NotFoundError(f"file not found: {image.file_id}")
+
+        # add to list of files
+        _add_to_referenced_files(
+            referenced_files, seen_keys, "image", image.key, None, None, file)
+
+    for font in body.fonts or []:
+        file: File
+        if font.file:
+            raw = base64.b64decode(font.file)
+            file = _resolve_file(
+                db, raw, created_by=actor, seen=seen_files)
+        elif font.file_id:
+            tmp = get_file(db, font.file_id)
+            if tmp is None:
+                raise NotFoundError(f"file not found: {font.file_id}")
+            if tmp.type != "font":
+                raise NotFoundError(
+                    f"file referenced as font is no font: {font.file_id}")
+            file = tmp
+        else:
+            raise NotFoundError(f"file not found: {font.file_id}")
+
+        # add to list of files
+        _add_to_referenced_files(
+            referenced_files,
+            seen_keys,
+            "font",
+            _generate_font_key(font.name, font.weight),
+            font.name,
+            font.weight,
+            file
+        )
+
+    # create a new document_template
+    document_template = DocumentTemplate(
+        public_document_template_id=public_document_template_id,
+        html=body.html,
+        css=body.css,
         created_by=actor,
     )
-    db.add(concrete)
+    db.add(document_template)
+    db.flush()  # need the id for the file rows
+
+    # attach all files
+    for type_, key, font_name, font_weight, file in referenced_files:
+        db.add(
+            DocumentTemplateFile(
+                document_template_id=document_template.id,
+                file_id=file.id,
+                type=type_,
+                key=key,
+                font_name=font_name,
+                font_weight=font_weight,
+                created_by=actor,
+            )
+        )
+
+    # point the new id to the public template
+    public_document_template.document_template_id = document_template.id
+
+    # set label + locale
+    public_document_template.locale = body.locale
+    public_document_template.label = make_multilanguage_label(body.label)
+
+    # set updated at
+    public_document_template.updated_at = _now()
     db.flush()
 
-    public.document_template_id = concrete.id
-    public.updated_at = _now()
-    db.flush()
-    return public
+    # return updated template
+    return public_document_template
 
 
 def resolve_document_template(
-    db: Session, invoice_template: InvoiceTemplate, actor_sub: str | None
+    db: Session,
+    invoice_template: InvoiceTemplate,
+    locale: str,
+    actor_sub: str | None,
+
 ) -> DocumentTemplate:
 
     # a public template should be used
@@ -157,42 +255,42 @@ def resolve_document_template(
             db, invoice_template.template_name)
         return public_template.document_template
 
-    # check if the template already exists
-
-    # Template does not exist
-
-    # create all necessary files
-
-    # create document template
-
-    seen: dict[str, File] = {}
-    key_seen: dict[tuple[str, str, int | None], uuid.UUID] = {}
-    specs: list[Spec] = []
+    # go over all files
+    seen_files: dict[str, File] = {}
+    seen_keys: dict[tuple[str, str, int | None], uuid.UUID] = {}
+    referenced_files: list[ReferencedFile] = []
 
     for image in invoice_template.images or []:
-        raw = base64.b64decode(image.file) if image.file is not None\
-            else _fetch_link(image.link)  # type: ignore validator guarantees exactly one of file/link is set
-
+        raw = base64.b64decode(image.file)
         file = _resolve_file(
-            db, raw, created_by=actor_sub or "system", seen=seen)
-        _add_spec(specs, key_seen, "image", image.key, None, None, file)
+            db, raw, created_by=actor_sub or "system", seen=seen_files)
+        _add_to_referenced_files(
+            referenced_files, seen_keys, "image", image.key, None, None, file)
 
     for font in invoice_template.fonts or []:
         raw = base64.b64decode(font.file)
         file = _resolve_file(
-            db, raw, created_by=actor_sub or "system", seen=seen)
-        # fonts are referenced in the template by their name
-        _add_spec(specs, key_seen, "font", font.name,
-                  font.name, font.weight, file)
+            db, raw, created_by=actor_sub or "system", seen=seen_files)
+        _add_to_referenced_files(
+            referenced_files,
+            seen_keys,
+            "font",
+            _generate_font_key(font.name, font.weight),
+            font.name,
+            font.weight,
+            file
+        )
 
-    # ---- Template-level dedup: same html+css and identical file set ------- #
+    # Template-level deduplication: same html+css and identical file set
     existing = _find_existing_document_template(
-        db, invoice_template.html, invoice_template.css, specs
+        db, invoice_template.html, invoice_template.css, referenced_files
     )
     if existing is not None:
         return existing
 
+    # create new template
     document_template = DocumentTemplate(
+        locale=locale,
         html=invoice_template.html,
         css=invoice_template.css,
         public_document_template_id=None,
@@ -201,7 +299,8 @@ def resolve_document_template(
     db.add(document_template)
     db.flush()  # need the id for the file rows
 
-    for type_, key, font_name, font_weight, file in specs:
+    # attach all files
+    for type_, key, font_name, font_weight, file in referenced_files:
         db.add(
             DocumentTemplateFile(
                 document_template_id=document_template.id,
@@ -214,6 +313,8 @@ def resolve_document_template(
             )
         )
     db.flush()
+
+    # return the created document template
     return document_template
 
 
@@ -247,8 +348,8 @@ def _resolve_file(
     return file
 
 
-def _add_spec(
-    specs: list[Spec],
+def _add_to_referenced_files(
+    referenced_files: list[ReferencedFile],
     key_seen: dict[tuple[str, str, int | None], uuid.UUID],
     type_: str,
     key: str,
@@ -259,7 +360,7 @@ def _add_spec(
     """Collect a (type, key, weight) -> file mapping, collapsing exact
     duplicates and rejecting the same (key, weight) pointing at conflicting
     content within one request. Fonts may reuse a key across different weights;
-    images always pass weight=None, so they still dedup on (type, key)."""
+    images always pass weight=None, so they still deduplicate on (type, key)."""
     ns_key = (type_, key, font_weight)
     if ns_key in key_seen:
         if key_seen[ns_key] != file.id:
@@ -269,11 +370,11 @@ def _add_spec(
             )
         return
     key_seen[ns_key] = file.id
-    specs.append((type_, key, font_name, font_weight, file))
+    referenced_files.append((type_, key, font_name, font_weight, file))
 
 
 def _find_existing_document_template(
-    db: Session, html: str | None, css: str | None, specs: list[Spec],
+    db: Session, html: str | None, css: str | None, specs: list[ReferencedFile],
 ) -> DocumentTemplate | None:
     desired = {
         (type_, key, font_name, font_weight, file.id)
@@ -292,13 +393,3 @@ def _find_existing_document_template(
         if actual == desired:
             return candidate
     return None
-
-
-def _fetch_link(url: str) -> bytes:
-    raise ValueError("link is currently not supported for images")
-    # # SEE NOTE BELOW — this is server-side fetching of a caller-supplied URL.
-    # if not url.lower().startswith("https://"):
-    #     raise ValueError("image link must be https")
-    # resp = httpx.get(url, timeout=10.0, follow_redirects=False)
-    # resp.raise_for_status()
-    # return resp.content

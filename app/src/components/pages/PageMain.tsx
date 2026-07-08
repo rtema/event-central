@@ -18,6 +18,8 @@ import { DocumentTemplatesList } from "../document-templates/DocumentTemplatesLi
 import { PublicDocumentTemplateEditor } from "../document-templates/PublicDocumentTemplateEditor";
 import { EventDetail } from "../events/EventDetail";
 import { EventsList } from "../events/EventsList";
+import { FilesList } from "../files/FilesList";
+import { FileDetail } from "../files/FileDetail";
 import { InvoiceCreate } from "../invoices/InvoiceCreate";
 import { InvoiceDetail } from "../invoices/InvoiceDetail";
 import { InvoicesList } from "../invoices/InvoicesList";
@@ -85,6 +87,11 @@ export function PageMain() {
                         <Route
                           path="document-templates/rendered/:templateId"
                           element={<DocumentTemplateDetail />}
+                        />
+                        <Route path="files" element={<FilesList />} />
+                                                <Route
+                          path="files/:fileId"
+                          element={<FileDetail />}
                         />
                       </Route>
                     </Route>

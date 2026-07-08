@@ -17,6 +17,7 @@ import {
   IconCalendarEvent,
   IconCash,
   IconFileInvoice,
+  IconFiles,
   IconLogout,
   IconPercentage,
   IconShoppingCart,
@@ -143,9 +144,17 @@ export function AppLayout() {
           <NavLink
             component={RouterNavLink}
             to={`/${i18n.locale}/document-templates`}
-            label={<Trans>Templates</Trans>}
+            label={<Trans>Document Templates</Trans>}
             leftSection={<IconTemplate size={18} />}
-            active={location.pathname.startsWith(`/${i18n.locale}/templates`)}
+            active={location.pathname.startsWith(`/${i18n.locale}/document-templates`)}
+            onClick={close}
+          />
+          <NavLink
+            component={RouterNavLink}
+            to={`/${i18n.locale}/files`}
+            label={<Trans>Files</Trans>}
+            leftSection={<IconFiles size={18} />}
+            active={location.pathname.startsWith(`/${i18n.locale}/files`)}
             onClick={close}
           />
           <NavLink

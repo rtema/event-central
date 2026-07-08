@@ -1,36 +1,54 @@
 import useSWR, { useSWRConfig } from "swr";
 import { eventsApi } from "../../api/events";
+import { filesApi } from "../../api/files";
 import { invoicesApi } from "../../api/invoices";
 import { ordersApi } from "../../api/orders";
 import { paymentsApi } from "../../api/payments";
 import { taxesApi } from "../../api/taxes";
-import { templatesApi } from "../../api/templates";
-import type { ListParams } from "../../api/types";
+import { documentTemplatesApi } from "../../api/documentTemplates";
+import type { FileSearchParams, ListParams } from "../../api/types";
 
 /** Cache-key factory shared across the invoicing UI. */
 export const invKeys = {
-  invoices: (p?: ListParams) => ["invoices", p?.limit ?? null, p?.offset ?? null] as const,
+  invoices: (p?: ListParams) =>
+    ["invoices", p?.limit ?? null, p?.offset ?? null] as const,
   invoice: (id: string) => ["invoice", id] as const,
   invoiceLineItems: (id: string) => ["invoice", id, "line-items"] as const,
   invoiceTaxes: (id: string) => ["invoice", id, "taxes"] as const,
 
-  events: (p?: ListParams) => ["events", p?.limit ?? null, p?.offset ?? null] as const,
+  events: (p?: ListParams) =>
+    ["events", p?.limit ?? null, p?.offset ?? null] as const,
   event: (id: string) => ["event", id] as const,
   eventOrders: (id: string, p?: ListParams) =>
     ["event", id, "orders", p?.limit ?? null, p?.offset ?? null] as const,
 
-  orders: (p?: ListParams) => ["orders", p?.limit ?? null, p?.offset ?? null] as const,
+  orders: (p?: ListParams) =>
+    ["orders", p?.limit ?? null, p?.offset ?? null] as const,
   order: (id: string) => ["order", id] as const,
   orderPayments: (id: string) => ["order", id, "payments"] as const,
   orderInvoices: (id: string) => ["order", id, "invoices"] as const,
 
-  payments: (p?: ListParams) => ["payments", p?.limit ?? null, p?.offset ?? null] as const,
+  payments: (p?: ListParams) =>
+    ["payments", p?.limit ?? null, p?.offset ?? null] as const,
 
-  templates: () => ["document-templates"] as const,
-  template: (id: string) => ["document-template", id] as const,
-  publicTemplates: () => ["public-document-templates"] as const,
-  publicTemplate: (id: string) => ["public-document-template", id] as const,
+  documentTemplates: () => ["document-templates"] as const,
+  documentTemplate: (id: string) => ["document-template", id] as const,
+  documentTemplateFiles: (id: string) =>
+    ["document-template", id, "files"] as const,
 
+  publicDocumentTemplates: () => ["public-document-templates"] as const,
+  publicDocumentTemplate: (id: string) =>
+    ["public-document-template", id] as const,
+
+  // // Template files (the template ⇄ file join collection).
+  // documentTemplateFiles: () => ["document-template-files"] as const,
+  // documentTemplateFile: (id: string) => ["document-template-file", id] as const,
+
+  // Stored files.
+  files: (p?: ListParams) =>
+    ["files", p?.limit ?? null, p?.offset ?? null] as const,
+  fileSearch: (key: string) => ["files-search", key] as const,
+  file: (id: string) => ["file", id] as const,
   taxes: () => ["taxes"] as const,
 };
 
@@ -95,20 +113,53 @@ export function usePayments(params?: ListParams) {
 // ---- Templates ------------------------------------------------------------
 
 export function useDocumentTemplates() {
-  return useSWR(invKeys.templates(), () => templatesApi.list());
+  return useSWR(invKeys.documentTemplates(), () => documentTemplatesApi.list());
 }
 export function useDocumentTemplate(id: string | undefined) {
-  return useSWR(id ? invKeys.template(id) : null, () =>
-    templatesApi.get(id!),
+  return useSWR(id ? invKeys.documentTemplate(id) : null, () =>
+    documentTemplatesApi.get(id!),
   );
 }
-export function usePublicTemplates() {
-  return useSWR(invKeys.publicTemplates(), () => templatesApi.listPublic());
-}
-export function usePublicTemplate(id: string | undefined) {
-  return useSWR(id ? invKeys.publicTemplate(id) : null, () =>
-    templatesApi.getPublic(id!),
+export function usePublicDocumentTemplates() {
+  return useSWR(invKeys.publicDocumentTemplates(), () =>
+    documentTemplatesApi.listPublic(),
   );
+}
+export function usePublicDocumentTemplate(id: string | undefined) {
+  return useSWR(id ? invKeys.publicDocumentTemplate(id) : null, () =>
+    documentTemplatesApi.getPublic(id!),
+  );
+}
+
+// ---- Template files (join records) ----------------------------------------
+
+/** Files referenced by one specific template. */
+export function useDocumentTemplateFiles(id: string | undefined) {
+  return useSWR(id ? invKeys.documentTemplateFiles(id) : null, () =>
+    documentTemplatesApi.templateFiles(id!),
+  );
+}
+
+// ---- Stored files ---------------------------------------------------------
+
+export function useFiles(params?: ListParams) {
+  return useSWR(invKeys.files(params), () => filesApi.list(params));
+}
+export function useFileSearch(params: FileSearchParams) {
+  // Stable cache key from the structured filters.
+  const key = JSON.stringify({
+    q: params.q ?? "",
+    extension: params.extension ?? [],
+    type: params.type ?? [],
+    published: params.published ?? [],
+    basePath: params.basePath ?? [],
+    limit: params.limit ?? null,
+    offset: params.offset ?? null,
+  });
+  return useSWR(invKeys.fileSearch(key), () => filesApi.search(params));
+}
+export function useFile(id: string | undefined) {
+  return useSWR(id ? invKeys.file(id) : null, () => filesApi.get(id!));
 }
 
 // ---- Misc -----------------------------------------------------------------

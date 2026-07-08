@@ -1,23 +1,28 @@
 from __future__ import annotations
 
+import datetime as dt
 import hashlib
 import logging
 import os
 import re
 import uuid
+from collections.abc import Sequence
 from dataclasses import dataclass
 from io import BytesIO
 
 import magic
+from alembic.environment import Any
 from PIL import Image, ImageFile
-from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy import ColumnElement, Select, String, cast, func, or_, select
+from sqlalchemy.orm import InstrumentedAttribute, Session
 
 from src.config import settings
-from src.core.errors import AppError
+from src.core.errors import AppError, NotFoundError
+from src.core.security import sign_download_token
 from src.files.clamav_client import clamav_validate_bytes
 from src.files.images import generate_image_preview, open_image_safely
 from src.files.models import File
+from src.files.schemas import FileLinkResponse, FileSearchParams
 from src.storage.s3 import get_storage
 
 logger = logging.getLogger(__name__)
@@ -299,6 +304,67 @@ def list_files(
     return list(db.execute(stmt).scalars().all()), total
 
 
+def search_files(
+    db: Session,
+    *,
+    limit: int,
+    offset: int,
+    search_params: FileSearchParams,
+    include_deleted: bool = False,
+) -> tuple[list[File], int]:
+    """Return a page of files (newest first) and the total count."""
+    conditions: list[ColumnElement[bool]] = []
+
+    if not include_deleted:
+        conditions.append(File.deleted_at.is_(None))
+
+    # filters
+    filters: list[tuple[InstrumentedAttribute[Any], Sequence[Any] | None]] = [
+        (File.extension, search_params.extension),
+        (File.type, search_params.type),
+        (File.base_path, search_params.base_path),
+    ]
+    for column, values in filters:
+        if values:
+            conditions.append(column.in_(values))
+
+    # special values
+    if search_params.published:
+        conditions.append(File.published.in_(search_params.published))
+
+    # text filters
+    if search_params.q and search_params.q.strip():
+        term: str = search_params.q.strip()
+        # escape LIKE wildcards so user input is matched literally
+        escaped: str = (
+            term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        )
+        pattern: str = f"%{escaped}%"
+        conditions.append(
+            or_(
+                File.access_key.ilike(pattern, escape="\\"),
+                File.base_path.ilike(pattern, escape="\\"),
+                cast(File.label, String).ilike(pattern, escape="\\"),
+            )
+        )
+
+    # count total
+    count_stmt: Select[tuple[int]] = (
+        select(func.count()).select_from(File).where(*conditions)
+    )
+    total: int = db.execute(count_stmt).scalar_one()
+
+    # build statement
+    stmt = (
+        select(File)
+        .where(*conditions)
+        .order_by(File.created_at.desc())
+        .limit(limit)
+        .offset(offset)
+    )
+    return list(db.execute(stmt).scalars().all()), total
+
+
 def get_files_by_hash(
     db: Session,
     hash: str,
@@ -344,3 +410,27 @@ def get_file_data(
     except Exception:
         logger.warning("storage fetch failed for %s", file_id, exc_info=True)
         return None
+
+
+def create_link(
+    db: Session,
+    file_id: uuid.UUID,
+    *,
+    expires_in: int | None,
+) -> FileLinkResponse:
+    """Issue a signed, time-limited link to view the file."""
+    file = get_file(db, file_id)
+
+    if file is None:
+        raise NotFoundError("file not found")
+
+    ttl = expires_in if expires_in is not None else 3600
+    expires_at = dt.datetime.now(dt.UTC) + dt.timedelta(seconds=ttl)
+    resource = f"files/private/{file.access_key}"
+    token = sign_download_token(
+        resource=resource, expires_at=int(expires_at.timestamp()))
+    url = (
+        f"{settings.api_base_url}/api/v1/files/private/"
+        f"{file.access_key}?signedToken={token}"
+    )
+    return FileLinkResponse(url=url, expires_at=expires_at)

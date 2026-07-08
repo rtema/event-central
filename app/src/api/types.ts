@@ -359,12 +359,37 @@ export interface InvoiceCreateLineItem {
   ticket?: InvoiceLineItemTicketMetadata;
 }
 
+/**
+ * Font/image as they appear on the immutable `DocumentTemplate` *response*.
+ * Note the response keeps `name` for images and has no `weight` — the request
+ * shapes below diverge (see `TemplateFontInput` / `TemplateImageInput`).
+ */
 export interface TemplateFont {
-  name?: string;
-  file?: string;
+  name: string;
+  weight: number;
+  file: string;
 }
 export interface TemplateImage {
+  key: string;
+  file?: string;
+  link?: string;
+}
+
+/**
+ * Font/image as sent in *request* bodies (public template create/update and
+ * invoice create). Each asset may be supplied three ways, in priority order:
+ * `fileId` (reference an existing stored file), `file` (base64 upload) or,
+ * for images, `link` (public https URL).
+ */
+export interface TemplateFontInput {
   name?: string;
+  weight?: number;
+  fileId?: string;
+  file?: string;
+}
+export interface TemplateImageInput {
+  key?: string;
+  fileId?: string;
   file?: string;
   link?: string;
 }
@@ -517,6 +542,7 @@ export interface PaymentCreateRequest {
 
 export interface DocumentTemplate {
   id: string;
+  locale: string;
   publicDocumentTemplateId?: string | null;
   html?: string;
   css?: string;
@@ -536,6 +562,7 @@ export interface DocumentTemplateResponse {
 export interface PublicDocumentTemplate {
   id: string;
   documentTemplateId?: string;
+  locale: string;
   label?: MultiLanguageLabel;
   createdAt?: string;
   updatedAt?: string;
@@ -550,16 +577,110 @@ export interface PublicDocumentTemplateResponse {
 }
 export interface PublicDocumentTemplateCreateRequest {
   id: string;
-  html?: string;
-  css?: string;
-  fonts?: TemplateFont[];
-  images?: TemplateImage[];
+  locale: string;
+  html: string;
+  css: string;
+  fonts: TemplateFontInput[];
+  images: TemplateImageInput[];
 }
+
 export interface PublicDocumentTemplateUpdateRequest {
-  html?: string;
-  css?: string;
-  fonts?: TemplateFont[];
-  images?: TemplateImage[];
+  locale: string;
+  html: string;
+  css: string;
+  fonts: TemplateFontInput[];
+  images: TemplateImageInput[];
+}
+
+// ---- Document template files (template ⇄ file join records) ---------------
+
+export type DocumentTemplateFileType = "image" | "font";
+
+export interface DocumentTemplateFile {
+  id: string;
+  documentTemplateId: string;
+  fileId: string;
+  type: DocumentTemplateFileType;
+  key?: string;
+  fontName?: string;
+  fontWeight?: number;
+  createdAt?: string;
+  createdBy?: string;
+}
+export interface DocumentTemplateFilesListResponse {
+  data: DocumentTemplateFile[];
+  pagination?: Pagination;
+}
+export interface DocumentTemplateFileResponse {
+  data: DocumentTemplateFile;
+}
+
+// ---- Files ----------------------------------------------------------------
+export type FileType = "image" | "font";
+
+export type FileExtension = "png" | "jpg" | "ttf";
+
+export interface File {
+  id: string;
+  label: MultiLanguageLabel;
+  extension: string;
+  type: string;
+  mime: string;
+  published: boolean;
+  accessKey: string;
+  basePath: string;
+  size: number;
+  hash: string;
+  preview?: string;
+  height?: number;
+  width?: number;
+  meta?: { [key: string]: string };
+  createdAt: string;
+  createdBy: string;
+  deletedAt?: string | null;
+  deletedBy?: string | null;
+}
+
+export interface FilesListResponse {
+  data: File[];
+  pagination?: Pagination;
+}
+
+export interface FileSearchParams {
+  q?: string;
+  extension?: FileExtension[];
+  type?: FileType[];
+  published?: boolean[];
+  basePath?: string[];
+  limit?: number;
+  offset?: string;
+}
+
+export interface FileSearchResponseParams {
+  q?: string | null;
+  extension?: FileExtension[] | null;
+  type?: FileType[] | null;
+  published?: boolean[] | null;
+  basePath?: string[] | null;
+}
+
+export interface FilesSearchResponse {
+  data: File[];
+  pagination?: Pagination;
+  search?: FileSearchResponseParams;
+}
+
+export interface FileResponse {
+  data: File;
+}
+export interface FileLinkRequest {
+  /** Lifetime of the link in seconds (max 31536000). */
+  expiresIn?: number;
+}
+
+export interface FileLinkResponse {
+  url: string;
+  expiresAt?: string;
 }
 
 // ---- Taxes ----------------------------------------------------------------

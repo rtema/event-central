@@ -70,3 +70,17 @@ export function fileToBase64(file: File): Promise<string> {
     reader.readAsDataURL(file);
   });
 }
+
+/** Human-readable file size (1024-based) in the active locale. */
+export function formatBytes(bytes?: number | null): string {
+  if (bytes == null || Number.isNaN(bytes)) return "—";
+  if (bytes < 1024) return `${bytes} B`;
+  const units = ["KB", "MB", "GB", "TB"];
+  let value = bytes / 1024;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  return `${formatNumber(Math.round(value * 10) / 10)} ${units[unit]}`;
+}

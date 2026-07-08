@@ -21,6 +21,7 @@ from sqlalchemy.orm import Session
 
 from src.config import settings
 from src.core.errors import ForbiddenError, NotFoundError
+from src.core.schemas import make_multilanguage_label
 from src.core.scopes import (
     SCOPE_INVOICES_WRITE_ALL,
     SCOPE_INVOICES_WRITE_OWN,
@@ -169,14 +170,6 @@ def _actor_identity(actor: AuthenticatedActor | str | None) -> tuple[str | None,
     return actor.sub, set(getattr(actor, "scopes", set()))
 
 
-def _multilanguage_label(value: str | dict[str, Any] | None) -> dict[str, str]:
-    if value is None:
-        return {}
-    if isinstance(value, dict):
-        return {k: v for k, v in value.items() if v is not None}
-    return {"de": value, "en": value}
-
-
 def _supplier_snapshot(req: InvoiceCreateRequest) -> dict[str, Any]:
     """Resolve the supplier from the request, falling back to configured defaults."""
     supplied = req.supplier.model_dump(
@@ -238,7 +231,7 @@ def _party_from_recipient(snapshot: dict[str, Any]) -> Party:
     )
 
 
-def _upsert_event(
+def _resolve_event(
     db: Session, event_id: str, event_in: Any, actor_sub: str | None
 ) -> Event:
     """Find the event or create it on the fly from the embedded event object."""
@@ -247,7 +240,7 @@ def _upsert_event(
         # Enrich an existing event with any newly-supplied label/dates.
         if event_in is not None:
             if getattr(event_in, "label", None) and not event.label:
-                event.label = _multilanguage_label(event_in.label)
+                event.label = make_multilanguage_label(event_in.label)
             if getattr(event_in, "start_dt", None) and event.start_dt is None:
                 event.start_dt = event_in.start_dt
             if getattr(event_in, "end_dt", None) and event.end_dt is None:
@@ -256,7 +249,7 @@ def _upsert_event(
 
     event = Event(
         id=event_id,
-        label=_multilanguage_label(getattr(event_in, "label", None)) or {
+        label=make_multilanguage_label(getattr(event_in, "label", None)) or {
             "de": event_id},
         start_dt=getattr(event_in, "start_dt", None),
         end_dt=getattr(event_in, "end_dt", None),
@@ -367,7 +360,7 @@ def _resolve_tax_rates(
         created = Tax(
             external_id=tax_rate.external_id,
             rate=rate,
-            label=_multilanguage_label(tax_rate.label),
+            label=make_multilanguage_label(tax_rate.label),
             type=tax_rate.type,
             tax_exemption_reason=tax_rate.tax_exemption_reason,
             created_by=actor_sub or "system",
@@ -462,7 +455,7 @@ def _generate_and_store_documents(
     doc: InvoiceDocument,
     document_template: DocumentTemplate,
 ) -> tuple[bytes, bytes]:
-    """Render the artefacts, write them to storage and set the key columns."""
+    """Render the artifacts, write them to storage and set the key columns."""
     pdf_bytes, xml_bytes = build_documents(
         doc,
         document_template,
@@ -541,12 +534,7 @@ def create_invoice(
     # Resolve the event_id from the nested object
     event_id = req.event.id
 
-    # Check if event exists
-
-    # Create/or Update event
-
-    # Assign the necessary scopes if the user newly created the event
-    # build_scope("invoices", "write", event_id),
+    # TODO: Assign the necessary scopes if the event does not exist
 
     # Per-event authorization: invoices:write:{all|own|<eventId>}.
     required = [
@@ -560,8 +548,8 @@ def create_invoice(
             error="insufficient_scope",
         )
 
-    # Upsert event +
-    event = _upsert_event(db, event_id, req.event, actor_sub)
+    # resolve/create event
+    event = _resolve_event(db, event_id, req.event, actor_sub)
 
     # resolve/create order.
     order = _resolve_order(db, event_id, req, actor_sub)
@@ -571,7 +559,7 @@ def create_invoice(
 
     # resolve/create document template
     document_template = resolve_document_template(
-        db, req.invoice_template, actor_sub)
+        db, req.invoice_template, req.locale, actor_sub)
 
     # Numbering within the accounting entity (serialised by advisory lock).
     ae = req.accounting_entity

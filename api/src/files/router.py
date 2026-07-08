@@ -22,15 +22,29 @@ import re
 import uuid
 from functools import lru_cache
 from pathlib import Path
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, Header, Query, Response
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
 
-from src.core.deps import get_db
+from src.auth.deps import AuthenticatedActor, require_all_scopes
+from src.config import settings
+from src.core.deps import PageParams, get_db, page_params
+from src.core.schemas import make_pagination
+from src.core.scopes import SCOPE_FILES_READ_ALL
 from src.core.security import verify_download_token
+from src.files import service
 from src.files.models import File
-from src.files.service import get_file_by_access_key, storage_key_for_file
+from src.files.schemas import (
+    FileLinkRequest,
+    FileLinkResponse,
+    FileOut,
+    FileResponse,
+    FileSearchParams,
+    FilesListResponse,
+    FilesSearchResponse,
+)
 from src.invoices.exports import content_type_for
 from src.invoices.service import get_invoice
 from src.jobs.models import Job
@@ -46,7 +60,6 @@ router = APIRouter(prefix="/api/v1/files", tags=["Files"])
 # --------------------------------------------------------------------------- #
 
 _ERROR_PAGES_DIR = (Path(__file__).resolve().parent / "error_pages").resolve()
-_DEFAULT_LOCALE = "en"
 # Whitelist of language tags ("en", "en-US", "pt_BR"). No slashes or dots, so a
 # crafted value can never traverse out of the error_pages directory.
 _LOCALE_RE = re.compile(r"^[a-z]{2}(?:[-_][a-z0-9]{2,8})?$", re.IGNORECASE)
@@ -54,7 +67,7 @@ _LOCALE_RE = re.compile(r"^[a-z]{2}(?:[-_][a-z0-9]{2,8})?$", re.IGNORECASE)
 
 def _normalize_locale(locale: str | None) -> str:
     locale = (locale or "").strip()
-    return locale if _LOCALE_RE.match(locale) else _DEFAULT_LOCALE
+    return locale if _LOCALE_RE.match(locale) else settings.default_locale
 
 
 def _resolve_locale(locale: str | None, accept_language: str | None) -> str:
@@ -64,7 +77,7 @@ def _resolve_locale(locale: str | None, accept_language: str | None) -> str:
     if accept_language:
         primary = accept_language.split(",", 1)[0].split(";", 1)[0]
         return _normalize_locale(primary)
-    return _DEFAULT_LOCALE
+    return settings.default_locale
 
 
 @lru_cache(maxsize=64)
@@ -77,15 +90,15 @@ def _render_page(kind: str, locale: str) -> str:
     artifact. Cached for the process lifetime (restart to pick up edits).
     """
     candidates = [locale]
-    base = re.split(r"[-_]", locale, 1)[0]
+    base = re.split(r"[-_]", locale, maxsplit=1)[0]
     if base != locale:
         candidates.append(base)
-    if _DEFAULT_LOCALE not in candidates:
-        candidates.append(_DEFAULT_LOCALE)
+    if settings.default_locale not in candidates:
+        candidates.append(settings.default_locale)
 
-    for cand in candidates:
-        path = (_ERROR_PAGES_DIR / f"{kind}-{cand}.html").resolve()
-        # Defence in depth: the resolved path must stay directly inside the dir.
+    for candidate in candidates:
+        path = (_ERROR_PAGES_DIR / f"{kind}-{candidate}.html").resolve()
+        # Defense in depth: the resolved path must stay directly inside the dir.
         if path.parent == _ERROR_PAGES_DIR and path.is_file():
             return path.read_text(encoding="utf-8")
 
@@ -100,7 +113,7 @@ def _render_page(kind: str, locale: str) -> str:
 _INLINE_MIMES = {"application/pdf"}
 
 
-def _expired_page(locale: str = _DEFAULT_LOCALE) -> HTMLResponse:
+def _expired_page(locale: str = settings.default_locale) -> HTMLResponse:
     return HTMLResponse(
         content=_render_page("expired", _normalize_locale(locale)),
         status_code=401,
@@ -110,19 +123,19 @@ def _expired_page(locale: str = _DEFAULT_LOCALE) -> HTMLResponse:
 def _safe_download_name(file: File) -> str:
     """Build a header-safe download filename from the (untrusted) label."""
     label = ""
-    if isinstance(file.label, dict) and file.label:
+    if isinstance(file.label, dict) and file.label:  # type: ignore
         label = file.label.get("en") or next(iter(file.label.values()), "")
     base = re.sub(r"[^A-Za-z0-9._-]", "_", str(label)
                   ).strip("._") or "download"
     return f"{base}.{file.extension}"
 
 
-def _serve_file(file: File, locale: str = _DEFAULT_LOCALE) -> Response:
+def _serve_file(file: File, locale: str = settings.default_locale) -> Response:
     """Stream a stored File's bytes with conservative, sniff-proof headers."""
     from src.storage.s3 import get_storage
 
     try:
-        data = get_storage().get(storage_key_for_file(file, "original"))
+        data = get_storage().get(service.storage_key_for_file(file))
     except Exception:
         data = None
     if not data:
@@ -141,23 +154,95 @@ def _serve_file(file: File, locale: str = _DEFAULT_LOCALE) -> Response:
     )
 
 
-@router.get(
-    "/public/{access_key}",
-    tags=["Files"],
-    summary="Access a public file",
-)
-def get_public_file(
-    access_key: str,
-    locale: str | None = Query(None),
-    accept_language: str | None = Header(None, alias="Accept-Language"),
+@router.get("", response_model=FilesListResponse, summary="List files")
+def list_files(
+    page: PageParams = Depends(page_params),
     db: Session = Depends(get_db),
-) -> Response:
-    loc = _resolve_locale(locale, accept_language)
-    file = get_file_by_access_key(db, access_key)
-    if file is None or not file.published:
-        # Same response whether the key is missing or simply not published.
-        return _expired_page(loc)
-    return _serve_file(file, loc)
+    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_FILES_READ_ALL)),
+) -> FilesListResponse:
+    files, total = service.list_files(db, limit=page.limit, offset=page.offset)
+    return FilesListResponse(
+        data=[FileOut.model_validate(f) for f in files],
+        pagination=make_pagination(
+            total, limit=page.limit, offset=page.offset),
+    )
+
+
+@router.get("/search", response_model=FilesSearchResponse, summary="Search files")
+def search_files(
+    page: Annotated[PageParams, Depends(page_params)],
+    search_params: Annotated[FileSearchParams, Query()],
+    db: Session = Depends(get_db),
+    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_FILES_READ_ALL)),
+) -> FilesSearchResponse:
+    files, total = service.search_files(
+        db, limit=page.limit, offset=page.offset, search_params=search_params
+    )
+    return FilesSearchResponse(
+        data=[FileOut.model_validate(f) for f in files],
+        pagination=make_pagination(
+            total, limit=page.limit, offset=page.offset),
+        search=search_params,
+    )
+
+
+@router.get(
+    "/{file_id}",
+    response_model=FileResponse,
+    summary="Get a file"
+)
+def get_file(
+    file_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_FILES_READ_ALL)),
+) -> FileResponse:
+    return FileResponse(data=FileOut.model_validate(service.get_file(db, file_id)))
+
+@router.patch(
+    "/{file_id}",
+    response_model=FileResponse,
+    summary="Get a file"
+)
+def patch_file(
+    file_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_FILES_READ_ALL)),
+) -> FileResponse:
+    return FileResponse(data=FileOut.model_validate(service.get_file(db, file_id)))
+
+
+@router.post(
+    "/{file_id}/link",
+    response_model=FileLinkResponse,
+    summary="Create a signed link to view/download",
+)
+def create_file_link(
+    file_id: uuid.UUID,
+    body: FileLinkRequest,
+    db: Session = Depends(get_db),
+    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_FILES_READ_ALL)),
+) -> FileLinkResponse:
+    return service.create_link(
+        db, file_id, expires_in=body.expires_in
+    )
+
+# @router.get(
+#     "/public/{access_key}",
+#     tags=["Files"],
+#     summary="Access a public file",
+# )
+# def get_public_file(
+#     access_key: str,
+#     locale: str | None = Query(None),
+#     accept_language: str | None = Header(None, alias="Accept-Language"),
+#     db: Session = Depends(get_db),
+# ) -> Response:
+#     loc = _resolve_locale(locale, accept_language)
+#     file = get_file_by_access_key(db, access_key)
+#     if file is None or not file.published:
+#         # Same response whether the key is missing or simply not published.
+#         return _expired_page(loc)
+#     return _serve_file(file, loc)
 
 
 @router.get(
@@ -168,18 +253,16 @@ def get_public_file(
 def get_private_file(
     access_key: str,
     signed_token: str = Query(..., alias="signedToken"),
-    locale: str | None = Query(None),
-    accept_language: str | None = Header(None, alias="Accept-Language"),
     db: Session = Depends(get_db),
 ) -> Response:
-    resource = f"files/{access_key}"
+    resource = f"files/private/{access_key}"
     if not verify_download_token(signed_token, resource=resource):
-        return _expired_page(loc)
+        return _expired_page(settings.default_locale)
 
-    file = get_file_by_access_key(db, access_key)
+    file = service.get_file_by_access_key(db, access_key)
     if file is None:
-        return _expired_page(loc)
-    return _serve_file(file, loc)
+        return _expired_page(settings.default_locale)
+    return _serve_file(file, settings.default_locale)
 
 
 @router.get(

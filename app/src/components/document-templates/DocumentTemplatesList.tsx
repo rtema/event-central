@@ -16,13 +16,13 @@ import { notifications } from "@mantine/notifications";
 import {
   IconFileCode,
   IconPlus,
-  IconTemplate,
+  IconTemplate
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useSWRConfig } from "swr";
 import { toRequestError } from "../../api/client";
-import { templatesApi } from "../../api/templates";
+import { documentTemplatesApi } from "../../api/documentTemplates";
 import {
   assetsToPayload,
   TemplateAssetsFields,
@@ -31,7 +31,7 @@ import {
 import {
   invKeys,
   useDocumentTemplates,
-  usePublicTemplates,
+  usePublicDocumentTemplates
 } from "../invoices/invoicingHooks";
 import { QueryState } from "../ui/QueryState";
 import { formatDateTime } from "../utils/datetime";
@@ -53,7 +53,18 @@ function CreatePublicTemplateModal({
   const [saving, setSaving] = useState(false);
 
   const form = useForm<CreateValues>({
-    initialValues: { id: "", html: "", css: "", images: [], fonts: [] },
+    initialValues: {
+      id: "",
+      locale: "",
+      label: {
+        "de": "",
+        "en": ""
+      },
+      html: "",
+      css: "",
+      images: [],
+      fonts: []
+    },
     validate: {
       id: (v) =>
         /^[a-z0-9_-]+$/.test(v)
@@ -66,11 +77,11 @@ function CreatePublicTemplateModal({
     if (form.validate().hasErrors) return;
     setSaving(true);
     try {
-      const created = await templatesApi.createPublic({
+      const created = await documentTemplatesApi.createPublic({
         id: form.values.id,
         ...assetsToPayload(form.values),
       });
-      void mutate(invKeys.publicTemplates());
+      void mutate(invKeys.publicDocumentTemplates());
       notifications.show({
         color: "pine",
         title: t`Template created`,
@@ -118,10 +129,10 @@ function CreatePublicTemplateModal({
   );
 }
 
-function PublicTemplatesTab() {
+function PublicDocumentTemplatesTab() {
   const { i18n } = useLingui();
   const navigate = useNavigate();
-  const { data, error, isLoading } = usePublicTemplates();
+  const { data, error, isLoading } = usePublicDocumentTemplates();
   const [createOpen, setCreateOpen] = useState(false);
   const templates = data ?? [];
 
@@ -197,7 +208,7 @@ function PublicTemplatesTab() {
   );
 }
 
-function RenderedTemplatesTab() {
+function RenderedDocumentTemplatesTab() {
   const navigate = useNavigate();
   const { i18n } = useLingui();
   const { data, error, isLoading } = useDocumentTemplates();
@@ -282,10 +293,10 @@ export function DocumentTemplatesList() {
           </Tabs.Tab>
         </Tabs.List>
         <Tabs.Panel value="public" pt="lg">
-          <PublicTemplatesTab />
+          <PublicDocumentTemplatesTab />
         </Tabs.Panel>
         <Tabs.Panel value="rendered" pt="lg">
-          <RenderedTemplatesTab />
+          <RenderedDocumentTemplatesTab />
         </Tabs.Panel>
       </Tabs>
     </Stack>

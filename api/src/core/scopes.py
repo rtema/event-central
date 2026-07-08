@@ -48,6 +48,10 @@ SCOPE_PAYMENTS_READ_OWN = "payments:read:own"
 SCOPE_PAYMENTS_WRITE_ALL = "payments:write:all"
 SCOPE_PAYMENTS_WRITE_OWN = "payments:write:own"
 
+# Files
+SCOPE_FILES_READ_ALL = "files:read:all"
+SCOPE_FILES_WRITE_ALL = "files:write:all"
+
 # Emails (read-only, reserved for a later feature)
 SCOPE_EMAILS_READ_ALL = "emails:read:all"
 

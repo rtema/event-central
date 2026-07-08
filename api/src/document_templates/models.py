@@ -48,6 +48,9 @@ class DocumentTemplate(Base, CreatedAtMixin, CreatedByMixin):
         String(128), nullable=True, index=True
     )
 
+    locale: Mapped[str] = mapped_column(
+        String(2), nullable=False, default="de")
+
     html: Mapped[str | None] = mapped_column(Text, nullable=True)
     css: Mapped[str | None] = mapped_column(Text, nullable=True)
 
@@ -76,6 +79,9 @@ class PublicDocumentTemplate(
         ForeignKey("document_templates.id", ondelete="SET NULL"),
         nullable=True,
     )
+
+    locale: Mapped[str] = mapped_column(
+        String(2), nullable=False, default="de")
 
     # MultiLanguageLabel
     label: Mapped[dict[str, str]] = mapped_column(
@@ -108,7 +114,7 @@ class DocumentTemplateFile(Base, CreatedAtMixin, CreatedByMixin):
 
     # Key
     # the templates are jinja templates that will be rendered using weasyprint
-    # files can be referenced by {{ image.key }} and fonts by {{ font.key }}
+    # files can be referenced by {{ images.key }} and fonts by {{ font.key }}
     # Therefore this key only needs to unique within a single template
     key: Mapped[str] = mapped_column(String(2048), nullable=True, default=None)
 
@@ -116,7 +122,7 @@ class DocumentTemplateFile(Base, CreatedAtMixin, CreatedByMixin):
     font_name: Mapped[str] = mapped_column(
         String(256), nullable=True, default=None)
 
-    # Name of the font
+    # Weight of the font
     font_weight: Mapped[int] = mapped_column(
         Integer, nullable=True, default=None)
 

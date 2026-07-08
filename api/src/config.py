@@ -168,6 +168,9 @@ class Settings(BaseSettings):
     # HTTP Basic credentials "user:pass" base64 or token
     openobserve_token: str | None = None
 
+    # -- Localization --------------------------------------------------------
+    default_locale: str = "en"
+
     @property
     def is_production(self) -> bool:
         return self.environment == "production"

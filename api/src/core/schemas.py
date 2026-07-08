@@ -6,7 +6,8 @@ import base64
 import binascii
 from typing import Annotated, Literal
 
-from pydantic import AfterValidator, BaseModel, ConfigDict
+from alembic.environment import Any
+from pydantic import AfterValidator, BaseModel, BeforeValidator, ConfigDict
 from pydantic.alias_generators import to_camel
 
 Locale = Literal["de", "en"]
@@ -62,6 +63,32 @@ class Pagination(CamelModel):
 def make_pagination(total: int, *, limit: int, offset: int) -> Pagination:
     return Pagination(total=total, limit=limit, current_offset=offset)
 
+def split_comma_separated_list(value: Any) -> list[str] | None:
+    """Normalize a comma-separated query value into a clean list.
+
+    Handles both wire formats:
+      "png,jpg"            -> ["png", "jpg"]   (comma-separated, one param)
+      ["png", "jpg"]       -> ["png", "jpg"]   (repeated ?ext=png&ext=jpg)
+      "a, b ,, c"          -> ["a", "b", "c"]  (trims, drops empties)
+      None / "" / ","      -> None
+    """
+    if value is None:
+        return None
+    if isinstance(value, str):
+        value = [value]
+    items = [part.strip() for chunk in value for part in chunk.split(",")] # type: ignore
+    items: list[str] = [item for item in items if item]
+    return items or None
+
+
+CommaSeparatedListStr = Annotated[list[str] | None, BeforeValidator(split_comma_separated_list)]
+
+def make_multilanguage_label(value: str | dict[str, Any] | None) -> dict[str, str]:
+    if value is None:
+        return {}
+    if isinstance(value, dict):
+        return {k: v for k, v in value.items() if v is not None}
+    return {"de": value, "en": value}
 
 class InvoiceSupplier(CamelModel):
     """Supplier (issuer) of the goods/services. Shared value object."""
