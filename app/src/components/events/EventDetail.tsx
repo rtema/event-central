@@ -4,8 +4,9 @@ import { IconArrowLeft } from "@tabler/icons-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router";
+import { listLinkWithFilters } from "../utils/listQuery";
 import type { Order } from "../../api/types";
-import { useEvent, useEventOrders } from "../invoices/invoicingHooks";
+import { useEvent, useEventOrders } from "../../api/hooks";
 import { DataTable } from "../ui/DataTable";
 import { FieldGrid } from "../ui/FieldGrid";
 import { QueryState } from "../ui/QueryState";
@@ -35,7 +36,7 @@ export function EventDetail() {
       {
         id: "recipient",
         header: t`Recipient`,
-        accessorFn: (o) => `${o.recipient?.contactLastname} ${o.recipient?.contactLastname}`,
+        accessorFn: (o) => `${o.recipient?.contactFirstname} ${o.recipient?.contactLastname}`,
         cell: (info) => <Text size="sm">{info.getValue<string>() || "—"}</Text>,
       },
       {
@@ -57,7 +58,7 @@ export function EventDetail() {
 
   return (
     <Stack>
-      <Anchor component={Link} to={`/${i18n.locale}/events`} size="sm">
+      <Anchor component={Link} to={listLinkWithFilters(`/${i18n.locale}/events`, "events")} size="sm">
         <Group gap={4}>
           <IconArrowLeft size={14} />
           <Trans>Back to events</Trans>

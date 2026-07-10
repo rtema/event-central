@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import datetime as dt
 import uuid
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import EmailStr
+from pydantic import BeforeValidator, EmailStr, Field
 
-from src.core.schemas import CamelModel
+from src.core.schemas import CamelModel, Pagination, split_comma_separated_list
 
+UserTitle = Literal["dr", "dr-ing", "prof", "prof-dr", "prof-dr-ing", "phd"]
+UserSalutation = Literal["mr", "ms", "mx"]
 AuthMethod = Literal["api-token", "password",
                      "backup-code", "passwordless", "otp"]
 
@@ -34,6 +36,29 @@ class UserResponse(CamelModel):
 
 class UsersListResponse(CamelModel):
     data: list[UserOut]
+    pagination: Pagination
+
+
+class UserSearchParams(CamelModel):
+    q: str | None = Field(
+        default=None, description="Generic free-text search term")
+
+    title: Annotated[list[UserTitle] | None,
+                     BeforeValidator(split_comma_separated_list)] = Field(
+        default=None,
+        description="Comma-separated titles, e.g. dr,dr-ing,prof,prof-dr,prof-dr-ing,phd"
+    )
+    salutation: Annotated[list[UserSalutation] | None,
+                          BeforeValidator(split_comma_separated_list)] = Field(
+        default=None,
+        description="Comma-separated salutations, e.g. mr,ms,mx"
+    )
+
+
+class UsersSearchResponse(CamelModel):
+    data: list[UserOut]
+    pagination: Pagination
+    search: UserSearchParams
 
 
 class UsersCreateRequest(CamelModel):

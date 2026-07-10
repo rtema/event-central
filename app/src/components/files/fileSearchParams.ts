@@ -18,8 +18,8 @@ function splitCsv(value: string | null): string[] {
 
 /** Read the structured filters out of the address bar. */
 export function paramsFromUrl(sp: URLSearchParams): FileSearchParams {
-  const extension = splitCsv(sp.get("extension")).filter((e): e is FileExtension =>
-    (EXTENSIONS as string[]).includes(e),
+  const extension = splitCsv(sp.get("extension")).filter(
+    (e): e is FileExtension => (EXTENSIONS as string[]).includes(e),
   );
   const type = splitCsv(sp.get("type")).filter((t): t is FileType =>
     (TYPES as string[]).includes(t),
@@ -56,9 +56,9 @@ export function paramsToUrl(params: FileSearchParams): URLSearchParams {
 export function hasActiveFilters(params: FileSearchParams): boolean {
   return Boolean(
     params.q ||
-      params.extension?.length ||
-      params.type?.length ||
-      params.published?.length ||
-      params.basePath?.length,
+    params.extension?.length ||
+    params.type?.length ||
+    params.published?.length ||
+    params.basePath?.length,
   );
 }

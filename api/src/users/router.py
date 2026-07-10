@@ -6,13 +6,14 @@ Note: the spec uses POST (not PUT/PATCH) for the update/set operations.
 from __future__ import annotations
 
 import uuid
-from typing import Any
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Body, Depends, status
+from fastapi import APIRouter, Body, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from src.auth.deps import AuthenticatedActor, require_all_scopes
-from src.core.deps import get_db
+from src.core.deps import PageParams, get_db, page_params
+from src.core.schemas import make_pagination
 from src.core.scopes import SCOPE_USERS_READ_ALL, SCOPE_USERS_WRITE_ALL
 from src.users import service
 from src.users.models import UserAuth, UserData
@@ -31,7 +32,9 @@ from src.users.schemas import (
     UserScopesListResponse,
     UserScopesUpdateRequest,
     UsersCreateRequest,
+    UserSearchParams,
     UsersListResponse,
+    UsersSearchResponse,
     UserUpdateRequest,
 )
 
@@ -53,10 +56,34 @@ def _user_data_out(record: UserData) -> UserDataOut:
 # --------------------------------------------------------------------------- #
 @router.get("", response_model=UsersListResponse, summary="List users")
 def list_users(
+    page: PageParams = Depends(page_params),
     db: Session = Depends(get_db),
     _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_USERS_READ_ALL))
 ) -> UsersListResponse:
-    return UsersListResponse(data=[UserOut.model_validate(u) for u in service.list_users(db)])
+    users, total = service.list_users(db, limit=page.limit, offset=page.offset)
+    return UsersListResponse(
+        data=[UserOut.model_validate(u) for u in users],
+        pagination=make_pagination(
+            total, limit=page.limit, offset=page.offset),
+    )
+
+
+@router.get("/search", response_model=UsersSearchResponse, summary="Search users")
+def search_users(
+    page: Annotated[PageParams, Depends(page_params)],
+    search_params: Annotated[UserSearchParams, Query()],
+    db: Session = Depends(get_db),
+    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_USERS_READ_ALL))
+) -> UsersSearchResponse:
+    users, total = service.search_users(
+        db, limit=page.limit, offset=page.offset, search_params=search_params
+    )
+    return UsersSearchResponse(
+        data=[UserOut.model_validate(u) for u in users],
+        pagination=make_pagination(
+            total, limit=page.limit, offset=page.offset),
+        search=search_params,
+    )
 
 
 @router.post(

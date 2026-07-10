@@ -18,6 +18,11 @@ import {
 import { useState } from "react";
 import { Link, useParams } from "react-router";
 import { toRequestError } from "../../api/client";
+import {
+  useInvoice,
+  useInvoiceLineItems,
+  useInvoiceTaxes,
+} from "../../api/hooks";
 import { invoicesApi } from "../../api/invoices";
 import type { InvoiceFileType } from "../../api/types";
 import { FieldGrid } from "../ui/FieldGrid";
@@ -25,11 +30,7 @@ import { QueryState } from "../ui/QueryState";
 import { InvoiceTypeBadge } from "../ui/StatusBadge";
 import { formatDateTime } from "../utils/datetime";
 import { formatMoney, formatNumber, localizedLabel } from "../utils/format";
-import {
-  useInvoice,
-  useInvoiceLineItems,
-  useInvoiceTaxes,
-} from "./invoicingHooks";
+import { listLinkWithFilters } from "../utils/listQuery";
 
 export function InvoiceDetail() {
   const { t, i18n } = useLingui();
@@ -62,7 +63,7 @@ export function InvoiceDetail() {
 
   return (
     <Stack>
-      <Anchor component={Link} to={`/${i18n.locale}/invoices`} size="sm">
+      <Anchor component={Link} to={listLinkWithFilters(`/${i18n.locale}/invoices`, "invoices")} size="sm">
         <Group gap={4}>
           <IconArrowLeft size={14} />
           <Trans>Back to invoices</Trans>

@@ -27,17 +27,18 @@ import {
 } from "@tabler/icons-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
+import { useFileSearch } from "../../api/hooks";
 import type {
+  File,
   FileExtension,
   FileSearchParams,
   FileType,
-  File,
 } from "../../api/types";
 import { Pager } from "../ui/Pager";
 import { QueryState } from "../ui/QueryState";
 import { formatDateTime } from "../utils/datetime";
 import { formatBytes, localizedLabel } from "../utils/format";
-import { useFileSearch } from "../invoices/invoicingHooks";
+import { saveListQuery } from "../utils/listQuery";
 import {
   hasActiveFilters,
   paramsFromUrl,
@@ -78,6 +79,12 @@ export function FilesList() {
     () => paramsFromUrl(searchParams),
     [searchParams],
   );
+
+  // Mirror the canonical query into localStorage so the "Back to files" link on
+  // detail pages can return to this exact filtered view.
+  useEffect(() => {
+    saveListQuery("files", paramsToUrl(params));
+  }, [params]);
 
   // Free-text box is debounced before it hits the URL.
   const [qInput, setQInput] = useState(params.q ?? "");
@@ -234,6 +241,15 @@ export function FilesList() {
             </Stack>
           }
         >
+          <Pager
+            limit={LIMIT}
+            offset={offset}
+            count={files.length}
+            pagination={data?.pagination}
+            onChange={(next) =>
+              commit({ ...params, offset: next ? String(next) : undefined })
+            }
+          />
           <Table.ScrollContainer minWidth={820}>
             <Table verticalSpacing="sm" highlightOnHover>
               <Table.Thead>
@@ -340,15 +356,6 @@ export function FilesList() {
               </Table.Tbody>
             </Table>
           </Table.ScrollContainer>
-          <Pager
-            limit={LIMIT}
-            offset={offset}
-            count={files.length}
-            pagination={data?.pagination}
-            onChange={(next) =>
-              commit({ ...params, offset: next ? String(next) : undefined })
-            }
-          />
         </QueryState>
       </Paper>
     </Stack>

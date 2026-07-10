@@ -22,11 +22,12 @@ import {
   IconTypography,
 } from "@tabler/icons-react";
 import { Link, useParams } from "react-router";
+import { listLinkWithFilters } from "../utils/listQuery";
 import { FieldGrid } from "../ui/FieldGrid";
 import { QueryState } from "../ui/QueryState";
 import { formatDateTime } from "../utils/datetime";
 import { formatBytes, localizedLabel } from "../utils/format";
-import { useFile } from "../invoices/invoicingHooks";
+import { useFile } from "../../api/hooks";
 import { useOpenFile } from "./useFileActions";
 
 function HashValue({ value }: { value: string }) {
@@ -64,7 +65,7 @@ export function FileDetail() {
 
   return (
     <Stack maw={960} mx="auto" w="100%">
-      <Anchor component={Link} to={`/${i18n.locale}/files`} size="sm">
+      <Anchor component={Link} to={listLinkWithFilters(`/${i18n.locale}/files`, "files")} size="sm">
         <Group gap={4}>
           <IconArrowLeft size={14} />
           <Trans>Back to files</Trans>

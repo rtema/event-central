@@ -4,8 +4,8 @@ import { IconCash } from "@tabler/icons-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { Link } from "react-router";
+import { usePayments } from "../../api/hooks";
 import type { Payment } from "../../api/types";
-import { usePayments } from "../invoices/invoicingHooks";
 import { DataTable } from "../ui/DataTable";
 import { Pager } from "../ui/Pager";
 import { QueryState } from "../ui/QueryState";
@@ -106,18 +106,18 @@ export function PaymentsList() {
             </Stack>
           }
         >
-          <DataTable
-            data={payments}
-            columns={columns}
-            initialSorting={[{ id: "createdAt", desc: true }]}
-            minWidth={720}
-          />
           <Pager
             limit={LIMIT}
             offset={offset}
             count={payments.length}
             pagination={data?.pagination}
             onChange={setOffset}
+          />
+          <DataTable
+            data={payments}
+            columns={columns}
+            initialSorting={[{ id: "createdAt", desc: true }]}
+            minWidth={720}
           />
         </QueryState>
       </Paper>

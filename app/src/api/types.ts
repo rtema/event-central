@@ -84,6 +84,16 @@ export interface AuthPasswordResetConfirmRequest {
 
 // ---- Users ----------------------------------------------------------------
 
+export type UserTitle =
+  | "dr"
+  | "dr-ing"
+  | "prof"
+  | "prof-dr"
+  | "prof-dr-ing"
+  | "phd";
+
+export type UserSalutation = "mr" | "ms" | "mx";
+
 export interface User {
   id: string;
   email: string;
@@ -100,6 +110,26 @@ export interface UserResponse {
 }
 export interface UsersListResponse {
   data: User[];
+  pagination?: Pagination;
+}
+export interface UserSearchParams {
+  q?: string;
+  title?: UserTitle[];
+  salutation?: UserSalutation[];
+  limit?: number;
+  offset?: string;
+}
+
+export interface UserSearchResponseParams {
+  q?: string | null;
+  title?: UserTitle[] | null;
+  salutation?: UserSalutation[] | null;
+}
+
+export interface UsersSearchResponse {
+  data: User[];
+  pagination?: Pagination;
+  search?: UserSearchResponseParams;
 }
 
 export interface UsersCreateRequest {
@@ -156,6 +186,7 @@ export interface UserAuth {
 }
 /** Note: per the spec these endpoints return the object directly (no `data` wrapper). */
 export type UserAuthResponse = UserAuth;
+
 export interface UserAuthListResponse {
   data: UserAuth[];
 }
@@ -174,9 +205,11 @@ export interface UserScope {
   createdAt: string;
   deletedAt?: string | null;
 }
+
 export interface UserScopesListResponse {
   data: UserScope[];
 }
+
 export interface UserScopesUpdateRequest {
   scopes: string[];
 }
@@ -188,6 +221,7 @@ export interface UserData {
   changedBy: string;
   data: Record<string, unknown>;
 }
+
 export interface UserDataResponse {
   data: UserData;
 }
@@ -199,6 +233,7 @@ export interface UserDataHistoryItem {
   changedBy: string;
   newState: Record<string, unknown>;
 }
+
 export interface UserDataHistoryResponse {
   data: UserDataHistoryItem[];
 }
@@ -209,6 +244,7 @@ export interface Scope {
   scope: string;
   label?: MultiLanguageLabel;
 }
+
 export interface ScopesListResponse {
   data: Scope[];
 }
@@ -329,12 +365,37 @@ export interface InvoicesListResponse {
   data: Invoice[];
   pagination?: Pagination;
 }
+
+export interface InvoiceSearchParams {
+  q?: string;
+  accountingEntity?: string[];
+  invoiceType?: InvoiceType[];
+  locale?: Locale[];
+  limit?: number;
+  offset?: string;
+}
+
+export interface InvoiceSearchResponseParams {
+  q?: string | null;
+  accountingEntity?: string[] | null;
+  invoiceType?: InvoiceType[] | null;
+  locale?: Locale[] | null;
+}
+
+export interface InvoicesSearchResponse {
+  data: Invoice[];
+  pagination?: Pagination;
+  search?: InvoiceSearchResponseParams;
+}
+
 export interface InvoiceResponse {
   data: Invoice;
 }
+
 export interface InvoiceLineItemsListResponse {
   data: InvoiceLineItem[];
 }
+
 export interface InvoiceTaxesListResponse {
   data: Tax[];
 }
@@ -369,6 +430,7 @@ export interface TemplateFont {
   weight: number;
   file: string;
 }
+
 export interface TemplateImage {
   key: string;
   file?: string;
@@ -387,6 +449,7 @@ export interface TemplateFontInput {
   fileId?: string;
   file?: string;
 }
+
 export interface TemplateImageInput {
   key?: string;
   fileId?: string;
@@ -446,16 +509,19 @@ export interface InvoiceLinkRequest {
   fileType: InvoiceFileType;
   expiresIn?: number;
 }
+
 export interface InvoiceLinkResponse {
   url: string;
   expiresAt?: string;
 }
 
 export type InvoiceExportFormat = "xlsx" | "zip";
+
 export interface InvoiceExportRequest {
   accountingEntity?: string;
   format: InvoiceExportFormat;
 }
+
 export interface InvoicesExportResponse {
   url: string;
   expiresAt?: string;
@@ -472,10 +538,28 @@ export interface Event {
   updatedAt?: string;
   deletedAt?: string | null;
 }
+
 export interface EventsListResponse {
   data: Event[];
   pagination?: Pagination;
 }
+
+export interface EventSearchParams {
+  q?: string;
+  limit?: number;
+  offset?: string;
+}
+
+export interface EventSearchResponseParams {
+  q?: string | null;
+}
+
+export interface EventsSearchResponse {
+  data: Event[];
+  pagination?: Pagination;
+  search?: EventSearchResponseParams;
+}
+
 export interface EventResponse {
   data: Event;
 }
@@ -500,6 +584,28 @@ export interface OrdersListResponse {
   data: Order[];
   pagination?: Pagination;
 }
+
+export interface OrderSearchParams {
+  q?: string;
+  status?: OrderStatus[];
+  /** Comma-separated list of event ids to restrict the result to. */
+  event?: string[];
+  limit?: number;
+  offset?: string;
+}
+
+export interface OrderSearchResponseParams {
+  q?: string | null;
+  status?: OrderStatus[] | null;
+  event?: string[] | null;
+}
+
+export interface OrdersSearchResponse {
+  data: Order[];
+  pagination?: Pagination;
+  search?: OrderSearchResponseParams;
+}
+
 export interface OrderResponse {
   data: Order;
 }
@@ -521,13 +627,16 @@ export interface Payment {
   createdBy?: string;
   createdAt?: string;
 }
+
 export interface PaymentsListResponse {
   data: Payment[];
   pagination?: Pagination;
 }
+
 export interface PaymentResponse {
   data: Payment;
 }
+
 export interface PaymentCreateRequest {
   externalId?: string;
   provider?: string;
@@ -551,10 +660,12 @@ export interface DocumentTemplate {
   createdAt?: string;
   createdBy?: string;
 }
+
 export interface DocumentTemplatesListResponse {
   data: DocumentTemplate[];
   pagination?: Pagination;
 }
+
 export interface DocumentTemplateResponse {
   data: DocumentTemplate;
 }
@@ -568,13 +679,16 @@ export interface PublicDocumentTemplate {
   updatedAt?: string;
   deletedAt?: string | null;
 }
+
 export interface PublicDocumentTemplatesListResponse {
   data: PublicDocumentTemplate[];
   pagination?: Pagination;
 }
+
 export interface PublicDocumentTemplateResponse {
   data: PublicDocumentTemplate;
 }
+
 export interface PublicDocumentTemplateCreateRequest {
   id: string;
   locale: string;
@@ -607,10 +721,12 @@ export interface DocumentTemplateFile {
   createdAt?: string;
   createdBy?: string;
 }
+
 export interface DocumentTemplateFilesListResponse {
   data: DocumentTemplateFile[];
   pagination?: Pagination;
 }
+
 export interface DocumentTemplateFileResponse {
   data: DocumentTemplateFile;
 }
@@ -695,7 +811,14 @@ export interface Tax {
   createdAt?: string;
   createdBy?: string;
 }
+
 export interface TaxesListResponse {
   data: Tax[];
   pagination?: Pagination;
+}
+
+// ---- Accounting entities --------------------------------------------------
+
+export interface AccountingEntitiesListResponse {
+  data: string[];
 }

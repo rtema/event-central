@@ -1,25 +1,46 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
+  Badge,
   Button,
   Group,
   Modal,
+  MultiSelect,
   Paper,
   SimpleGrid,
   Stack,
+  Table,
   Text,
   TextInput,
   Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { useDebouncedValue } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { IconPlus, IconUserPlus } from "@tabler/icons-react";
-import { useState } from "react";
-import { useNavigate } from "react-router";
+import { IconPlus, IconSearch, IconUserPlus, IconX } from "@tabler/icons-react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router";
 import { toRequestError } from "../../api/client";
+import type {
+  User,
+  UserSalutation,
+  UserSearchParams,
+  UserTitle,
+} from "../../api/types";
 import { usersApi } from "../../api/users";
+import { Pager } from "../ui/Pager";
 import { QueryState } from "../ui/QueryState";
-import { useUserMutations, useUsers } from "../users/userHooks";
-import { UsersTable } from "../users/UsersTable";
+import { formatDate } from "../utils/datetime";
+import { saveListQuery } from "../utils/listQuery";
+import { useUserMutations, useUserSearch } from "./userHooks";
+import { hasActiveFilters, paramsFromUrl, paramsToUrl } from "./userSearchParams";
+
+const LIMIT = 100;
+
+function displayName(u: User): string {
+  return (
+    [u.title, u.firstName, u.lastName].filter(Boolean).join(" ") || u.email
+  );
+}
 
 function CreateUserModal({
   opened,
@@ -124,8 +145,43 @@ function CreateUserModal({
 }
 
 export function UsersList() {
-  const { data, error, isLoading } = useUsers();
+  const { t, i18n } = useLingui();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [open, setOpen] = useState(false);
+
+  // The address bar is the source of truth for all filters.
+  const params = useMemo(() => paramsFromUrl(searchParams), [searchParams]);
+
+  // Mirror the canonical query into localStorage so the "Back to users" link on
+  // detail pages can return to this exact filtered view.
+  useEffect(() => {
+    saveListQuery("users", paramsToUrl(params));
+  }, [params]);
+
+  // Free-text box is debounced before it hits the URL.
+  const [qInput, setQInput] = useState(params.q ?? "");
+  const [debouncedQ] = useDebouncedValue(qInput, 350);
+  useEffect(() => {
+    setQInput(params.q ?? "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.q]);
+  useEffect(() => {
+    if ((debouncedQ || "") === (params.q ?? "")) return;
+    commit({ ...params, q: debouncedQ || undefined, offset: undefined });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedQ]);
+
+  const offset = Number(params.offset ?? "0");
+  const { data, error, isLoading } = useUserSearch({ ...params, limit: LIMIT });
+  const users = data?.data ?? [];
+
+  // Any change resets pagination unless an explicit offset is supplied.
+  function commit(next: UserSearchParams) {
+    setSearchParams(paramsToUrl(next), { replace: true });
+  }
+
+  const activeFilters = hasActiveFilters(params);
 
   return (
     <Stack>
@@ -144,20 +200,149 @@ export function UsersList() {
       </Group>
 
       <Paper withBorder radius="md" p="md">
+        <Group align="flex-end" wrap="wrap" gap="sm">
+          <TextInput
+            label={t`Search`}
+            placeholder={t`Name or email…`}
+            leftSection={<IconSearch size={16} />}
+            value={qInput}
+            onChange={(e) => setQInput(e.currentTarget.value)}
+            style={{ flex: "1 1 240px" }}
+          />
+          <MultiSelect
+            label={t`Title`}
+            placeholder={params.title?.length ? undefined : t`Any`}
+            data={[
+              { value: "dr", label: t`Dr.` },
+              { value: "dr-ing", label: t`Dr.-Ing.` },
+              { value: "prof", label: t`Prof.` },
+              { value: "prof-dr", label: t`Prof. Dr.` },
+              { value: "prof-dr-ing", label: t`Prof. Dr.-Ing.` },
+              { value: "phd", label: t`PhD` },
+            ]}
+            value={params.title ?? []}
+            onChange={(v) =>
+              commit({ ...params, title: v as UserTitle[], offset: undefined })
+            }
+            clearable
+            style={{ flex: "1 1 200px" }}
+          />
+          <MultiSelect
+            label={t`Salutation`}
+            placeholder={params.salutation?.length ? undefined : t`Any`}
+            data={[
+              { value: "mr", label: t`Mr` },
+              { value: "ms", label: t`Ms` },
+              { value: "mx", label: t`Mx` },
+            ]}
+            value={params.salutation ?? []}
+            onChange={(v) =>
+              commit({
+                ...params,
+                salutation: v as UserSalutation[],
+                offset: undefined,
+              })
+            }
+            clearable
+            style={{ flex: "1 1 160px" }}
+          />
+          {activeFilters && (
+            <Button
+              variant="subtle"
+              color="gray"
+              leftSection={<IconX size={14} />}
+              onClick={() => {
+                setQInput("");
+                commit({});
+              }}
+            >
+              <Trans>Clear filters</Trans>
+            </Button>
+          )}
+        </Group>
+      </Paper>
+
+      <Paper withBorder radius="md" p="md">
         <QueryState
           isLoading={isLoading}
           error={error}
-          isEmpty={(data?.length ?? 0) === 0}
+          isEmpty={users.length === 0}
           empty={
             <Stack align="center" gap="xs" c="dimmed">
               <IconUserPlus size={32} />
               <Text size="sm">
-                <Trans>No users yet. Create the first one.</Trans>
+                {activeFilters ? (
+                  <Trans>No users match these filters.</Trans>
+                ) : (
+                  <Trans>No users yet. Create the first one.</Trans>
+                )}
               </Text>
             </Stack>
           }
         >
-          <UsersTable users={data ?? []} />
+          <Pager
+            limit={LIMIT}
+            offset={offset}
+            count={users.length}
+            pagination={data?.pagination}
+            onChange={(next) =>
+              commit({ ...params, offset: next ? String(next) : undefined })
+            }
+          />
+          <Table.ScrollContainer minWidth={640}>
+            <Table verticalSpacing="sm" highlightOnHover>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>
+                    <Trans>Name</Trans>
+                  </Table.Th>
+                  <Table.Th>
+                    <Trans>Email</Trans>
+                  </Table.Th>
+                  <Table.Th>
+                    <Trans>Created</Trans>
+                  </Table.Th>
+                  <Table.Th>
+                    <Trans>Status</Trans>
+                  </Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {users.map((user) => (
+                  <Table.Tr
+                    key={user.id}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/${i18n.locale}/users/${user.id}`)}
+                  >
+                    <Table.Td>
+                      <Text size="sm" fw={500}>
+                        {displayName(user)}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Text size="sm" c="dimmed">
+                        {user.email}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Text size="sm">{formatDate(user.createdAt)}</Text>
+                    </Table.Td>
+                    <Table.Td>
+                      {user.deletedAt ? (
+                        <Badge color="gray" variant="light">
+                          <Trans>Deleted</Trans>
+                        </Badge>
+                      ) : (
+                        <Badge color="pine" variant="light">
+                          <Trans>Active</Trans>
+                        </Badge>
+                      )}
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </Table.ScrollContainer>
         </QueryState>
       </Paper>
 

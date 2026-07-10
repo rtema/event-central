@@ -24,15 +24,15 @@ import { useSWRConfig } from "swr";
 import { toRequestError } from "../../api/client";
 import { documentTemplatesApi } from "../../api/documentTemplates";
 import {
+  useDocumentTemplates,
+  usePublicDocumentTemplates
+} from "../../api/hooks";
+import {
   assetsToPayload,
   TemplateAssetsFields,
   type TemplateAssetsValues,
 } from "../invoices/TemplateAssetsFields";
-import {
-  invKeys,
-  useDocumentTemplates,
-  usePublicDocumentTemplates
-} from "../invoices/invoicingHooks";
+import { Pager } from "../ui/Pager";
 import { QueryState } from "../ui/QueryState";
 import { formatDateTime } from "../utils/datetime";
 import { localizedLabel } from "../utils/format";
@@ -40,6 +40,8 @@ import { localizedLabel } from "../utils/format";
 interface CreateValues extends TemplateAssetsValues {
   id: string;
 }
+
+const LIMIT = 100;
 
 function CreatePublicTemplateModal({
   opened,
@@ -81,7 +83,9 @@ function CreatePublicTemplateModal({
         id: form.values.id,
         ...assetsToPayload(form.values),
       });
-      void mutate(invKeys.publicDocumentTemplates());
+      void mutate(
+        (key) => Array.isArray(key) && key[0] === "public-document-templates",
+      );
       notifications.show({
         color: "pine",
         title: t`Template created`,
@@ -211,8 +215,12 @@ function PublicDocumentTemplatesTab() {
 function RenderedDocumentTemplatesTab() {
   const navigate = useNavigate();
   const { i18n } = useLingui();
-  const { data, error, isLoading } = useDocumentTemplates();
-  const templates = data ?? [];
+  const [offset, setOffset] = useState(0);
+  const { data, error, isLoading } = useDocumentTemplates({
+    limit: LIMIT,
+    offset: String(offset),
+  });
+  const templates = data?.data ?? [];
 
   return (
     <Paper withBorder p="lg" radius="md">
@@ -234,6 +242,13 @@ function RenderedDocumentTemplatesTab() {
           </Stack>
         }
       >
+        <Pager
+          limit={LIMIT}
+          offset={offset}
+          count={templates.length}
+          pagination={data?.pagination}
+          onChange={setOffset}
+        />
         <Table verticalSpacing="sm" highlightOnHover>
           <Table.Thead>
             <Table.Tr>

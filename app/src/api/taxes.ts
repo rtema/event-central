@@ -1,7 +1,9 @@
 import { api } from "./instance";
-import type { Tax, TaxesListResponse } from "./types";
+import type { ListParams, TaxesListResponse } from "./types";
+
+const base = "/api/v1/taxes";
 
 export const taxesApi = {
-  list: (): Promise<Tax[]> =>
-    api.get<TaxesListResponse>("/api/v1/taxes").then((r) => r.data.data),
+  list: (params?: ListParams): Promise<TaxesListResponse> =>
+    api.get<TaxesListResponse>(base, { params }).then((r) => r.data),
 };

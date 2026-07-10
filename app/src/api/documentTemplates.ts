@@ -6,6 +6,7 @@ import type {
   DocumentTemplateFilesListResponse,
   DocumentTemplateResponse,
   DocumentTemplatesListResponse,
+  ListParams,
   PublicDocumentTemplate,
   PublicDocumentTemplateCreateRequest,
   PublicDocumentTemplateResponse,
@@ -32,8 +33,10 @@ async function blobUrl(url: string, body?: unknown): Promise<string> {
 
 export const documentTemplatesApi = {
   // --- rendered (private) templates: read-only ---
-  list: (): Promise<DocumentTemplate[]> =>
-    api.get<DocumentTemplatesListResponse>(base).then((r) => r.data.data),
+  list: (params?: ListParams): Promise<DocumentTemplatesListResponse> =>
+    api
+      .get<DocumentTemplatesListResponse>(base, { params })
+      .then((r) => r.data),
 
   get: (id: string): Promise<DocumentTemplate> =>
     api.get<DocumentTemplateResponse>(`${base}/${id}`).then((r) => r.data.data),
@@ -55,8 +58,7 @@ export const documentTemplatesApi = {
    * accepts draft html/css + sample context would let the editor preview
    * unsaved edits with realistic data — see API-REVIEW.md.
    */
-  preview: (id: string): Promise<string> =>
-    blobUrl(`${base}/${id}/preview`),
+  preview: (id: string): Promise<string> => blobUrl(`${base}/${id}/preview`),
 
   // --- public templates: read / create / update ---
   listPublic: (): Promise<PublicDocumentTemplate[]> =>

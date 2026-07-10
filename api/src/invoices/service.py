@@ -13,11 +13,12 @@ from __future__ import annotations
 import base64
 import datetime as dt
 import uuid
+from collections.abc import Sequence
 from decimal import ROUND_HALF_UP, Decimal
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy import ColumnElement, Select, String, cast, func, or_, select
+from sqlalchemy.orm import InstrumentedAttribute, Session
 
 from src.config import settings
 from src.core.errors import ForbiddenError, NotFoundError
@@ -61,6 +62,7 @@ from src.invoices.schemas import (
     InvoiceLineItemOut,
     InvoiceLinkResponse,
     InvoiceOut,
+    InvoiceSearchParams,
     InvoicesExportResponse,
 )
 from src.jobs.models import Job
@@ -92,6 +94,61 @@ def list_invoices(
 
     total = db.execute(count_stmt).scalar_one()
     stmt = base.order_by(Invoice.created_at.desc()).limit(limit).offset(offset)
+    return list(db.execute(stmt).scalars().all()), total
+
+
+def search_invoices(
+    db: Session,
+    *,
+    limit: int,
+    offset: int,
+    search_params: InvoiceSearchParams,
+) -> tuple[list[Invoice], int]:
+    conditions: list[ColumnElement[bool]] = []
+
+    # filters
+    filters: list[tuple[InstrumentedAttribute[Any], Sequence[Any] | None]] = [
+        (Invoice.accounting_entity, search_params.accounting_entity),
+        (Invoice.invoice_type, search_params.invoice_type),
+        (Invoice.locale, search_params.locale),
+    ]
+    for column, values in filters:
+        if values:
+            conditions.append(column.in_(values))
+
+    # special values
+    # Currently not implemented
+
+    # text filters
+    if search_params.q and search_params.q.strip():
+        term: str = search_params.q.strip()
+        # escape LIKE wildcards so user input is matched literally
+        escaped: str = (
+            term.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        )
+        pattern: str = f"%{escaped}%"
+        conditions.append(
+            or_(
+                Invoice.invoice_number.ilike(pattern, escape="\\"),
+                cast(Invoice.supplier, String).ilike(pattern, escape="\\"),
+                cast(Invoice.recipient, String).ilike(pattern, escape="\\"),
+            )
+        )
+
+    # count total
+    count_stmt: Select[tuple[int]] = (
+        select(func.count()).select_from(Invoice).where(*conditions)
+    )
+    total: int = db.execute(count_stmt).scalar_one()
+
+    # build statement
+    stmt = (
+        select(Invoice)
+        .where(*conditions)
+        .order_by(Invoice.created_at.desc())
+        .limit(limit)
+        .offset(offset)
+    )
     return list(db.execute(stmt).scalars().all()), total
 
 
@@ -131,6 +188,19 @@ def list_all_taxes(db: Session, *, limit: int, offset: int) -> tuple[list[Tax], 
     stmt = select(Tax).order_by(
         Tax.created_at.desc()).limit(limit).offset(offset)
     return list(db.execute(stmt).scalars().all()), total
+
+
+def list_all_accounting_entities(db: Session) -> list[str]:
+    """All accounting entities used across all invoices (newest first) — used by Misc /accounting-entities."""  # noqa: E501
+    stmt = select(Invoice.accounting_entity)\
+        .where(Invoice.accounting_entity.is_not(None))\
+        .distinct()\
+        .order_by(Invoice.accounting_entity)
+
+    # type: ignore see stmt, none is not allowed
+    accounting_entities: list[str] = list(db.execute(stmt).scalars().all())
+
+    return accounting_entities
 
 
 # --------------------------------------------------------------------------- #
@@ -350,7 +420,7 @@ def _resolve_tax_rates(
                 Tax.type == tax_rate.type,
                 Tax.tax_exemption_reason == tax_rate.tax_exemption_reason
             )
-        ).scalar() # do not use scalar_one_or_none(): 
+        ).scalar()  # do not use scalar_one_or_none():
         # if deduplication had an issue: do not throw an error here, it does not do any harm
         if existing:
             # everything matches

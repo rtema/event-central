@@ -17,7 +17,7 @@ import { formatDateTime } from "../utils/datetime";
 import {
   useDocumentTemplate,
   useDocumentTemplateFiles,
-} from "../invoices/invoicingHooks";
+} from "../../api/hooks";
 import { DocumentTemplateFilesTable } from "./DocumentTemplateFilesTable";
 import { DocumentTemplatePreview } from "./DocumentTemplatePreview";
 

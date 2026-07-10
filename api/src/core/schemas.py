@@ -5,6 +5,7 @@ from __future__ import annotations
 import base64
 import binascii
 from typing import Annotated, Literal
+from uuid import UUID
 
 from alembic.environment import Any
 from pydantic import AfterValidator, BaseModel, BeforeValidator, ConfigDict
@@ -23,6 +24,8 @@ def _validate_base64(value: str) -> str:
     except (binascii.Error, ValueError) as exc:
         raise ValueError("must be valid base64-encoded data") from exc
     return value
+
+
 Base64Str = Annotated[str, AfterValidator(_validate_base64)]
 
 
@@ -63,6 +66,7 @@ class Pagination(CamelModel):
 def make_pagination(total: int, *, limit: int, offset: int) -> Pagination:
     return Pagination(total=total, limit=limit, current_offset=offset)
 
+
 def split_comma_separated_list(value: Any) -> list[str] | None:
     """Normalize a comma-separated query value into a clean list.
 
@@ -76,12 +80,18 @@ def split_comma_separated_list(value: Any) -> list[str] | None:
         return None
     if isinstance(value, str):
         value = [value]
-    items = [part.strip() for chunk in value for part in chunk.split(",")] # type: ignore
+    items = [part.strip()
+             for chunk in value for part in chunk.split(",")]  # type: ignore
     items: list[str] = [item for item in items if item]
     return items or None
 
 
-CommaSeparatedListStr = Annotated[list[str] | None, BeforeValidator(split_comma_separated_list)]
+CommaSeparatedListStr = Annotated[list[str] | None,
+                                  BeforeValidator(split_comma_separated_list)]
+
+CommaSeparatedListUuid = Annotated[list[UUID] |
+                                   None, BeforeValidator(split_comma_separated_list)]
+
 
 def make_multilanguage_label(value: str | dict[str, Any] | None) -> dict[str, str]:
     if value is None:
@@ -89,6 +99,7 @@ def make_multilanguage_label(value: str | dict[str, Any] | None) -> dict[str, st
     if isinstance(value, dict):
         return {k: v for k, v in value.items() if v is not None}
     return {"de": value, "en": value}
+
 
 class InvoiceSupplier(CamelModel):
     """Supplier (issuer) of the goods/services. Shared value object."""

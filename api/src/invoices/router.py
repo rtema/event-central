@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import uuid
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from src.auth.deps import (
@@ -29,8 +30,10 @@ from src.invoices.schemas import (
     InvoiceLinkResponse,
     InvoiceOut,
     InvoiceResponse,
+    InvoiceSearchParams,
     InvoicesExportResponse,
     InvoicesListResponse,
+    InvoicesSearchResponse,
     InvoiceTaxesListResponse,
     TaxOut,
 )
@@ -42,12 +45,34 @@ router = APIRouter(prefix="/api/v1/invoices", tags=["Invoicing"])
 def list_invoices(
     page: PageParams = Depends(page_params),
     db: Session = Depends(get_db),
-    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_INVOICES_READ_ALL)),
+    _: AuthenticatedActor = Depends(
+        require_all_scopes(SCOPE_INVOICES_READ_ALL)),
 ) -> InvoicesListResponse:
-    invoices, total = service.list_invoices(db, limit=page.limit, offset=page.offset)
+    invoices, total = service.list_invoices(
+        db, limit=page.limit, offset=page.offset)
     return InvoicesListResponse(
         data=[InvoiceOut.model_validate(i) for i in invoices],
-        pagination=make_pagination(total, limit=page.limit, offset=page.offset),
+        pagination=make_pagination(
+            total, limit=page.limit, offset=page.offset),
+    )
+
+
+@router.get("/search", response_model=InvoicesSearchResponse, summary="Search invoices")
+def search_invoices(
+    page: Annotated[PageParams, Depends(page_params)],
+    search_params: Annotated[InvoiceSearchParams, Query()],
+    db: Session = Depends(get_db),
+    _: AuthenticatedActor = Depends(
+        require_all_scopes(SCOPE_INVOICES_READ_ALL)),
+) -> InvoicesSearchResponse:
+    invoices, total = service.search_invoices(
+        db, limit=page.limit, offset=page.offset, search_params=search_params
+    )
+    return InvoicesSearchResponse(
+        data=[InvoiceOut.model_validate(i) for i in invoices],
+        pagination=make_pagination(
+            total, limit=page.limit, offset=page.offset),
+        search=search_params,
     )
 
 
@@ -72,7 +97,8 @@ def create_invoice(
 def export_invoices(
     body: InvoiceExportRequest,
     db: Session = Depends(get_db),
-    actor: AuthenticatedActor = Depends(require_all_scopes(SCOPE_INVOICES_READ_ALL)),
+    actor: AuthenticatedActor = Depends(
+        require_all_scopes(SCOPE_INVOICES_READ_ALL)),
 ) -> InvoicesExportResponse:
     return service.export_invoices(
         db,

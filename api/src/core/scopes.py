@@ -139,6 +139,20 @@ def _build_catalogue() -> list[ScopeDef]:
             "Write misc data necessary to access the backend",
         )
     )
+    out.append(
+        ScopeDef(
+            SCOPE_FILES_READ_ALL,
+            "Dateien ansehen",
+            "View uploaded files",
+        )
+    )
+    out.append(
+        ScopeDef(
+            SCOPE_FILES_WRITE_ALL,
+            "Dateien hochladen/editieren",
+            "Upload files / update files",
+        )
+    )
     return out
 
 

@@ -23,6 +23,7 @@ import {
   IconUser,
 } from "@tabler/icons-react";
 import { Link, useParams } from "react-router";
+import { listLinkWithFilters } from "../utils/listQuery";
 import { toRequestError } from "../../api/client";
 import { usersApi } from "../../api/users";
 import { QueryState } from "../ui/QueryState";
@@ -97,7 +98,7 @@ export function UserDetail() {
 
   return (
     <Stack>
-      <Anchor component={Link} to={`/${i18n.locale}/users`} size="sm">
+      <Anchor component={Link} to={listLinkWithFilters(`/${i18n.locale}/users`, "users")} size="sm">
         <Group gap={4}>
           <IconArrowLeft size={14} />
           <Trans>Back to users</Trans>

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import datetime as dt
 
+from pydantic import Field
+
 from src.core.schemas import CamelModel, MultiLanguageLabel, Pagination
 
 
@@ -24,3 +26,14 @@ class EventResponse(CamelModel):
 class EventsListResponse(CamelModel):
     data: list[EventOut]
     pagination: Pagination
+
+
+class EventSearchParams(CamelModel):
+    q: str | None = Field(
+        default=None, description="Generic free-text search term")
+
+
+class EventsSearchResponse(CamelModel):
+    data: list[EventOut]
+    pagination: Pagination
+    search: EventSearchParams

@@ -12,7 +12,7 @@ from src.core.deps import PageParams, get_db, page_params
 from src.core.schemas import MultiLanguageLabel, make_pagination
 from src.core.scopes import SCOPE_BACKEND_READ, SCOPES
 from src.invoices import service as invoicing_service
-from src.invoices.schemas import TaxesListResponse, TaxOut
+from src.invoices.schemas import AccountingEntitiesListResponse, TaxesListResponse, TaxOut
 from src.misc.schemas import ScopeOut, ScopesListResponse
 from src.storage.s3 import get_storage
 
@@ -36,7 +36,11 @@ def health_storage(db: Session = Depends(get_db)) -> JSONResponse:
     return JSONResponse(status, code)
 
 
-@router.get("/api/v1/taxes", response_model=TaxesListResponse, summary="List tax rates")
+@router.get(
+    "/api/v1/taxes",
+    response_model=TaxesListResponse,
+    summary="List tax rates"
+)
 def list_taxes(
     page: PageParams = Depends(page_params),
     db: Session = Depends(get_db),
@@ -51,7 +55,25 @@ def list_taxes(
     )
 
 
-@router.get("/api/v1/scopes", response_model=ScopesListResponse, summary="List scopes")
+@router.get(
+    "/api/v1/accounting-entities",
+    response_model=AccountingEntitiesListResponse,
+    summary="List tax rates"
+)
+def list_accounting_entities(
+    db: Session = Depends(get_db),
+    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ)),
+) -> AccountingEntitiesListResponse:
+    return AccountingEntitiesListResponse(
+        data=invoicing_service.list_all_accounting_entities(db),
+    )
+
+
+@router.get(
+    "/api/v1/scopes",
+    response_model=ScopesListResponse,
+    summary="List scopes"
+)
 def list_scopes(
     _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ)),
 ) -> ScopesListResponse:

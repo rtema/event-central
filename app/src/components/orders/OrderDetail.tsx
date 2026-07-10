@@ -26,6 +26,7 @@ import {
 } from "@tabler/icons-react";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
+import { listLinkWithFilters } from "../utils/listQuery";
 import { toRequestError } from "../../api/client";
 import { ordersApi } from "../../api/orders";
 import type { PaymentType } from "../../api/types";
@@ -34,7 +35,7 @@ import {
   useOrderInvoices,
   useOrderMutations,
   useOrderPayments,
-} from "../invoices/invoicingHooks";
+} from "../../api/hooks";
 import { FieldGrid } from "../ui/FieldGrid";
 import { QueryState } from "../ui/QueryState";
 import {
@@ -205,7 +206,7 @@ export function OrderDetail() {
 
   return (
     <Stack>
-      <Anchor component={Link} to={`/${i18n.locale}/orders`} size="sm">
+      <Anchor component={Link} to={listLinkWithFilters(`/${i18n.locale}/orders`, "orders")} size="sm">
         <Group gap={4}>
           <IconArrowLeft size={14} />
           <Trans>Back to orders</Trans>

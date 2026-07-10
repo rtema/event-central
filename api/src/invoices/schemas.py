@@ -7,17 +7,19 @@ import uuid
 from decimal import Decimal
 from typing import Annotated, Literal
 
-from pydantic import Field, StringConstraints, field_validator, model_validator
+from pydantic import BeforeValidator, Field, StringConstraints, field_validator, model_validator
 
 from src.core.schemas import (
     Base64Str,
     CamelModel,
+    CommaSeparatedListStr,
     Currency,
     InvoiceRecipient,
     InvoiceSupplier,
     Locale,
     MultiLanguageLabel,
     Pagination,
+    split_comma_separated_list,
 )
 from src.core.scopes import RESERVED_LABELS
 from src.events.schemas import EventOut
@@ -50,6 +52,14 @@ class TaxesListResponse(CamelModel):
 
     data: list[TaxOut]
     pagination: Pagination
+
+# --------------------------------------------------------------------------- #
+# Accounting entities
+# --------------------------------------------------------------------------- #
+
+
+class AccountingEntitiesListResponse(CamelModel):
+    data: list[str]
 
 
 # --------------------------------------------------------------------------- #
@@ -123,26 +133,43 @@ class InvoicesListResponse(CamelModel):
     pagination: Pagination
 
 
+class InvoiceSearchParams(CamelModel):
+    q: str | None = Field(
+        default=None, description="Generic free-text search term")
+
+    accounting_entity: CommaSeparatedListStr = Field(
+        default=None,
+        description="Comma-separated list of accounting entities",
+    )
+    invoice_type: Annotated[list[InvoiceType] | None,
+                            BeforeValidator(split_comma_separated_list)] = Field(
+        default=None,
+        description="Comma-separated types, e.g. invoice,cancellation"
+    )
+    locale: Annotated[list[Locale] | None, BeforeValidator(split_comma_separated_list)] = Field(
+        default=None,
+        description="Comma-separated locales, e.g. de,en"
+    )
+
+
+class InvoicesSearchResponse(CamelModel):
+    data: list[InvoiceOut]
+    pagination: Pagination
+    search: InvoiceSearchParams
+
+
 # --------------------------------------------------------------------------- #
 # Template fragments (embedded in the create request)
 # --------------------------------------------------------------------------- #
 class TemplateFont(CamelModel):
     name: str
     weight: int
-    file: Base64Str  # base64
+    file: Base64Str
 
 
 class TemplateImage(CamelModel):
     key: str
-    file: Base64Str | None = None  # base64
-    link: str | None = None  # https only
-
-    @model_validator(mode="after")
-    def check_file_xor_link(self):
-        # True when both are None or both are set — both are error cases
-        if (self.file is None) == (self.link is None):
-            raise ValueError("exactly one of 'file' or 'link' must be set")
-        return self
+    file: Base64Str
 
 
 class InvoiceTemplate(CamelModel):
@@ -213,7 +240,8 @@ class InvoiceCreateTaxRate(CamelModel):
     # 0..100 and at most 2 decimals to match the `taxes.rate` Numeric(5, 2)
     # column and EN16931 rate handling.
     rate: Decimal = Field(ge=0, le=100, max_digits=5, decimal_places=2)
-    label: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+    label: Annotated[str, StringConstraints(
+        strip_whitespace=True, min_length=1)]
     type: TaxType
     tax_exemption_reason: str | None = None
 

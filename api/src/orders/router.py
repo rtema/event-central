@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import uuid
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from src.auth.deps import AuthenticatedActor, require_all_scopes
@@ -15,7 +16,13 @@ from src.invoices import service as invoicing_service
 from src.invoices.schemas import InvoiceCreateResponse, InvoiceOut, InvoicesListResponse
 from src.orders import service
 from src.orders.deps import require_order_scope
-from src.orders.schemas import OrderOut, OrderResponse, OrdersListResponse
+from src.orders.schemas import (
+    OrderOut,
+    OrderResponse,
+    OrderSearchParams,
+    OrdersListResponse,
+    OrdersSearchResponse,
+)
 from src.payments import service as payments_service
 from src.payments.schemas import (
     PaymentCreateRequest,
@@ -33,10 +40,30 @@ def list_orders(
     db: Session = Depends(get_db),
     _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_ORDERS_READ_ALL)),
 ) -> OrdersListResponse:
-    orders, total = service.list_orders(db, limit=page.limit, offset=page.offset)
+    orders, total = service.list_orders(
+        db, limit=page.limit, offset=page.offset)
     return OrdersListResponse(
         data=[OrderOut.model_validate(o) for o in orders],
-        pagination=make_pagination(total, limit=page.limit, offset=page.offset),
+        pagination=make_pagination(
+            total, limit=page.limit, offset=page.offset),
+    )
+
+
+@router.get("/search", response_model=OrdersSearchResponse, summary="Search orders")
+def search_orders(
+    page: Annotated[PageParams, Depends(page_params)],
+    search_params: Annotated[OrderSearchParams, Query()],
+    db: Session = Depends(get_db),
+    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_ORDERS_READ_ALL)),
+) -> OrdersSearchResponse:
+    orders, total = service.search_orders(
+        db, limit=page.limit, offset=page.offset, search_params=search_params
+    )
+    return OrdersSearchResponse(
+        data=[OrderOut.model_validate(o) for o in orders],
+        pagination=make_pagination(
+            total, limit=page.limit, offset=page.offset),
+        search=search_params,
     )
 
 
@@ -53,7 +80,8 @@ def get_order(
 def cancel_order(
     order_id: uuid.UUID,
     db: Session = Depends(get_db),
-    actor: AuthenticatedActor = Depends(require_order_scope("orders", "write")),
+    actor: AuthenticatedActor = Depends(
+        require_order_scope("orders", "write")),
 ) -> InvoiceCreateResponse:
     # Cancelling issues a cancellation invoice (invoiceType=cancellation, code
     # 381). Document generation is delivered in step 3, so this raises 501.
@@ -74,7 +102,8 @@ def list_order_payments(
     payments = payments_service.list_order_payments(db, order_id)
     return PaymentsListResponse(
         data=[PaymentOut.model_validate(p) for p in payments],
-        pagination=make_pagination(len(payments), limit=len(payments) or 1, offset=0),
+        pagination=make_pagination(
+            len(payments), limit=len(payments) or 1, offset=0),
     )
 
 
@@ -89,7 +118,8 @@ def create_order_payment(
     order_id: uuid.UUID,
     body: PaymentCreateRequest,
     db: Session = Depends(get_db),
-    actor: AuthenticatedActor = Depends(require_order_scope("payments", "write")),
+    actor: AuthenticatedActor = Depends(
+        require_order_scope("payments", "write")),
 ) -> PaymentResponse:
     payment = payments_service.create_order_payment(
         db, order_id, data=body.model_dump(exclude_unset=True), actor=actor.sub
@@ -111,5 +141,6 @@ def list_order_invoices(
     invoices = invoicing_service.list_order_invoices(db, order_id)
     return InvoicesListResponse(
         data=[InvoiceOut.model_validate(i) for i in invoices],
-        pagination=make_pagination(len(invoices), limit=len(invoices) or 1, offset=0),
+        pagination=make_pagination(
+            len(invoices), limit=len(invoices) or 1, offset=0),
     )

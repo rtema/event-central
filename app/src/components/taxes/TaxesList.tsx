@@ -1,74 +1,21 @@
-import { Trans, useLingui } from "@lingui/react/macro";
-import { Badge, Paper, Stack, Text, Title } from "@mantine/core";
+import { Trans } from "@lingui/react/macro";
+import { Badge, Paper, Stack, Table, Text, Title } from "@mantine/core";
 import { IconPercentage } from "@tabler/icons-react";
-import type { ColumnDef } from "@tanstack/react-table";
-import { useMemo } from "react";
-import type { Tax } from "../../api/types";
-import { DataTable } from "../ui/DataTable";
+import { useState } from "react";
+import { useTaxes } from "../../api/hooks";
+import { Pager } from "../ui/Pager";
 import { QueryState } from "../ui/QueryState";
-import { useTaxes } from "../invoices/invoicingHooks";
 import { formatNumber, localizedLabel } from "../utils/format";
 
-export function TaxesList() {
-  const { t } = useLingui();
-  const { data, error, isLoading } = useTaxes();
-  const taxes = data ?? [];
+const LIMIT = 100;
 
-  const columns = useMemo<ColumnDef<Tax>[]>(
-    () => [
-      {
-        id: "label",
-        header: t`Label`,
-        accessorFn: (tax) => localizedLabel(tax.label),
-        cell: (info) => (
-          <Text fw={500} size="sm">
-            {info.getValue<string>()}
-          </Text>
-        ),
-      },
-      {
-        accessorKey: "rate",
-        header: t`Rate`,
-        cell: (info) =>
-          info.getValue<number>() != null ? (
-            <Text size="sm">{formatNumber(info.getValue<number>())}%</Text>
-          ) : (
-            <Text size="sm">—</Text>
-          ),
-      },
-      {
-        id: "type",
-        header: t`Type`,
-        accessorFn: (tax) => tax.type ?? "standard",
-        cell: (info) =>
-          info.getValue<string>() === "exempt-verein" ? (
-            <Badge color="grape" variant="light">
-              <Trans>Exempt (Verein)</Trans>
-            </Badge>
-          ) : (
-            <Badge color="pine" variant="light">
-              <Trans>Standard</Trans>
-            </Badge>
-          ),
-      },
-      {
-        accessorKey: "externalId",
-        header: t`Reference ID`,
-        cell: (info) => (
-          <Text size="sm" c="dimmed">
-            {info.getValue<string>() || "—"}
-          </Text>
-        ),
-      },
-      {
-        accessorKey: "taxExemptionReason",
-        header: t`Exemption reason`,
-        enableSorting: false,
-        cell: (info) => <Text size="sm">{info.getValue<string>() || "—"}</Text>,
-      },
-    ],
-    [t],
-  );
+export function TaxesList() {
+  const [offset, setOffset] = useState(0);
+  const { data, error, isLoading } = useTaxes({
+    limit: LIMIT,
+    offset: String(offset),
+  });
+  const taxes = data?.data ?? [];
 
   return (
     <Stack>
@@ -95,13 +42,71 @@ export function TaxesList() {
             </Stack>
           }
         >
-          <DataTable
-            data={taxes}
-            columns={columns}
-            searchable
-            searchPlaceholder={t`Search tax rates`}
-            minWidth={640}
+          <Pager
+            limit={LIMIT}
+            offset={offset}
+            count={taxes.length}
+            pagination={data?.pagination}
+            onChange={setOffset}
           />
+          <Table.ScrollContainer minWidth={640}>
+            <Table verticalSpacing="sm" highlightOnHover>
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>
+                    <Trans>Label</Trans>
+                  </Table.Th>
+                  <Table.Th>
+                    <Trans>Rate</Trans>
+                  </Table.Th>
+                  <Table.Th>
+                    <Trans>Type</Trans>
+                  </Table.Th>
+                  <Table.Th>
+                    <Trans>Reference ID</Trans>
+                  </Table.Th>
+                  <Table.Th>
+                    <Trans>Exemption reason</Trans>
+                  </Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {taxes.map((tax) => (
+                  <Table.Tr key={tax.id}>
+                    <Table.Td>
+                      <Text size="sm" fw={500}>
+                        {localizedLabel(tax.label)}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Text size="sm">
+                        {tax.rate != null ? `${formatNumber(tax.rate)}%` : "—"}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      {tax.type === "exempt-verein" ? (
+                        <Badge color="grape" variant="light">
+                          <Trans>Exempt (Verein)</Trans>
+                        </Badge>
+                      ) : (
+                        <Badge color="pine" variant="light">
+                          <Trans>Standard</Trans>
+                        </Badge>
+                      )}
+                    </Table.Td>
+                    <Table.Td>
+                      <Text size="sm" c="dimmed">
+                        {tax.externalId || "—"}
+                      </Text>
+                    </Table.Td>
+                    <Table.Td>
+                      <Text size="sm">{tax.taxExemptionReason || "—"}</Text>
+                    </Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </Table.ScrollContainer>
         </QueryState>
       </Paper>
     </Stack>

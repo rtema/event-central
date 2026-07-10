@@ -15,7 +15,7 @@ import {
 import { IconFile, IconPhoto, IconSearch, IconTypography } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import type { File, FileSearchParams, FileType } from "../../api/types";
-import { useFileSearch } from "../invoices/invoicingHooks";
+import { useFileSearch } from "../../api/hooks";
 import { QueryState } from "../ui/QueryState";
 import { formatBytes, localizedLabel } from "../utils/format";
 

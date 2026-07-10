@@ -16,15 +16,33 @@ import type {
   UsersCreateRequest,
   UserScope,
   UserScopesListResponse,
+  UserSearchParams,
   UsersListResponse,
+  UsersSearchResponse,
   UserUpdateRequest,
 } from "./types";
 
 const base = "/api/v1/users";
 
 export const usersApi = {
-  list: () =>
-    api.get<UsersListResponse>(base).then((r) => r.data.data),
+  list: () => api.get<UsersListResponse>(base).then((r) => r.data.data),
+
+  /**
+   * Search/filter users. Array filters are serialized comma-joined to match the
+   * spec's `style: form, explode: false` (e.g. `title=dr,prof`).
+   */
+  search: (params: UserSearchParams): Promise<UsersSearchResponse> => {
+    const query: Record<string, string | number> = {};
+    if (params.q) query.q = params.q;
+    if (params.title?.length) query.title = params.title.join(",");
+    if (params.salutation?.length)
+      query.salutation = params.salutation.join(",");
+    if (params.limit != null) query.limit = params.limit;
+    if (params.offset != null) query.offset = params.offset;
+    return api
+      .get<UsersSearchResponse>(`${base}/search`, { params: query })
+      .then((r) => r.data);
+  },
 
   get: (id: string) =>
     api.get<UserResponse>(`${base}/${id}`).then((r) => r.data.data),
@@ -53,14 +71,10 @@ export const usersApi = {
       .then((r) => r.data.data),
 
   createAuth: (id: string, body: UserAuthCreateRequest): Promise<UserAuth> =>
-    api
-      .post<UserAuth>(`${base}/${id}/auth`, body)
-      .then((r) => r.data),
+    api.post<UserAuth>(`${base}/${id}/auth`, body).then((r) => r.data),
 
   deleteAuth: (id: string, authId: string): Promise<UserAuth> =>
-    api
-      .delete<UserAuth>(`${base}/${id}/auth/${authId}`)
-      .then((r) => r.data),
+    api.delete<UserAuth>(`${base}/${id}/auth/${authId}`).then((r) => r.data),
 
   // --- scopes ---
   listScopes: (id: string): Promise<UserScope[]> =>

@@ -29,7 +29,7 @@ import {
   useDocumentTemplate,
   useDocumentTemplateFiles,
   usePublicDocumentTemplate,
-} from "../invoices/invoicingHooks";
+} from "../../api/hooks";
 import { QueryState } from "../ui/QueryState";
 import { localizedLabel } from "../utils/format";
 import { DocumentTemplateFilesTable } from "./DocumentTemplateFilesTable";
