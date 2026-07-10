@@ -38,18 +38,47 @@ const PENALTY_N4 = 10;
 
 // ECC codewords per block, indexed [ecl.ordinal][version]. Index 0 is padding.
 const ECC_CODEWORDS_PER_BLOCK: int[][] = [
-  [-1, 7, 10, 15, 20, 26, 18, 20, 24, 30, 18, 20, 24, 26, 30, 22, 24, 28, 30, 28, 28, 28, 28, 30, 30, 26, 28, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
-  [-1, 10, 16, 26, 18, 24, 16, 18, 22, 22, 26, 30, 22, 22, 24, 24, 28, 28, 26, 26, 26, 26, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28],
-  [-1, 13, 22, 18, 26, 18, 24, 18, 22, 20, 24, 28, 26, 24, 20, 30, 24, 28, 28, 26, 30, 28, 30, 30, 30, 30, 28, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
-  [-1, 17, 28, 22, 16, 22, 28, 26, 26, 24, 28, 24, 28, 22, 24, 24, 30, 28, 28, 26, 28, 30, 24, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
+  [
+    -1, 7, 10, 15, 20, 26, 18, 20, 24, 30, 18, 20, 24, 26, 30, 22, 24, 28, 30,
+    28, 28, 28, 28, 30, 30, 26, 28, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+    30, 30, 30,
+  ],
+  [
+    -1, 10, 16, 26, 18, 24, 16, 18, 22, 22, 26, 30, 22, 22, 24, 24, 28, 28, 26,
+    26, 26, 26, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
+    28, 28, 28,
+  ],
+  [
+    -1, 13, 22, 18, 26, 18, 24, 18, 22, 20, 24, 28, 26, 24, 20, 30, 24, 28, 28,
+    26, 30, 28, 30, 30, 30, 30, 28, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+    30, 30, 30,
+  ],
+  [
+    -1, 17, 28, 22, 16, 22, 28, 26, 26, 24, 28, 24, 28, 22, 24, 24, 30, 28, 28,
+    26, 28, 30, 24, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30,
+    30, 30, 30,
+  ],
 ];
 
 // Number of ECC blocks, indexed [ecl.ordinal][version]. Index 0 is padding.
 const NUM_ERROR_CORRECTION_BLOCKS: int[][] = [
-  [-1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 4, 4, 4, 4, 4, 6, 6, 6, 6, 7, 8, 8, 9, 9, 10, 12, 12, 12, 13, 14, 15, 16, 17, 18, 19, 19, 20, 21, 22, 24, 25],
-  [-1, 1, 1, 1, 2, 2, 4, 4, 4, 5, 5, 5, 8, 9, 9, 10, 10, 11, 13, 14, 16, 17, 17, 18, 20, 21, 23, 25, 26, 28, 29, 31, 33, 35, 37, 38, 40, 43, 45, 47, 49],
-  [-1, 1, 1, 2, 2, 4, 4, 6, 6, 8, 8, 8, 10, 12, 16, 12, 17, 16, 18, 21, 20, 23, 23, 25, 27, 29, 34, 34, 35, 38, 40, 43, 45, 48, 51, 53, 56, 59, 62, 65, 68],
-  [-1, 1, 1, 2, 4, 4, 4, 5, 6, 8, 8, 11, 11, 16, 16, 18, 16, 19, 21, 25, 25, 25, 34, 30, 32, 35, 37, 40, 42, 45, 48, 51, 54, 57, 60, 63, 66, 70, 74, 77, 81],
+  [
+    -1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 4, 4, 4, 4, 4, 6, 6, 6, 6, 7, 8, 8, 9, 9, 10,
+    12, 12, 12, 13, 14, 15, 16, 17, 18, 19, 19, 20, 21, 22, 24, 25,
+  ],
+  [
+    -1, 1, 1, 1, 2, 2, 4, 4, 4, 5, 5, 5, 8, 9, 9, 10, 10, 11, 13, 14, 16, 17,
+    17, 18, 20, 21, 23, 25, 26, 28, 29, 31, 33, 35, 37, 38, 40, 43, 45, 47, 49,
+  ],
+  [
+    -1, 1, 1, 2, 2, 4, 4, 6, 6, 8, 8, 8, 10, 12, 16, 12, 17, 16, 18, 21, 20, 23,
+    23, 25, 27, 29, 34, 34, 35, 38, 40, 43, 45, 48, 51, 53, 56, 59, 62, 65, 68,
+  ],
+  [
+    -1, 1, 1, 2, 4, 4, 4, 5, 6, 8, 8, 11, 11, 16, 16, 18, 16, 19, 21, 25, 25,
+    25, 34, 30, 32, 35, 37, 40, 42, 45, 48, 51, 54, 57, 60, 63, 66, 70, 74, 77,
+    81,
+  ],
 ];
 
 function assert(cond: boolean): void {
@@ -122,7 +151,9 @@ function reedSolomonComputeRemainder(
   for (const b of data) {
     const factor: byte = b ^ (result.shift() as byte);
     result.push(0);
-    divisor.forEach((coef, i) => (result[i] ^= reedSolomonMultiply(coef, factor)));
+    divisor.forEach(
+      (coef, i) => (result[i] ^= reedSolomonMultiply(coef, factor)),
+    );
   }
   return result;
 }
@@ -184,7 +215,9 @@ class QrCode {
   }
 
   getModule(x: int, y: int): boolean {
-    return 0 <= x && x < this.size && 0 <= y && y < this.size && this.modules[y][x];
+    return (
+      0 <= x && x < this.size && 0 <= y && y < this.size && this.modules[y][x]
+    );
   }
 
   private drawFunctionPatterns(): void {
@@ -225,7 +258,8 @@ class QrCode {
     this.setFunctionModule(8, 7, getBit(bits, 6));
     this.setFunctionModule(8, 8, getBit(bits, 7));
     this.setFunctionModule(7, 8, getBit(bits, 8));
-    for (let i = 9; i < 15; i++) this.setFunctionModule(14 - i, 8, getBit(bits, i));
+    for (let i = 9; i < 15; i++)
+      this.setFunctionModule(14 - i, 8, getBit(bits, i));
 
     for (let i = 0; i < 8; i++)
       this.setFunctionModule(this.size - 1 - i, 8, getBit(bits, i));
@@ -340,15 +374,32 @@ class QrCode {
       for (let x = 0; x < this.size; x++) {
         let invert: boolean;
         switch (mask) {
-          case 0: invert = (x + y) % 2 == 0; break;
-          case 1: invert = y % 2 == 0; break;
-          case 2: invert = x % 3 == 0; break;
-          case 3: invert = (x + y) % 3 == 0; break;
-          case 4: invert = (Math.floor(x / 3) + Math.floor(y / 2)) % 2 == 0; break;
-          case 5: invert = ((x * y) % 2) + ((x * y) % 3) == 0; break;
-          case 6: invert = (((x * y) % 2) + ((x * y) % 3)) % 2 == 0; break;
-          case 7: invert = (((x + y) % 2) + ((x * y) % 3)) % 2 == 0; break;
-          default: throw new Error("Unreachable");
+          case 0:
+            invert = (x + y) % 2 == 0;
+            break;
+          case 1:
+            invert = y % 2 == 0;
+            break;
+          case 2:
+            invert = x % 3 == 0;
+            break;
+          case 3:
+            invert = (x + y) % 3 == 0;
+            break;
+          case 4:
+            invert = (Math.floor(x / 3) + Math.floor(y / 2)) % 2 == 0;
+            break;
+          case 5:
+            invert = ((x * y) % 2) + ((x * y) % 3) == 0;
+            break;
+          case 6:
+            invert = (((x * y) % 2) + ((x * y) % 3)) % 2 == 0;
+            break;
+          case 7:
+            invert = (((x + y) % 2) + ((x * y) % 3)) % 2 == 0;
+            break;
+          default:
+            throw new Error("Unreachable");
         }
         if (!this.isFunction[y][x] && invert)
           this.modules[y][x] = !this.modules[y][x];
@@ -376,7 +427,8 @@ class QrCode {
         }
       }
       result +=
-        this.finderPenaltyTerminateAndCount(runColor, runX, runHistory) * PENALTY_N3;
+        this.finderPenaltyTerminateAndCount(runColor, runX, runHistory) *
+        PENALTY_N3;
     }
     for (let x = 0; x < this.size; x++) {
       let runColor = false;
@@ -396,7 +448,8 @@ class QrCode {
         }
       }
       result +=
-        this.finderPenaltyTerminateAndCount(runColor, runY, runHistory) * PENALTY_N3;
+        this.finderPenaltyTerminateAndCount(runColor, runY, runHistory) *
+        PENALTY_N3;
     }
 
     for (let y = 0; y < this.size - 1; y++) {
@@ -425,7 +478,8 @@ class QrCode {
     if (this.version == 1) return [];
     const numAlign: int = Math.floor(this.version / 7) + 2;
     const step: int =
-      Math.floor((this.version * 8 + numAlign * 3 + 5) / (numAlign * 4 - 4)) * 2;
+      Math.floor((this.version * 8 + numAlign * 3 + 5) / (numAlign * 4 - 4)) *
+      2;
     const result: int[] = [6];
     for (let pos = this.size - 7; result.length < numAlign; pos -= step)
       result.splice(1, 0, pos);
@@ -461,7 +515,10 @@ class QrCode {
     return this.finderPenaltyCountPatterns(runHistory);
   }
 
-  private finderPenaltyAddHistory(currentRunLength: int, runHistory: int[]): void {
+  private finderPenaltyAddHistory(
+    currentRunLength: int,
+    runHistory: int[],
+  ): void {
     if (runHistory[0] == 0) currentRunLength += this.size;
     runHistory.pop();
     runHistory.unshift(currentRunLength);
@@ -473,7 +530,7 @@ function encodeBytes(data: readonly byte[], ecl: Ecc): QrCode {
   // Pick the smallest version that fits the data at the requested ECC level.
   let version = MIN_VERSION;
   let dataUsedBits = 0;
-  for (;; version++) {
+  for (; ; version++) {
     const dataCapacityBits = getNumDataCodewords(version, ecl) * 8;
     const usedBits = 4 + byteModeCharCountBits(version) + data.length * 8;
     if (usedBits <= dataCapacityBits) {
@@ -527,10 +584,7 @@ function toUtf8Bytes(str: string): byte[] {
  * matrix of booleans where `true` means a dark module. Error correction
  * defaults to "M", auto-boosted when spare capacity allows.
  */
-export function qrToMatrix(
-  text: string,
-  ecl: Ecc = ECC.MEDIUM,
-): boolean[][] {
+export function qrToMatrix(text: string, ecl: Ecc = ECC.MEDIUM): boolean[][] {
   const qr = encodeBytes(toUtf8Bytes(text), ecl);
   const matrix: boolean[][] = [];
   for (let y = 0; y < qr.size; y++) {

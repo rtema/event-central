@@ -56,7 +56,8 @@ class DocumentLine:
     position: int
     name: str
     quantity: Decimal
-    price_per_unit_gross: Decimal  # incoming unit price *includes* VAT (per spec)
+    # incoming unit price *includes* VAT (per spec)
+    price_per_unit_gross: Decimal
     net_unit_price: Decimal        # derived net unit price (BT-146)
     net: Decimal                   # line net amount (BT-131)
     tax: Decimal

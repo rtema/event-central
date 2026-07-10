@@ -9,9 +9,7 @@
 //
 // The interface is injectable so tests can drive deterministic fakes.
 
-export type AuthBroadcast =
-  | { type: 'tokens-updated' }
-  | { type: 'logged-out' };
+export type AuthBroadcast = { type: "tokens-updated" } | { type: "logged-out" };
 
 export interface AuthChannel {
   post(message: AuthBroadcast): Promise<void> | void;

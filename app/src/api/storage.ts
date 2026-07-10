@@ -23,7 +23,7 @@ export interface TokenStorage {
   clear(): void;
 }
 
-const STORAGE_KEY = 'event-central.auth.tokens';
+const STORAGE_KEY = "event-central.auth.tokens";
 
 /** localStorage-backed implementation used in the browser. */
 export class LocalTokenStorage implements TokenStorage {

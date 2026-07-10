@@ -67,6 +67,7 @@ def generate_image_preview(image: Image.Image) -> str | None:
         log.warning("preview generation failed", exc_info=True)
         return None
 
+
 def _read_data(data: BytesIO | bytes | bytearray | memoryview) -> bytes:
     if isinstance(data, (bytes, bytearray, memoryview)):
         return bytes(data)
@@ -76,6 +77,7 @@ def _read_data(data: BytesIO | bytes | bytearray | memoryview) -> bytes:
     raw = data.read()
     data.seek(pos)
     return raw
+
 
 # Standard JPEG (Annex K) luminance quantization table — used to estimate the
 # encoding quality of a source JPEG.

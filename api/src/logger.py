@@ -80,7 +80,8 @@ class OpenObserveHandler(logging.Handler):
         self._flush_interval = flush_interval
         self._queue: queue.Queue[str] = queue.Queue(maxsize=10_000)
         self.setFormatter(formatter)
-        self._thread = threading.Thread(target=self._run, daemon=True, name="openobserve-log")
+        self._thread = threading.Thread(
+            target=self._run, daemon=True, name="openobserve-log")
         self._thread.start()
 
     def emit(self, record: logging.LogRecord) -> None:
@@ -94,11 +95,13 @@ class OpenObserveHandler(logging.Handler):
         batch: list[str] = []
         last = time.monotonic()
         while True:
-            timeout = max(0.0, self._flush_interval - (time.monotonic() - last))
+            timeout = max(0.0, self._flush_interval -
+                          (time.monotonic() - last))
             with contextlib.suppress(queue.Empty):
                 batch.append(self._queue.get(timeout=timeout))
             if batch and (
-                len(batch) >= self._batch_size or time.monotonic() - last >= self._flush_interval
+                len(batch) >= self._batch_size or time.monotonic() -
+                    last >= self._flush_interval
             ):
                 self._ship(batch)
                 batch = []
@@ -108,7 +111,8 @@ class OpenObserveHandler(logging.Handler):
         try:
             body = ("[" + ",".join(batch) + "]").encode()
             req = urllib.request.Request(
-                self._endpoint, data=body, headers={"Content-Type": "application/json"}
+                self._endpoint, data=body, headers={
+                    "Content-Type": "application/json"}
             )
             if self._token:
                 req.add_header("Authorization", f"Basic {self._token}")
@@ -120,6 +124,7 @@ class OpenObserveHandler(logging.Handler):
 # save if logging has been configured to prevent the setup from being run twice
 _logging_configured: bool = False
 
+
 def configure_logger(level: str | None = None) -> None:
     global _logging_configured
     if _logging_configured is True:
@@ -127,7 +132,8 @@ def configure_logger(level: str | None = None) -> None:
 
     level = (level or settings.log_level).upper()
     if settings.api_log_format == "json":
-        formatter: logging.Formatter = JsonFormatter(settings.api_service_name, settings.environment)
+        formatter: logging.Formatter = JsonFormatter(
+            settings.api_service_name, settings.environment)
     else:
         formatter = logging.Formatter(
             fmt="%(asctime)s %(levelname)-8s %(name)s :: %(message)s",

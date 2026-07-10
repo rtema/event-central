@@ -56,7 +56,7 @@ def rate(value: object) -> Decimal:
 
 
 def classify_tax(tax: Tax
-) -> tuple[str, Decimal, str | None, str | None]:
+                 ) -> tuple[str, Decimal, str | None, str | None]:
     """Resolve (category, effective_rate, reason, reason_code) for a tax rate.
 
     ``exempt-verein`` (or any zero rate) maps to EN16931 category ``E`` at 0 %
@@ -106,7 +106,8 @@ def build_line(
     factor = Decimal("1") + (tax_rate / Decimal("100"))
 
     # BT-146 item net price: single rounding of the VAT-inclusive unit price.
-    net_unit = money(raw_unit_gross / factor) if factor != 0 else money(raw_unit_gross)
+    net_unit = money(raw_unit_gross /
+                     factor) if factor != 0 else money(raw_unit_gross)
 
     # BT-131 line net amount = round(quantity * BT-146). Exact match with what
     # the validator recomputes from the emitted quantity and net unit price.

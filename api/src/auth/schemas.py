@@ -48,7 +48,7 @@ class AuthUserinfoResponse(BaseModel):
 
 class _PasswordlessAuthParams(BaseModel):
     scope: str
-    redirectUri: str | None = None 
+    redirectUri: str | None = None
     locale: Locale
 
 
@@ -56,7 +56,7 @@ class AuthPasswordlessStartRequest(BaseModel):
     client_id: str | None = None
     connection: Literal["email", "sms"]
     email: EmailStr | None = None
-    phoneNumber: str | None = None 
+    phoneNumber: str | None = None
     send: Literal["link", "code"] = "code"
     authParams: _PasswordlessAuthParams
 

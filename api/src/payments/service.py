@@ -32,7 +32,8 @@ def list_payments(
         base = base.where(Payment.order_id == order_id)
         count_stmt = count_stmt.where(Payment.order_id == order_id)
     if event_id is not None:
-        base = base.join(Order, Order.id == Payment.order_id).where(Order.event_id == event_id)
+        base = base.join(Order, Order.id == Payment.order_id).where(
+            Order.event_id == event_id)
         count_stmt = (
             count_stmt.join(Order, Order.id == Payment.order_id)
             .where(Order.event_id == event_id)
@@ -46,7 +47,8 @@ def list_payments(
 def list_order_payments(db: Session, order_id: uuid.UUID) -> list[Payment]:
     get_order(db, order_id)  # 404 if missing
     stmt = (
-        select(Payment).where(Payment.order_id == order_id).order_by(Payment.created_at.desc())
+        select(Payment).where(Payment.order_id ==
+                              order_id).order_by(Payment.created_at.desc())
     )
     return list(db.execute(stmt).scalars().all())
 

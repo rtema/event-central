@@ -34,11 +34,13 @@ class RefreshToken(Base, CreatedAtMixin):
 
     # Token data
     client_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    scope: Mapped[str] = mapped_column(String(2048), nullable=False, default="")
+    scope: Mapped[str] = mapped_column(
+        String(2048), nullable=False, default="")
 
     # Timing
     expires_at: Mapped[dt.datetime] = mapped_column(TZDateTime, nullable=False)
-    revoked_at: Mapped[dt.datetime | None] = mapped_column(TZDateTime, nullable=True, default=None)
+    revoked_at: Mapped[dt.datetime | None] = mapped_column(
+        TZDateTime, nullable=True, default=None)
 
     @property
     def is_active(self) -> bool:
@@ -54,18 +56,20 @@ class AuthChallenge(Base, CreatedAtMixin):
         UUIDType, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=True
     )
 
-
     purpose: Mapped[str] = mapped_column(String(32), nullable=False)
     channel: Mapped[str | None] = mapped_column(String(16), nullable=True)
-    destination: Mapped[str] = mapped_column(String(320), nullable=False, index=True)
+    destination: Mapped[str] = mapped_column(
+        String(320), nullable=False, index=True)
     code_hash: Mapped[str] = mapped_column(String(512), nullable=False)
     client_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     scope: Mapped[str | None] = mapped_column(String(2048), nullable=True)
-    redirect_uri: Mapped[str | None] = mapped_column(String(2048), nullable=True)
+    redirect_uri: Mapped[str | None] = mapped_column(
+        String(2048), nullable=True)
 
     # Timing
     expires_at: Mapped[dt.datetime] = mapped_column(TZDateTime, nullable=False)
-    consumed_at: Mapped[dt.datetime | None] = mapped_column(TZDateTime, nullable=True, default=None)
+    consumed_at: Mapped[dt.datetime | None] = mapped_column(
+        TZDateTime, nullable=True, default=None)
 
     @property
     def is_valid(self) -> bool:

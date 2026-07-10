@@ -97,20 +97,21 @@ def _run_job(db: Session, job: Job) -> None:
 
 
 def _install_signal_handlers() -> None:
-    def _handle(exit_code: int, _frame): # type: ignore
+    def _handle(exit_code: int, _frame):  # type: ignore
         global _shutdown
         log.info("received signal %s, shutting down after current job", exit_code)
         _shutdown = True
 
-    signal.signal(signal.SIGTERM, _handle) # type: ignore
-    signal.signal(signal.SIGINT, _handle) # type: ignore
+    signal.signal(signal.SIGTERM, _handle)  # type: ignore
+    signal.signal(signal.SIGINT, _handle)  # type: ignore
 
 
 def run() -> None:
     configure_logger(settings.log_level)
     _install_signal_handlers()
     worker_id = _worker_id()
-    log.info("queue handler started (%s); %d handler(s) registered", worker_id, len(_HANDLERS))
+    log.info("queue handler started (%s); %d handler(s) registered",
+             worker_id, len(_HANDLERS))
 
     while not _shutdown:
         with SessionLocal() as db:

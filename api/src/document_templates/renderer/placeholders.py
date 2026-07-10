@@ -272,7 +272,7 @@ def generate_invoice_placeholders(invoice: Invoice | None, locale: str) -> dict[
 
             placeholders['supplierIban'] += escape(
                 invoice.supplier.get('iban', ''))
-            
+
             placeholders['supplierBankName'] += escape(
                 invoice.supplier.get('bankName', ''))
 

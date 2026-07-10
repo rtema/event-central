@@ -11,12 +11,16 @@ import axios, {
   type AxiosInstance,
   type AxiosError,
   type InternalAxiosRequestConfig,
-} from 'axios';
-import { BroadcastChannelAuthChannel, NoopAuthChannel, type AuthChannel } from './broadcast';
-import { createCrossTabLock, type CrossTabLock } from './lock';
-import { LocalTokenStorage, type TokenStorage } from './storage';
-import { TokenManager, type RefreshFn } from './tokenManager';
-import type { AuthTokenResponse } from './types';
+} from "axios";
+import {
+  BroadcastChannelAuthChannel,
+  NoopAuthChannel,
+  type AuthChannel,
+} from "./broadcast";
+import { createCrossTabLock, type CrossTabLock } from "./lock";
+import { LocalTokenStorage, type TokenStorage } from "./storage";
+import { TokenManager, type RefreshFn } from "./tokenManager";
+import type { AuthTokenResponse } from "./types";
 
 interface RetryableConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
@@ -24,11 +28,11 @@ interface RetryableConfig extends InternalAxiosRequestConfig {
 }
 
 const AUTH_PATHS = [
-  '/auth/token',
-  '/auth/revoke',
-  '/auth/passwordless/start',
-  '/auth/password-reset/start',
-  '/auth/password-reset/confirm',
+  "/auth/token",
+  "/auth/revoke",
+  "/auth/passwordless/start",
+  "/auth/password-reset/start",
+  "/auth/password-reset/confirm",
 ];
 
 /** Endpoints that must never carry a bearer token nor trigger a refresh-retry. */
@@ -66,17 +70,17 @@ export function toRequestError(err: unknown): RequestError {
     const message =
       data?.message ??
       data?.error_description ??
-      (typeof data?.error === 'string' ? data.error : undefined) ??
+      (typeof data?.error === "string" ? data.error : undefined) ??
       err.message;
     return {
-      message: message || 'Request failed',
+      message: message || "Request failed",
       status,
       code: data?.code != null ? String(data.code) : err.code,
       correlationId: data?.correlationId,
     };
   }
   if (err instanceof Error) return { message: err.message };
-  return { message: 'Unknown error' };
+  return { message: "Unknown error" };
 }
 
 export interface ApiClientOptions {
@@ -104,8 +108,8 @@ export function createApiClient(opts: ApiClientOptions): ApiClient {
   const refreshFn: RefreshFn =
     opts.refreshFn ??
     (async (refreshToken: string): Promise<AuthTokenResponse> => {
-      const { data } = await bare.post<AuthTokenResponse>('/auth/token', {
-        grant_type: 'refresh_token',
+      const { data } = await bare.post<AuthTokenResponse>("/auth/token", {
+        grant_type: "refresh_token",
         refresh_token: refreshToken,
         client_id: clientId,
         ...(scope ? { scope } : {}),
@@ -127,7 +131,7 @@ export function createApiClient(opts: ApiClientOptions): ApiClient {
     if (!isAuthEndpoint(config.url)) {
       const token = tokenManager.getAccessToken();
       if (token) {
-        config.headers.set?.('Authorization', `Bearer ${token}`);
+        config.headers.set?.("Authorization", `Bearer ${token}`);
         config._triggerToken = token;
       }
     }
@@ -153,7 +157,7 @@ export function createApiClient(opts: ApiClientOptions): ApiClient {
       config._retry = true;
       try {
         const tokens = await tokenManager.refresh(config._triggerToken);
-        config.headers.set?.('Authorization', `Bearer ${tokens.accessToken}`);
+        config.headers.set?.("Authorization", `Bearer ${tokens.accessToken}`);
         return client(config);
       } catch {
         // Refresh failed: TokenManager has already cleared state + broadcast
@@ -168,8 +172,8 @@ export function createApiClient(opts: ApiClientOptions): ApiClient {
 
 /** Browser factory: builds the cross-tab channel from `broadcast-channel`. */
 export async function createBrowserAuthChannel(): Promise<AuthChannel> {
-  const { BroadcastChannel } = await import('broadcast-channel');
+  const { BroadcastChannel } = await import("broadcast-channel");
   return new BroadcastChannelAuthChannel(
-    new BroadcastChannel('event-central.auth') as never,
+    new BroadcastChannel("event-central.auth") as never,
   );
 }

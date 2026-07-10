@@ -91,7 +91,8 @@ def require_event_path_scope(resource: str, action: str):
 
     def _dep(
         event_id: str,
-        authenticated_actor: AuthenticatedActor = Depends(get_authenticated_actor),
+        authenticated_actor: AuthenticatedActor = Depends(
+            get_authenticated_actor),
     ) -> AuthenticatedActor:
         required = [
             scope_utils.build_scope(resource, action, "all"),

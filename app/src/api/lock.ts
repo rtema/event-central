@@ -25,14 +25,17 @@ export interface CrossTabLock {
 
 interface WebLocksNavigator {
   locks?: {
-    request: (name: string, callback: () => Promise<unknown>) => Promise<unknown>;
+    request: (
+      name: string,
+      callback: () => Promise<unknown>,
+    ) => Promise<unknown>;
   };
 }
 
 export class WebLocksAdapter implements CrossTabLock {
   static isSupported(): boolean {
     const nav = globalThis.navigator as WebLocksNavigator | undefined;
-    return typeof nav?.locks?.request === 'function';
+    return typeof nav?.locks?.request === "function";
   }
 
   run<T>(name: string, fn: () => Promise<T>): Promise<T> {
@@ -49,7 +52,10 @@ export class InMemoryLock implements CrossTabLock {
     const previous = this.chains.get(name) ?? Promise.resolve();
     // Each caller waits for the previous holder, then runs. Errors in one
     // holder must not break the chain for the next.
-    const result = previous.then(() => fn(), () => fn());
+    const result = previous.then(
+      () => fn(),
+      () => fn(),
+    );
     // Keep the chain alive regardless of success/failure of `result`.
     this.chains.set(
       name,
@@ -64,5 +70,7 @@ export class InMemoryLock implements CrossTabLock {
 
 /** Pick the best available lock for the current environment. */
 export function createCrossTabLock(): CrossTabLock {
-  return WebLocksAdapter.isSupported() ? new WebLocksAdapter() : new InMemoryLock();
+  return WebLocksAdapter.isSupported()
+    ? new WebLocksAdapter()
+    : new InMemoryLock();
 }

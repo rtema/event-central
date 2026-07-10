@@ -70,8 +70,7 @@ const devServer = (): Plugin => ({
     //   if (req.url?.startsWith("/")) {
     //     console.log(`[DEV-SERVER] Updated: "${req.url}" to "index.html"`);
     //     req.url = "/index.html";
-    //   } 
-      
+    //   }
     //   // else if (req.url === "/") {
     //   //   console.log(`[DEV-SERVER] Updated: "${req.url}" to "index.html"`);
     //   //   req.url = "/index.html";

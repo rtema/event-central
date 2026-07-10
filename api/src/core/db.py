@@ -29,7 +29,8 @@ _engine = create_engine(
     future=True,
 )
 
-SessionLocal = sessionmaker(bind=_engine, autoflush=False, expire_on_commit=False, future=True)
+SessionLocal = sessionmaker(
+    bind=_engine, autoflush=False, expire_on_commit=False, future=True)
 
 
 def get_engine():

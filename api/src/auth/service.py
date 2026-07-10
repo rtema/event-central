@@ -73,11 +73,13 @@ def issue_token_pair(
     client_id: str | None,
 ) -> AuthTokenResponse:
     owned = active_scopes_for_user(db, user.id)
-    granted = scope_utils.filter_grantable(scope_utils.parse_scope(requested_scope), owned)
+    granted = scope_utils.filter_grantable(
+        scope_utils.parse_scope(requested_scope), owned)
     scope_str = scope_utils.join_scope(granted)
 
     sub = f"user:{user.id}"
-    access, expires_in = create_access_token(sub=sub, scope=scope_str, client_id=client_id)
+    access, expires_in = create_access_token(
+        sub=sub, scope=scope_str, client_id=client_id)
     refresh, jti, expires_at = create_refresh_token(
         sub=sub, scope=scope_str, client_id=client_id
     )
@@ -111,7 +113,8 @@ def grant_password(
     client_id: str | None,
 ) -> AuthTokenResponse:
     if not username or not password:
-        raise AuthError("invalid_request", description="username and password are required")
+        raise AuthError("invalid_request",
+                        description="username and password are required")
 
     user = find_active_user_by_email(db, username)
     # Always run a hash verification to reduce username-enumeration timing leaks.
@@ -130,7 +133,8 @@ def grant_refresh(
     db: Session, *, refresh_token: str | None, scope: str | None, client_id: str | None
 ) -> AuthTokenResponse:
     if not refresh_token:
-        raise AuthError("invalid_request", description="refresh_token is required")
+        raise AuthError("invalid_request",
+                        description="refresh_token is required")
     try:
         claims = decode_token(refresh_token, expected_type=REFRESH_TOKEN_TYPE)
     except TokenError as exc:
@@ -146,7 +150,8 @@ def grant_refresh(
 
     user = db.get(User, record.user_id)
     if user is None or user.deleted_at is not None:
-        raise AuthError("invalid_grant", description="account is unavailable", http_status=401)
+        raise AuthError("invalid_grant",
+                        description="account is unavailable", http_status=401)
 
     # Rotate: revoke the presented token, issue a fresh pair.
     record.revoked_at = _now()
@@ -164,11 +169,14 @@ def grant_passwordless_otp(
     db: Session, *, username: str | None, otp: str | None, scope: str | None, client_id: str | None
 ) -> AuthTokenResponse:
     if not username or not otp:
-        raise AuthError("invalid_request", description="username and otp are required")
+        raise AuthError("invalid_request",
+                        description="username and otp are required")
 
-    challenge = _latest_valid_challenge(db, destination=username, purpose="passwordless")
+    challenge = _latest_valid_challenge(
+        db, destination=username, purpose="passwordless")
     if challenge is None or not verify_hashed_secret(otp, challenge.code_hash):
-        raise AuthError("invalid_grant", description="invalid or expired code", http_status=401)
+        raise AuthError("invalid_grant",
+                        description="invalid or expired code", http_status=401)
 
     user = (
         db.get(User, challenge.user_id)
@@ -176,7 +184,8 @@ def grant_passwordless_otp(
         else find_active_user_by_email(db, username)
     )
     if user is None or user.deleted_at is not None:
-        raise AuthError("invalid_grant", description="account is unavailable", http_status=401)
+        raise AuthError("invalid_grant",
+                        description="account is unavailable", http_status=401)
 
     challenge.consumed_at = _now()
     requested = scope or challenge.scope
@@ -263,14 +272,17 @@ def create_challenge(
 
 
 def confirm_password_reset(db: Session, *, email: str, code: str, new_password: str) -> bool:
-    challenge = _latest_valid_challenge(db, destination=email, purpose="password-reset")
+    challenge = _latest_valid_challenge(
+        db, destination=email, purpose="password-reset")
     if challenge is None or not verify_hashed_secret(code, challenge.code_hash):
-        raise AuthError("invalid_grant", description="invalid or expired code", http_status=400)
+        raise AuthError("invalid_grant",
+                        description="invalid or expired code", http_status=400)
 
     user = find_active_user_by_email(db, email)
     if user is None:
         # Opaque-ish: the challenge existed, but the account is gone.
-        raise AuthError("invalid_grant", description="invalid or expired code", http_status=400)
+        raise AuthError("invalid_grant",
+                        description="invalid or expired code", http_status=400)
 
     challenge.consumed_at = _now()
 
@@ -336,4 +348,5 @@ def verify_access_token(db: Session, token: str) -> tuple[str, set[str], str | N
         user, user_scopes = resolved
         return f"user:{user.id}", user_scopes, None
 
-    raise AuthError("invalid_token", description="invalid or expired token", http_status=401)
+    raise AuthError("invalid_token",
+                    description="invalid or expired token", http_status=401)

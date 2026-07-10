@@ -65,7 +65,8 @@ class Tax(Base, CreatedAtMixin, CreatedByMixin):
                                  None] = mapped_column(Text, nullable=True)
 
     # Relationships
-    line_items: Mapped[list[InvoiceLineItem]] = relationship(back_populates="tax")
+    line_items: Mapped[list[InvoiceLineItem]
+                       ] = relationship(back_populates="tax")
 
 
 class Invoice(Base, CreatedAtMixin, CreatedByMixin):

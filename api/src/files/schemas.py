@@ -52,8 +52,6 @@ class FilesListResponse(CamelModel):
 
 
 class FileSearchParams(CamelModel):
-    # model_config = {"populate_by_name": True}
-
     q: str | None = Field(
         default=None, description="Generic free-text search term")
 

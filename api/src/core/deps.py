@@ -24,7 +24,8 @@ class PageParams:
 
 
 def page_params(
-    limit: int = Query(default=100, ge=1, le=1000, description="Max items to return"),
+    limit: int = Query(default=100, ge=1, le=1000,
+                       description="Max items to return"),
     # The spec types Offset as a string, but the Pagination.currentOffset it
     # pairs with is an integer; a non-negative integer offset is used here.
     offset: int = Query(default=0, ge=0, description="Items to skip"),

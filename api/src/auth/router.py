@@ -91,7 +91,7 @@ def auth_passwordless_start(
     destination = body.email or body.phoneNumber
     if not destination:
         raise AuthError("invalid_request",
-                       description="email or phoneNumber is required")
+                        description="email or phoneNumber is required")
 
     auth_service.create_challenge(
         db,

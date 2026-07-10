@@ -80,7 +80,8 @@ def _make_finisher() -> Any:
                 continue
             raw = b"".join(
                 # type: ignore
-                x if isinstance(x, bytes) else str(x).encode() for x in obj.stream # type: ignore
+                # type: ignore
+                x if isinstance(x, bytes) else str(x).encode() for x in obj.stream
             )
             if b"</rdf:RDF>" in raw:
                 obj.stream = [raw.replace(

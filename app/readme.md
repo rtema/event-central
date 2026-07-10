@@ -17,18 +17,18 @@ per-user schemaless data store. It talks to the Event Central OpenAPI surface
 
 ## The cross-tab token fetcher
 
-The requirement was a fetcher for protected endpoints that *silently* revalidates
+The requirement was a fetcher for protected endpoints that _silently_ revalidates
 tokens and stays correct across multiple browser tabs. The implementation lives
 in `src/api/` and is split into small, individually testable pieces:
 
-| File | Responsibility |
-| --- | --- |
-| `storage.ts` | Token persistence. `localStorage` is the cross-tab source of truth; an in-memory variant backs the tests. |
-| `lock.ts` | Cross-tab mutual exclusion. Uses the **Web Locks API** (`navigator.locks`) when available, with an in-memory fallback. |
-| `broadcast.ts` | Cross-tab messaging over the validated **`broadcast-channel`** package (BroadcastChannel with localStorage/indexedDB fallbacks). |
-| `tokenManager.ts` | Owns the token lifecycle: single-flight refresh, cross-tab serialisation, and change/logout propagation. |
-| `client.ts` | The axios instance + interceptors that attach the bearer token and transparently refresh-and-replay on a `401`. |
-| `instance.ts` | The app-wide singleton wiring of the above. |
+| File              | Responsibility                                                                                                                   |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `storage.ts`      | Token persistence. `localStorage` is the cross-tab source of truth; an in-memory variant backs the tests.                        |
+| `lock.ts`         | Cross-tab mutual exclusion. Uses the **Web Locks API** (`navigator.locks`) when available, with an in-memory fallback.           |
+| `broadcast.ts`    | Cross-tab messaging over the validated **`broadcast-channel`** package (BroadcastChannel with localStorage/indexedDB fallbacks). |
+| `tokenManager.ts` | Owns the token lifecycle: single-flight refresh, cross-tab serialisation, and change/logout propagation.                         |
+| `client.ts`       | The axios instance + interceptors that attach the bearer token and transparently refresh-and-replay on a `401`.                  |
+| `instance.ts`     | The app-wide singleton wiring of the above.                                                                                      |
 
 **How a silent refresh works**
 
@@ -49,7 +49,7 @@ in `src/api/` and is split into small, individually testable pieces:
 6. On failure the session is cleared and a `logged-out` message is broadcast, so
    all tabs return to the login screen together.
 
-The refresh call itself uses a *bare* axios instance with no interceptors, so a
+The refresh call itself uses a _bare_ axios instance with no interceptors, so a
 `401` during refresh can never recurse back into the refresh logic. The `/auth/*`
 token, revoke, password-reset and passwordless endpoints are recognised as auth
 endpoints and never carry a bearer token nor trigger a retry; `/auth/userinfo`
@@ -82,23 +82,23 @@ npm run dev                 # http://localhost:5173
 
 ### Environment variables
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `VITE_API_BASE_URL` | `http://localhost:7435` | Event Central API base URL. The EU node is `https://eu-01.event-central.tema-dev.de`. |
-| `VITE_CLIENT_ID` | `event-central-admin` | OAuth client id used in token requests. |
-| `VITE_DEFAULT_SCOPE` | `users:read:all users:write:all backend:read` | Space-delimited scopes requested at login. |
+| Variable             | Default                                       | Purpose                                                                               |
+| -------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `VITE_API_BASE_URL`  | `http://localhost:7435`                       | Event Central API base URL. The EU node is `https://eu-01.event-central.tema-dev.de`. |
+| `VITE_CLIENT_ID`     | `event-central-admin`                         | OAuth client id used in token requests.                                               |
+| `VITE_DEFAULT_SCOPE` | `users:read:all users:write:all backend:read` | Space-delimited scopes requested at login.                                            |
 
 ## Scripts
 
-| Script | What it does |
-| --- | --- |
-| `npm run dev` | Start the Vite dev server. |
-| `npm run build` | Typecheck (`tsc --noEmit`) then build to `dist/`. |
-| `npm run preview` | Serve the production build locally. |
-| `npm test` | Run the Vitest suite once. |
-| `npm run test:watch` | Run Vitest in watch mode. |
-| `npm run lint` | Typecheck without emitting. |
-| `npm run i18n:extract` | Extract translatable strings into the `.po` catalogs. |
+| Script                 | What it does                                                       |
+| ---------------------- | ------------------------------------------------------------------ |
+| `npm run dev`          | Start the Vite dev server.                                         |
+| `npm run build`        | Typecheck (`tsc --noEmit`) then build to `dist/`.                  |
+| `npm run preview`      | Serve the production build locally.                                |
+| `npm test`             | Run the Vitest suite once.                                         |
+| `npm run test:watch`   | Run Vitest in watch mode.                                          |
+| `npm run lint`         | Typecheck without emitting.                                        |
+| `npm run i18n:extract` | Extract translatable strings into the `.po` catalogs.              |
 | `npm run i18n:compile` | Compile the catalogs (also done automatically by the Vite plugin). |
 
 ## Internationalisation

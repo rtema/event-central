@@ -48,7 +48,8 @@ def content_type_for(filename: str) -> str:
 
 
 def _select_invoices(db: Session, accounting_entity: str | None) -> list[Invoice]:
-    stmt = select(Invoice).order_by(Invoice.accounting_entity, Invoice.accounting_number)
+    stmt = select(Invoice).order_by(
+        Invoice.accounting_entity, Invoice.accounting_number)
     if accounting_entity:
         stmt = stmt.where(Invoice.accounting_entity == accounting_entity)
     return list(db.execute(stmt).scalars().all())
@@ -179,7 +180,8 @@ def run_export_job(db: Session, job: Job) -> None:
     payload = job.payload or {}
     export_format = payload.get("format", "xlsx")
     accounting_entity = payload.get("accounting_entity")
-    file_name = payload.get("file_name") or export_filename(export_format, accounting_entity)
+    file_name = payload.get("file_name") or export_filename(
+        export_format, accounting_entity)
 
     job.status = "running"
     job.attempts = (job.attempts or 0) + 1
@@ -187,7 +189,8 @@ def run_export_job(db: Session, job: Job) -> None:
 
     try:
         invoices = _select_invoices(db, accounting_entity)
-        data = build_zip(invoices) if export_format == "zip" else build_xlsx(db, invoices)
+        data = build_zip(
+            invoices) if export_format == "zip" else build_xlsx(db, invoices)
 
         key = f"exports/{job.id}/{file_name}"
         get_storage().put(key, data, content_type=content_type_for(file_name))

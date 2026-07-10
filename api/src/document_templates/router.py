@@ -79,7 +79,7 @@ def create_public_document_template(
     public_document_template = service.create_public_document_template(
         db,
         public_document_template_id=body.id,
-        body=body, 
+        body=body,
         actor=actor.sub
     )
     return PublicDocumentTemplateResponse(

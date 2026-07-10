@@ -13,23 +13,23 @@
 //     `logged-out`. Other tabs react via the channel; this tab notifies its own
 //     listeners directly.
 
-import type { AuthChannel, AuthBroadcast } from './broadcast';
-import type { CrossTabLock } from './lock';
-import type { StoredTokens, TokenStorage } from './storage';
-import type { AuthTokenResponse } from './types';
+import type { AuthChannel, AuthBroadcast } from "./broadcast";
+import type { CrossTabLock } from "./lock";
+import type { StoredTokens, TokenStorage } from "./storage";
+import type { AuthTokenResponse } from "./types";
 
-const REFRESH_LOCK = 'event-central.token-refresh';
+const REFRESH_LOCK = "event-central.token-refresh";
 
 export class RefreshError extends Error {
-  readonly reason: 'no_refresh_token' | 'refresh_failed';
+  readonly reason: "no_refresh_token" | "refresh_failed";
 
   constructor(
-    reason: 'no_refresh_token' | 'refresh_failed',
+    reason: "no_refresh_token" | "refresh_failed",
     options?: { cause?: unknown },
   ) {
     super(`Token refresh failed: ${reason}`);
     this.reason = reason;
-    this.name = 'RefreshError';
+    this.name = "RefreshError";
     if (options?.cause !== undefined) this.cause = options.cause;
   }
 }
@@ -47,18 +47,21 @@ export interface TokenManagerOptions {
   refreshFn: RefreshFn;
 }
 
-export function mapTokenResponse(res: AuthTokenResponse, previous?: StoredTokens | null): StoredTokens {
+export function mapTokenResponse(
+  res: AuthTokenResponse,
+  previous?: StoredTokens | null,
+): StoredTokens {
   const accessToken = res.access_token;
   if (!accessToken) {
-    throw new RefreshError('refresh_failed');
+    throw new RefreshError("refresh_failed");
   }
   return {
     accessToken,
     // Some servers omit a rotated refresh token; keep the previous one then.
-    refreshToken: res.refresh_token ?? previous?.refreshToken ?? '',
+    refreshToken: res.refresh_token ?? previous?.refreshToken ?? "",
     expiresAt: res.expires_in ? Date.now() + res.expires_in * 1000 : undefined,
     scope: res.scope ?? previous?.scope,
-    tokenType: res.token_type ?? previous?.tokenType ?? 'Bearer',
+    tokenType: res.token_type ?? previous?.tokenType ?? "Bearer",
   };
 }
 
@@ -100,7 +103,7 @@ export class TokenManager {
   setTokens(tokens: StoredTokens): void {
     this.storage.write(tokens);
     this.emitTokens(tokens);
-    void this.channel.post({ type: 'tokens-updated' });
+    void this.channel.post({ type: "tokens-updated" });
   }
 
   /** Clear all auth state (logout / unrecoverable refresh failure). Broadcasts. */
@@ -108,7 +111,7 @@ export class TokenManager {
     this.storage.clear();
     this.emitTokens(null);
     this.emitLogout();
-    void this.channel.post({ type: 'logged-out' });
+    void this.channel.post({ type: "logged-out" });
   }
 
   // ---- refresh (single-flight, cross-tab) ----
@@ -128,10 +131,16 @@ export class TokenManager {
     return this.refreshPromise;
   }
 
-  private async doRefresh(staleAccessToken?: string | null): Promise<StoredTokens> {
+  private async doRefresh(
+    staleAccessToken?: string | null,
+  ): Promise<StoredTokens> {
     // Double-check inside the lock: another tab/request may have already done it.
     const current = this.storage.read();
-    if (current?.accessToken && staleAccessToken && current.accessToken !== staleAccessToken) {
+    if (
+      current?.accessToken &&
+      staleAccessToken &&
+      current.accessToken !== staleAccessToken
+    ) {
       this.emitTokens(current);
       return current;
     }
@@ -139,7 +148,7 @@ export class TokenManager {
     const refreshToken = current?.refreshToken;
     if (!refreshToken) {
       this.clear();
-      throw new RefreshError('no_refresh_token');
+      throw new RefreshError("no_refresh_token");
     }
 
     try {
@@ -153,7 +162,7 @@ export class TokenManager {
         throw err;
       }
       this.clear();
-      throw new RefreshError('refresh_failed', { cause: err });
+      throw new RefreshError("refresh_failed", { cause: err });
     }
   }
 
@@ -186,11 +195,11 @@ export class TokenManager {
   }
 
   private handleBroadcast = (message: AuthBroadcast): void => {
-    if (message.type === 'tokens-updated') {
+    if (message.type === "tokens-updated") {
       // Another tab refreshed/updated tokens; storage already holds the new
       // values. Re-read and notify our own reactive listeners.
       this.emitTokens(this.storage.read());
-    } else if (message.type === 'logged-out') {
+    } else if (message.type === "logged-out") {
       // Another tab logged out. Reflect locally WITHOUT re-broadcasting.
       this.storage.clear();
       this.emitTokens(null);

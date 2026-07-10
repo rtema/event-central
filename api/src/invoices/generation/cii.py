@@ -38,7 +38,8 @@ def _q(prefix: str, local: str) -> str:
 
 
 def _sub(parent: ET.Element, qname: str, text: str | None = None, **attrs: str) -> ET.Element:
-    el = ET.SubElement(parent, qname, {k: v for k, v in attrs.items() if v is not None}) # type: ignore
+    el = ET.SubElement(parent, qname, {
+                       k: v for k, v in attrs.items() if v is not None})  # type: ignore
     if text is not None:
         el.text = text
     return el
@@ -50,7 +51,8 @@ def _amount(value: Decimal) -> str:
 
 def _date_str(parent: ET.Element, qname: str, value: dt.date) -> None:
     el = _sub(parent, qname)
-    _sub(el, _q("udt", "DateTimeString"), value.strftime("%Y%m%d"), format="102")
+    _sub(el, _q("udt", "DateTimeString"),
+         value.strftime("%Y%m%d"), format="102")
 
 
 def _electronic_address(party: Party) -> tuple[str, str] | None:
@@ -132,7 +134,8 @@ def _line_item(parent: ET.Element, line: DocumentLine) -> None:
     _sub(net_price, _q("ram", "ChargeAmount"), _amount(line.net_unit_price))
 
     delivery = _sub(item, _q("ram", "SpecifiedLineTradeDelivery"))
-    _sub(delivery, _q("ram", "BilledQuantity"), f"{line.quantity:g}", unitCode="C62")
+    _sub(delivery, _q("ram", "BilledQuantity"),
+         f"{line.quantity:g}", unitCode="C62")
 
     settlement = _sub(item, _q("ram", "SpecifiedLineTradeSettlement"))
     tax = _sub(settlement, _q("ram", "ApplicableTradeTax"))
@@ -144,7 +147,8 @@ def _line_item(parent: ET.Element, line: DocumentLine) -> None:
         _sub(tax, _q("ram", "ExemptionReasonCode"), line.exemption_reason_code)
     _sub(tax, _q("ram", "RateApplicablePercent"), _amount(line.tax_rate))
 
-    summation = _sub(settlement, _q("ram", "SpecifiedTradeSettlementLineMonetarySummation"))
+    summation = _sub(settlement, _q(
+        "ram", "SpecifiedTradeSettlementLineMonetarySummation"))
     _sub(summation, _q("ram", "LineTotalAmount"), _amount(line.net))
 
 
@@ -166,9 +170,11 @@ def build_cii_xml(
     #    (BT-24) this document conforms to. BusinessProcess MUST come first per
     #    the CII (D16B) schema sequence.
     ctx = _sub(root, _q("rsm", "ExchangedDocumentContext"))
-    process = _sub(ctx, _q("ram", "BusinessProcessSpecifiedDocumentContextParameter"))
+    process = _sub(
+        ctx, _q("ram", "BusinessProcessSpecifiedDocumentContextParameter"))
     _sub(process, _q("ram", "ID"), business_process)
-    guideline = _sub(ctx, _q("ram", "GuidelineSpecifiedDocumentContextParameter"))
+    guideline = _sub(
+        ctx, _q("ram", "GuidelineSpecifiedDocumentContextParameter"))
     _sub(guideline, _q("ram", "ID"), spec_id)
 
     # 2) Document header (BT-1/BT-3/BT-2 + notes).
@@ -188,8 +194,10 @@ def build_cii_xml(
     # 3a) Agreement: buyer reference + the two parties.
     agreement = _sub(txn, _q("ram", "ApplicableHeaderTradeAgreement"))
     _sub(agreement, _q("ram", "BuyerReference"), doc.buyer_reference or "N/A")
-    _party(agreement, _q("ram", "SellerTradeParty"), doc.supplier, is_seller=True)
-    _party(agreement, _q("ram", "BuyerTradeParty"), doc.recipient, is_seller=False)
+    _party(agreement, _q("ram", "SellerTradeParty"),
+           doc.supplier, is_seller=True)
+    _party(agreement, _q("ram", "BuyerTradeParty"),
+           doc.recipient, is_seller=False)
     if doc.order_external_id:
         order_ref = _sub(agreement, _q("ram", "BuyerOrderReferencedDocument"))
         _sub(order_ref, _q("ram", "IssuerAssignedID"), doc.order_external_id)
@@ -203,7 +211,8 @@ def build_cii_xml(
     _sub(settlement, _q("ram", "InvoiceCurrencyCode"), doc.currency)
 
     if doc.supplier.iban:
-        means = _sub(settlement, _q("ram", "SpecifiedTradeSettlementPaymentMeans"))
+        means = _sub(settlement, _q(
+            "ram", "SpecifiedTradeSettlementPaymentMeans"))
         _sub(means, _q("ram", "TypeCode"), "58")  # SEPA credit transfer
         account = _sub(means, _q("ram", "PayeePartyCreditorFinancialAccount"))
         _sub(account, _q("ram", "IBANID"), doc.supplier.iban)
@@ -217,14 +226,16 @@ def build_cii_xml(
         _sub(tax, _q("ram", "BasisAmount"), _amount(entry.basis))
         _sub(tax, _q("ram", "CategoryCode"), entry.category)
         if entry.category == "E" and entry.exemption_reason_code:
-            _sub(tax, _q("ram", "ExemptionReasonCode"), entry.exemption_reason_code)
+            _sub(tax, _q("ram", "ExemptionReasonCode"),
+                 entry.exemption_reason_code)
         _sub(tax, _q("ram", "RateApplicablePercent"), _amount(entry.rate))
 
     if doc.due_date:
         terms = _sub(settlement, _q("ram", "SpecifiedTradePaymentTerms"))
         _date_str(terms, _q("ram", "DueDateDateTime"), doc.due_date)
 
-    money_sum = _sub(settlement, _q("ram", "SpecifiedTradeSettlementHeaderMonetarySummation"))
+    money_sum = _sub(settlement, _q(
+        "ram", "SpecifiedTradeSettlementHeaderMonetarySummation"))
     _sub(money_sum, _q("ram", "LineTotalAmount"), _amount(doc.total_net))
     _sub(money_sum, _q("ram", "TaxBasisTotalAmount"), _amount(doc.total_net))
     _sub(

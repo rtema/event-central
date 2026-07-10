@@ -27,7 +27,8 @@ def require_order_scope(resource: str, action: str):
     def _dep(
         order_id: uuid.UUID,
         db: Session = Depends(get_db),
-        authenticated_actor: AuthenticatedActor = Depends(get_authenticated_actor),
+        authenticated_actor: AuthenticatedActor = Depends(
+            get_authenticated_actor),
     ) -> AuthenticatedActor:
         order = get_order(db, order_id)  # 404 if the order is unknown
         required = [

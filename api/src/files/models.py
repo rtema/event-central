@@ -24,7 +24,7 @@ class File(Base, CreatedAtMixin, CreatedByMixin, DeletedAtMixin, DeletedByMixin)
 
     Images: Processed versions for web are stored like follows
     /files/{base_path}/{file_id}/processed-w{processed_width}.{processed_extension}
-    
+
     """
 
     __tablename__ = "files"
@@ -51,7 +51,7 @@ class File(Base, CreatedAtMixin, CreatedByMixin, DeletedAtMixin, DeletedByMixin)
     # Part of the url, that will be matched when displaying the file
     access_key: Mapped[str] = mapped_column(
         String(2048), nullable=False, unique=True)
-    
+
     # Base path of the storage location
     base_path: Mapped[str] = mapped_column(
         String(2048), nullable=False)

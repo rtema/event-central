@@ -25,13 +25,15 @@ def require_invoice_scope(action: str):
     def _dep(
         invoice_id: uuid.UUID,
         db: Session = Depends(get_db),
-        authenticated_actor: AuthenticatedActor = Depends(get_authenticated_actor),
+        authenticated_actor: AuthenticatedActor = Depends(
+            get_authenticated_actor),
     ) -> AuthenticatedActor:
         invoice = get_invoice(db, invoice_id)  # 404 if unknown
         granted = authenticated_actor.scopes
 
         all_scope = scope_utils.build_scope("invoices", action, "all")
-        event_scope = scope_utils.build_scope("invoices", action, invoice.order.event_id)
+        event_scope = scope_utils.build_scope(
+            "invoices", action, invoice.order.event_id)
         own_scope = f"invoices:{action}:own"
 
         allowed = scope_utils.has_any(granted, [all_scope, event_scope]) or (

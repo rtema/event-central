@@ -5,10 +5,10 @@
 // (localStorage), the single-flight cross-tab refresh, and broadcast
 // propagation; this facade just exposes the small surface the React layer
 // needs (get / set / clear / subscribe) in the shape it expects.
-import { tokenManager } from './instance';
-import { mapTokenResponse } from './tokenManager';
-import type { StoredTokens } from './storage';
-import type { AuthTokenResponse } from './types';
+import { tokenManager } from "./instance";
+import { mapTokenResponse } from "./tokenManager";
+import type { StoredTokens } from "./storage";
+import type { AuthTokenResponse } from "./types";
 
 export type TokenSet = StoredTokens;
 

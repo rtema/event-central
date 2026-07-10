@@ -5,13 +5,13 @@
 // Everything the UI touches goes through `api` (the authed axios instance):
 // the request interceptor attaches the bearer token, and a 401 transparently
 // triggers a single-flight, cross-tab-serialised refresh + replay.
-import { BroadcastChannel } from 'broadcast-channel';
-import { config } from '../config';
-import { BroadcastChannelAuthChannel } from './broadcast';
-import { createApiClient } from './client';
+import { BroadcastChannel } from "broadcast-channel";
+import { config } from "../config";
+import { BroadcastChannelAuthChannel } from "./broadcast";
+import { createApiClient } from "./client";
 
 const channel = new BroadcastChannelAuthChannel(
-  new BroadcastChannel('event-central.auth') as never,
+  new BroadcastChannel("event-central.auth") as never,
 );
 
 export const { client, tokenManager } = createApiClient({

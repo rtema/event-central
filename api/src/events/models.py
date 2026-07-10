@@ -32,12 +32,15 @@ class Event(Base, CreatedAtMixin, UpdatedAtMixin, CreatedByMixin, DeletedAtMixin
     id: Mapped[str] = mapped_column(String(128), primary_key=True)
 
     # MultiLanguageLabel: {"de": ..., "en": ...}
-    label: Mapped[dict[str, str]] = mapped_column(JSONB, nullable=False, default=dict)
+    label: Mapped[dict[str, str]] = mapped_column(
+        JSONB, nullable=False, default=dict)
 
-    start_dt: Mapped[dt.datetime | None] = mapped_column(TZDateTime, nullable=True)
-    end_dt: Mapped[dt.datetime | None] = mapped_column(TZDateTime, nullable=True)
-    
+    start_dt: Mapped[dt.datetime | None] = mapped_column(
+        TZDateTime, nullable=True)
+    end_dt: Mapped[dt.datetime | None] = mapped_column(
+        TZDateTime, nullable=True)
+
     # Relationships
-    orders: Mapped[list["Order"]] = relationship( # noqa: F821, UP037 # pyright: ignore[reportUndefinedVariable]
+    orders: Mapped[list["Order"]] = relationship(  # noqa: F821, UP037 # pyright: ignore[reportUndefinedVariable]
         back_populates="event", lazy="selectin", order_by="Order.created_at"
     )

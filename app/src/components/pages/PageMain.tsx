@@ -89,7 +89,7 @@ export function PageMain() {
                           element={<DocumentTemplateDetail />}
                         />
                         <Route path="files" element={<FilesList />} />
-                                                <Route
+                        <Route
                           path="files/:fileId"
                           element={<FileDetail />}
                         />

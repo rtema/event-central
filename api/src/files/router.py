@@ -198,6 +198,7 @@ def get_file(
 ) -> FileResponse:
     return FileResponse(data=FileOut.model_validate(service.get_file(db, file_id)))
 
+
 @router.patch(
     "/{file_id}",
     response_model=FileResponse,

@@ -18,16 +18,19 @@ router = APIRouter(prefix="/api/v1/payments", tags=["Payments"])
 @router.get("", response_model=PaymentsListResponse, summary="List payments")
 def list_payments(
     page: PageParams = Depends(page_params),
-    event_id: str | None = Query(default=None, description="Restrict to one event"),
+    event_id: str | None = Query(
+        default=None, description="Restrict to one event"),
     db: Session = Depends(get_db),
     # Listing across events requires the resource-wide read scope. Per-event
     # tokens read payments through the order-scoped routes instead.
-    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_PAYMENTS_READ_ALL)),
+    _: AuthenticatedActor = Depends(
+        require_all_scopes(SCOPE_PAYMENTS_READ_ALL)),
 ) -> PaymentsListResponse:
     payments, total = service.list_payments(
         db, limit=page.limit, offset=page.offset, event_id=event_id
     )
     return PaymentsListResponse(
         data=[PaymentOut.model_validate(p) for p in payments],
-        pagination=make_pagination(total, limit=page.limit, offset=page.offset),
+        pagination=make_pagination(
+            total, limit=page.limit, offset=page.offset),
     )

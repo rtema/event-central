@@ -28,12 +28,16 @@ class Payment(Base, CreatedAtMixin, CreatedByMixin):
 
     # Unique on a per-event basis; enforced in the service layer since the event
     # lives on the parent order rather than on the payment row.
-    external_id: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
+    external_id: Mapped[str | None] = mapped_column(
+        String(255), nullable=True, index=True)
 
     provider: Mapped[str | None] = mapped_column(String(128), nullable=True)
     method: Mapped[str | None] = mapped_column(String(128), nullable=True)
-    type: Mapped[str] = mapped_column(String(16), nullable=False, default="payment")
+    type: Mapped[str] = mapped_column(
+        String(16), nullable=False, default="payment")
     status: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
-    amount: Mapped[float] = mapped_column(Numeric(14, 2), nullable=False, default=0)
-    currency: Mapped[str] = mapped_column(String(3), nullable=False, default="EUR")
+    amount: Mapped[float] = mapped_column(
+        Numeric(14, 2), nullable=False, default=0)
+    currency: Mapped[str] = mapped_column(
+        String(3), nullable=False, default="EUR")

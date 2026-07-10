@@ -87,7 +87,7 @@ def _correlation_id() -> str:
 
 def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(AuthError)
-    async def _auth_error( # pyright: ignore[reportUnusedFunction]
+    async def _auth_error(  # pyright: ignore[reportUnusedFunction]
         _: Request,
         exc: AuthError
     ) -> JSONResponse:
@@ -97,7 +97,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(status_code=exc.http_status, content=body)
 
     @app.exception_handler(AppError)
-    async def _app_error( # pyright: ignore[reportUnusedFunction]
+    async def _app_error(  # pyright: ignore[reportUnusedFunction]
         _: Request,
         exc: AppError
     ) -> JSONResponse:
@@ -112,7 +112,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         return JSONResponse(status_code=exc.http_status, content=body)
 
     @app.exception_handler(RequestValidationError)
-    async def _validation_error( # pyright: ignore[reportUnusedFunction]
+    async def _validation_error(  # pyright: ignore[reportUnusedFunction]
         _: Request,
         exc: RequestValidationError
     ) -> JSONResponse:
