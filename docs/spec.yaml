@@ -166,7 +166,10 @@ paths:
       tags: ["Users"]
       operationId: "listUsers"
       summary: "List users"
-      description: "Get a list of all users, response is not paged"
+      description: "Get a list of all users, returns at most 100 files"
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
       responses:
         "200":
           description: "List of all users, ordered by date created desc"
@@ -201,6 +204,50 @@ paths:
       security:
         - oAuth: ["users:write:all"]
 
+  /api/v1/users/search:
+    get:
+      tags: ["Users"]
+      operationId: "searchUsers"
+      summary: "Search users"
+      description: "Search the list of all users, returns at most 100 users"
+      parameters:
+        - name: q
+          in: query
+          description: "Generic free-text search term"
+          schema:
+            type: string
+        - name: title
+          in: query
+          description: "Comma-separated titles, e.g. dr,dr-ing,prof,prof-dr,prof-dr-ing,phd"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/UserTitle"
+        - name: salutation
+          in: query
+          description: "Comma-separated salutations, e.g. mr,ms,mx"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/UserSalutation"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: "List of all users, ordered by date created desc"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsersSearchResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["users:read:all"]
+
   /api/v1/users/{userId}:
     parameters:
       - $ref: "#/components/parameters/UserId"
@@ -220,7 +267,7 @@ paths:
           $ref: "#/components/responses/Error"
       security:
         - oAuth: ["users:read:all"]
-    post:
+    patch:
       tags: ["Users"]
       operationId: "updateUser"
       summary: "Update user"
@@ -330,7 +377,7 @@ paths:
             schema:
               $ref: "#/components/schemas/UserAuthCreateRequest"
       responses:
-        "200":
+        "201":
           description: "Auth method has been successfully set up"
           content:
             application/json:
@@ -537,6 +584,59 @@ paths:
         - oAuth: ["invoices:write:own"]
         - oAuth: ["invoices:write:{eventId}"]
 
+  /api/v1/invoices/search:
+    get:
+      tags: ["Invoicing"]
+      operationId: "listInvoices"
+      summary: "Get all invoices"
+      description: "Get a list of all invoices, returns at most 100 invoices"
+      parameters:
+        - name: q
+          in: query
+          description: "Generic free-text search term"
+          schema:
+            type: string
+        - name: accountingEntity
+          in: query
+          description: "Comma-separated list of accounting entities"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: invoiceType
+          in: query
+          description: "Comma-separated types, e.g. invoice,cancellation"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/InvoiceType"
+        - name: locale
+          in: query
+          description: "Comma-separated locales, e.g. de,en"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Locale"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: "List of invoices"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvoicesSearchResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["invoices:read:all"]
+
   /api/v1/invoices/{invoiceId}:
     parameters:
       - $ref: "#/components/parameters/InvoiceId"
@@ -694,13 +794,11 @@ paths:
           $ref: "#/components/responses/Error"
 
   /api/v1/events:
-    parameters:
-      - $ref: "#/components/parameters/EventId"
     get:
       tags: ["Events"]
       operationId: "getEvents"
       summary: "Get events"
-      description: "Get all events"
+      description: "Get all events, returns at most 100 events"
       parameters:
         - $ref: "#/components/parameters/Limit"
         - $ref: "#/components/parameters/Offset"
@@ -711,6 +809,32 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EventsListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["events:read:all"]
+
+  /api/v1/events/search:
+    get:
+      tags: ["Events"]
+      operationId: "searchEvents"
+      summary: "Search events"
+      description: "Search all events, returns at most 100 events"
+      parameters:
+        - name: q
+          in: query
+          description: "Generic free-text search term"
+          schema:
+            type: string
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: "List of events"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventsSearchResponse"
         default:
           $ref: "#/components/responses/Error"
       security:
@@ -777,6 +901,50 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OrdersListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["orders:read:all"]
+
+  /api/v1/orders/search:
+    get:
+      tags: ["Orders"]
+      operationId: "searchOrders"
+      summary: "Search all orders"
+      description: "Search all orders, returns at most 100 orders"
+      parameters:
+        - name: q
+          in: query
+          description: "Generic free-text search term"
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: "Comma-separated status, e.g. open,paid,cancelled"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/OrderStatus"
+        - name: event
+          in: query
+          description: "Comma-separated list of event ids"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: "List of orders"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrdersSearchResponse"
         default:
           $ref: "#/components/responses/Error"
       security:
@@ -954,6 +1122,9 @@ paths:
       operationId: "listDocumentTemplates"
       summary: "List all document templates"
       description: "This UI endpoint exposes the list of all taxes ever referenced in any invoice line"
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
       responses:
         "200":
           description: "List of document templates"
@@ -973,7 +1144,7 @@ paths:
       tags: ["Document Templates"]
       operationId: "getDocumentTemplate"
       summary: "Get a document template"
-      description: "Get all details of an invoice"
+      description: "Get a document template"
       responses:
         "200":
           description: "Basic data of an invoice"
@@ -986,12 +1157,53 @@ paths:
       security:
         - oAuth: ["backend:read"]
 
+  /api/v1/document-templates/{documentTemplateId}/files:
+    parameters:
+      - $ref: "#/components/parameters/DocumentTemplateId"
+    get:
+      tags: ["Document Templates"]
+      operationId: "getDocumentTemplateFiles"
+      summary: "Files referenced in the document template"
+      description: "Get a list of all the files used by a document template"
+      responses:
+        "200":
+          description: "List of document template files"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DocumentTemplateFilesListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+
+  /api/v1/document-templates/{documentTemplateId}/preview:
+    parameters:
+      - $ref: "#/components/parameters/DocumentTemplateId"
+    get:
+      tags: ["Document Templates"]
+      operationId: "previewDocumentTemplate"
+      summary: "Preview a document template"
+      description: "Create a preview of a document template"
+      responses:
+        "200":
+          description: "Basic data of an invoice"
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+
   /api/v1/document-templates/public:
     get:
       tags: ["Document Templates"]
       operationId: "listPublicDocumentTemplates"
       summary: "List all document templates"
-      description: "This UI endpoint exposes the list of all taxes ever referenced in any invoice line"
+      description: "List all document templates that can be referenced by name"
       responses:
         "200":
           description: "List of document templates"
@@ -1068,19 +1280,197 @@ paths:
       security:
         - oAuth: ["backend:write"]
 
+  /api/v1/files/:
+    get:
+      tags: ["Files"]
+      operationId: "listFiles"
+      summary: "Get all files"
+      description: "Get a list of files, returns at most 100 files"
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: "List of files"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FilesListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["files:read:all"]
+
+  /api/v1/files/search:
+    get:
+      tags: ["Files"]
+      operationId: "searchFiles"
+      summary: "Search all files"
+      description: "Search all files, returns at most 100 files"
+      parameters:
+        - name: q
+          in: query
+          description: "Generic free-text search term"
+          schema:
+            type: string
+        - name: extension
+          in: query
+          description: "Comma-separated extensions, e.g. png,jpg,ttf"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/FileExtension"
+        - name: type
+          in: query
+          description: "Comma-separated types, e.g. image,font"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/FileType"
+        - name: published
+          in: query
+          description: "Comma-separated booleans, e.g. true,false"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: boolean
+        - name: basePath
+          in: query
+          description: "Comma-separated base paths"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: "List of files"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FilesSearchResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["files:read:all"]
+
+  /api/v1/files/{fileId}:
+    parameters:
+      - $ref: "#/components/parameters/FileId"
+    get:
+      tags: ["Files"]
+      operationId: "getFile"
+      summary: "Get file"
+      description: "Get a single file"
+      responses:
+        "200":
+          description: "Single file"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/File"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["files:read:all"]
+
+  /api/v1/files/{fileId}/link:
+    parameters:
+      - $ref: "#/components/parameters/FileId"
+    post:
+      tags: ["Files"]
+      operationId: "createFileLink"
+      summary: "Create signed download link"
+      description: "Return a signed link to view the file"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FileLinkRequest"
+      responses:
+        "200":
+          description: "Single file"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileLinkResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["files:read:all"]
+
+  /api/v1/files/private/{accessKey}:
+    parameters:
+      - $ref: "#/components/parameters/AccessKey"
+    get:
+      tags: ["Files"]
+      operationId: "accessFile"
+      summary: "Download/view the contents of a file"
+      description: >
+        Download/view the contents of a file using a signed link.
+        Authorization is carried by the signature in the query string, so no
+        bearer token is required.
+      parameters:
+        - $ref: "#/components/parameters/SignedToken"
+      responses:
+        "200":
+          description: "The file contents"
+        "401":
+          description: "The token has expired"
+          content:
+            text/html:
+              schema:
+                type: string
+                description: >
+                  The token has expired.
+                  A nice error page to let the user know, that they need to request a new link.
+        default:
+          $ref: "#/components/responses/Error"
+
   /api/v1/taxes:
     get:
       tags: ["Misc"]
       operationId: "listTaxes"
       summary: "List all taxes"
       description: "This UI endpoint exposes the list of all taxes ever referenced in any invoice line"
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
       responses:
         "200":
-          description: "List of scopes"
+          description: "List of tax rates"
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/TaxesListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+
+  /api/v1/accounting-entities:
+    get:
+      tags: ["Misc"]
+      operationId: "listAccountingEntities"
+      summary: "List all accounting entities"
+      description: "This UI endpoint exposes the list of all accounting entities ever used"
+      responses:
+        "200":
+          description: "List of accounting entities"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountingEntitiesListResponse"
         default:
           $ref: "#/components/responses/Error"
       security:
@@ -1144,6 +1534,8 @@ components:
             payments:write:own: "Allow modification of payments created by the user/app"
             payments:write:{eventId}: "Allow modification of payments associated with an event"
             emails:read:all: "Allow access to all emails"
+            files:read:all: "Allow access to all files"
+            files:write:all: "Allow modification of all files"
             backend:read: "Read misc data necessary to access the backend"
             backend:write: "Write misc data necessary to access the backend"
 
@@ -1202,6 +1594,13 @@ components:
       description: "ID of the public document template"
       schema:
         type: string
+    DocumentTemplateFileId:
+      name: documentTemplateFileId
+      in: path
+      required: true
+      description: "ID of the document template file"
+      schema:
+        type: string
     JobId:
       name: jobId
       in: path
@@ -1212,8 +1611,25 @@ components:
       schema:
         type: string
         format: uuid
+    FileId:
+      name: fileId
+      in: path
+      required: true
+      description: "ID of the the file (Opaque UUID)"
+      schema:
+        type: string
+        format: uuid
     FileName:
       name: fileName
+      in: path
+      required: true
+      description: >
+        Human-friendly name of the file to download. 
+        Appended to the URL to set the name of the saved file, if "filename" in the Content-Disposition header is ignored.
+      schema:
+        type: string
+    AccessKey:
+      name: accessKey
       in: path
       required: true
       description: >
@@ -1309,12 +1725,12 @@ components:
       type: string
       enum: [de, en]
       description: "The locale of this object. Used for document generation and communication."
-    
+
     Currency:
       type: string
       enum: [EUR]
       description: "The currency of this invoice. Only Euro (EUR) is supported."
-    
+
     MultiLanguageLabel:
       type: object
       description: "Multi language label"
@@ -1491,6 +1907,16 @@ components:
           type: boolean
 
     # Users
+    UserTitle:
+      type: string
+      enum: [dr, dr-ing, prof, prof-dr, prof-dr-ing, phd]
+      description: "Academic title"
+
+    UserSalutation:
+      type: string
+      enum: [mr, ms, mx]
+      description: "Salutation e. g. mr,ms,mx"
+
     User:
       type: object
       description: "A user"
@@ -1530,10 +1956,51 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/User"
-        # pagination is omitted to simplify UI loading patterns
-        # may be added later
-        # pagination:
-        #   $ref: "#/components/schemas/Pagination"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    UsersSearchParamsResponse:
+      type: object
+      properties:
+        q:
+          type: string
+          nullable: true
+          description: "Generic free-text search term"
+        title:
+          type: array
+          nullable: true
+          description: "titles, e.g. png,jpg,ttf"
+          items:
+            $ref: "#/components/schemas/UserTitle"
+        salutation:
+          type: array
+          nullable: true
+          description: "salutations, e.g. image,font"
+          items:
+            $ref: "#/components/schemas/UserSalutation"
+        published:
+          type: array
+          nullable: true
+          items:
+            type: boolean
+        basePath:
+          type: array
+          nullable: true
+          description: "base paths to match"
+          items:
+            type: string
+
+    UsersSearchResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        search:
+          $ref: "#/components/schemas/UsersSearchParamsResponse"
 
     UsersCreateRequest:
       type: object
@@ -1638,8 +2105,7 @@ components:
           enum: [user-request, password-reset, admin-request]
           description: "State why the auth method was set up"
         deletedBy:
-          type: string
-          description: "User ID or APP: user:userId or app:appKey"
+          $ref: "#/components/schemas/ActorIdentifier"
         deletedReason:
           type: string
           enum: [user-request, password-reset, admin-request, code-used]
@@ -1783,6 +2249,12 @@ components:
                 additionalProperties: true
 
     # Invoices
+    InvoiceType:
+      type: string
+      enum: [invoice, cancellation]
+      description: "Wether this is an invoice or a credit note"
+      example: "invoice"
+
     InvoiceSupplier:
       type: object
       description: "Information about the supplier of the goods/services"
@@ -1802,6 +2274,9 @@ components:
         iban:
           type: string
           description: "The IBAN to send the money to"
+        bankName:
+          type: string
+          description: "Name of the Bank to send the money to (only used for manual verification)"
         line1:
           type: string
           description: "First address line"
@@ -1856,9 +2331,22 @@ components:
         country:
           type: string
           description: "Country (ISO 2-letter code) of the recipient"
-        contactName:
+        contactSalutation:
           type: string
+          enum: [mr, ms, mx]
+          description: "Salutation of the contact person"
+          example: mx
+        contactTitle:
+          type: string
+          enum: [dr, dr-ing, prof, prof-dr, prof-dr-ing, phd]
           description: "Name of the contact person"
+          example: prof-dr
+        contactFirstname:
+          type: string
+          description: "First name of the contact person"
+        contactLastname:
+          type: string
+          description: "Last name of the contact person"
         contactPhone:
           type: string
           description: "Phone number of the contact person"
@@ -1909,10 +2397,7 @@ components:
           description: "The full invoice Number"
           example: "TEMA26-000100"
         invoiceType:
-          type: string
-          enum: [invoice, cancellation]
-          description: "Wether this is an invoice or a credit note"
-          example: "invoice"
+          $ref: "#/components/schemas/InvoiceType"
         invoiceTypeCode:
           type: string
           description: "380 = invoice (Rechnung), 381 = credit note (Storno)"
@@ -2037,6 +2522,44 @@ components:
         pagination:
           $ref: "#/components/schemas/Pagination"
 
+    InvoicesSearchParamsResponse:
+      type: object
+      properties:
+        q:
+          type: string
+          nullable: true
+          description: "Generic free-text search term"
+        accountingEntity:
+          type: array
+          nullable: true
+          description: "accounting entities to match"
+          items:
+            type: string
+        invoiceType:
+          type: array
+          nullable: true
+          description: "extensions, e.g. invoice,cancellation"
+          items:
+            $ref: "#/components/schemas/InvoiceType"
+        locale:
+          type: array
+          nullable: true
+          description: "locales, e.g. de,en"
+          items:
+            $ref: "#/components/schemas/Locale"
+
+    InvoicesSearchResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Invoice"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        search:
+          $ref: "#/components/schemas/InvoicesSearchParamsResponse"
+
     InvoiceCreateRequest:
       type: object
       description: "Single-request invoice generation payload"
@@ -2045,6 +2568,9 @@ components:
         externalOrderId:
           type: string
           description: "ID of the order. Must be unique on a per event basis."
+        externalOrderShortId:
+          type: string
+          description: "Human readable ID of the order. Must be unique on a per event basis."
         locale:
           $ref: "#/components/schemas/Locale"
         currency:
@@ -2188,6 +2714,9 @@ components:
                   name:
                     type: string
                     description: "The name of the font (as used in css)"
+                  weight:
+                    type: integer
+                    description: Weight of the font
                   file:
                     type: string
                     format: base64
@@ -2201,7 +2730,7 @@ components:
                 type: object
                 description: An image to use
                 properties:
-                  name:
+                  key:
                     type: string
                     description: "The name of the image, only lowercase chars"
                   file:
@@ -2209,12 +2738,6 @@ components:
                     format: base64
                     description: >
                       Base64 encoded image file
-                      See further documentation for details.
-                  link:
-                    type: string
-                    description: >
-                      Link to the image file (only https is supported).
-                      The image needs to be publicly available and needs to be smaller than 200kb.
                       See further documentation for details.
 
     InvoiceCreateResponse:
@@ -2345,6 +2868,26 @@ components:
         pagination:
           $ref: "#/components/schemas/Pagination"
 
+    EventsSearchParamsResponse:
+      type: object
+      properties:
+        q:
+          type: string
+          nullable: true
+          description: "Generic free-text search term"
+
+    EventsSearchResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Event"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        search:
+          $ref: "#/components/schemas/EventsSearchParamsResponse"
+
     EventResponse:
       type: object
       properties:
@@ -2352,6 +2895,11 @@ components:
           $ref: "#/components/schemas/Event"
 
     # Orders
+    OrderStatus:
+      type: string
+      enum: [open, paid, cancelled]
+      description: "Status of the order e. g. open,paid,cancelled"
+
     Order:
       type: object
       description: "An order"
@@ -2394,6 +2942,38 @@ components:
             $ref: "#/components/schemas/Order"
         pagination:
           $ref: "#/components/schemas/Pagination"
+
+    OrdersSearchParamsResponse:
+      type: object
+      properties:
+        q:
+          type: string
+          nullable: true
+          description: "Generic free-text search term"
+        status:
+          type: array
+          nullable: true
+          description: "status, e.g. open,paid,cancelled"
+          items:
+            $ref: "#/components/schemas/OrderStatus"
+        event:
+          type: array
+          nullable: true
+          description: "event ids to match"
+          items:
+            type: string
+
+    OrdersSearchResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Order"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        search:
+          $ref: "#/components/schemas/OrdersSearchParamsResponse"
 
     OrderResponse:
       type: object
@@ -2496,6 +3076,8 @@ components:
             Indicate which public ID this template has.
             Allowed are lower case letters, numbers, '-' and '_'
             Only templates with a public ID can be used to generate invoices by templateId
+        locale:
+          $ref: "#/components/schemas/Locale"
         html:
           type: string
           description: >
@@ -2518,6 +3100,9 @@ components:
               name:
                 type: string
                 description: "The name of the font (as used in css)"
+              weight:
+                type: integer
+                description: Weight of the font
               file:
                 type: string
                 format: base64
@@ -2531,7 +3116,7 @@ components:
             type: object
             description: An image to use
             properties:
-              name:
+              key:
                 type: string
                 description: "The name of the image, only lowercase chars"
               file:
@@ -2539,12 +3124,6 @@ components:
                 format: base64
                 description: >
                   Base64 encoded image file
-                  See further documentation for details.
-              link:
-                type: string
-                description: >
-                  Link to the image file (only https is supported).
-                  The image needs to be publicly available and needs to be smaller than 200kb.
                   See further documentation for details.
         createdAt:
           type: string
@@ -2579,6 +3158,8 @@ components:
           type: string
           format: uuid
           description: The template that is currently set up to be used with this public identifier
+        locale:
+          $ref: "#/components/schemas/Locale"
         label:
           $ref: "#/components/schemas/MultiLanguageLabel"
         createdAt:
@@ -2607,6 +3188,8 @@ components:
         id:
           type: string
           description: Allowed are lower case letters, numbers, '-' and '_'
+        locale:
+          $ref: "#/components/schemas/Locale"
         html:
           type: string
           description: >
@@ -2629,6 +3212,12 @@ components:
               name:
                 type: string
                 description: "The name of the font (as used in css)"
+              weight:
+                type: integer
+                description: Weight of the font
+              fileId:
+                type: string
+                description: Specify a file by id to use
               file:
                 type: string
                 format: base64
@@ -2642,20 +3231,17 @@ components:
             type: object
             description: An image to use
             properties:
-              name:
+              key:
                 type: string
                 description: "The name of the image, only lowercase chars"
+              fileId:
+                type: string
+                description: Specify a file by id to use
               file:
                 type: string
                 format: base64
                 description: >
                   Base64 encoded image file
-                  See further documentation for details.
-              link:
-                type: string
-                description: >
-                  Link to the image file (only https is supported).
-                  The image needs to be publicly available and needs to be smaller than 200kb.
                   See further documentation for details.
 
     PublicDocumentTemplateResponse:
@@ -2667,6 +3253,8 @@ components:
     PublicDocumentTemplateUpdateRequest:
       type: object
       properties:
+        locale:
+          $ref: "#/components/schemas/Locale"
         html:
           type: string
           description: >
@@ -2689,6 +3277,12 @@ components:
               name:
                 type: string
                 description: "The name of the font (as used in css)"
+              weight:
+                type: integer
+                description: Weight of the font
+              fileId:
+                type: string
+                description: Specify a file by id to use
               file:
                 type: string
                 format: base64
@@ -2702,21 +3296,226 @@ components:
             type: object
             description: An image to use
             properties:
-              name:
+              key:
                 type: string
                 description: "The name of the image, only lowercase chars"
+              fileId:
+                type: string
+                description: Specify a file by id to use
               file:
                 type: string
                 format: base64
                 description: >
                   Base64 encoded image file
                   See further documentation for details.
-              link:
-                type: string
-                description: >
-                  Link to the image file (only https is supported).
-                  The image needs to be publicly available and needs to be smaller than 200kb.
-                  See further documentation for details.
+
+    DocumentTemplateFile:
+      type: object
+      description: "A document template that can be referenced when creating an invoice using the API"
+      properties:
+        id:
+          type: string
+          description: Allowed are lower case letters, numbers, '-' and '_'
+        documentTemplateId:
+          type: string
+          format: uuid
+          description: The template this file is used in
+        fileId:
+          type: string
+          format: uuid
+          description: The file to render
+        type:
+          type: string
+          enum: [image, font]
+          description: Type of file ('image' or 'font')
+        key:
+          type: string
+          description: >
+            the templates are jinja templates that will be rendered using weasyprint
+            files can be referenced by {{ image.key }} and fonts by {{ font.key }}
+            Therefore this key only needs to unique within a single template
+        fontName:
+          type: string
+          description: Name of the font
+        fontWeight:
+          type: integer
+          description: Weight of the font
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: "#/components/schemas/ActorIdentifier"
+
+    DocumentTemplateFilesListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/DocumentTemplateFile"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    DocumentTemplateFilesSearchResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/DocumentTemplateFile"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    DocumentTemplateFileResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/DocumentTemplateFile"
+
+    # Files
+
+    FileType:
+      type: string
+      enum: [image, font]
+
+    FileExtension:
+      type: string
+      enum: [png, jpg, ttf]
+      description: "File extension e. g. pdf, png, ..."
+
+    File:
+      type: object
+      description: "A file"
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          $ref: "#/components/schemas/MultiLanguageLabel"
+        extension:
+          $ref: "#/components/schemas/FileExtension"
+        type:
+          $ref: "#/components/schemas/FileType"
+        mime:
+          type: string
+          description: ""
+        published:
+          type: boolean
+          description: "Wether this file should be publicly accessible"
+        accessKey:
+          type: string
+          description: "Part of the url, that will be matched when displaying the file"
+        basePath:
+          type: string
+          description: "Base path of the storage location"
+        size:
+          type: integer
+          description: "Size of the file in bytes"
+        hash:
+          type: string
+          description: "SHA256 hash of the file contents"
+        preview:
+          type: string
+          description: "Base64 encoded string of a preview image with a maximum of 128x128px"
+        height:
+          type: integer
+          description: "Height of the image (if applicable)"
+        width:
+          type: integer
+          description: "Width of the image (if applicable)"
+        meta:
+          type: object
+          description: "Arbitrary meta data"
+          additionalProperties: true
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          $ref: "#/components/schemas/ActorIdentifier"
+        deletedAt:
+          type: string
+          format: date-time
+        deletedBy:
+          $ref: "#/components/schemas/ActorIdentifier"
+
+    FilesListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/File"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    FilesSearchParamsResponse:
+      type: object
+      properties:
+        q:
+          type: string
+          nullable: true
+          description: "Generic free-text search term"
+        extension:
+          type: array
+          nullable: true
+          description: "extensions, e.g. png,jpg,ttf"
+          items:
+            $ref: "#/components/schemas/FileExtension"
+        type:
+          type: array
+          nullable: true
+          description: "types, e.g. image,font"
+          items:
+            $ref: "#/components/schemas/FileType"
+        published:
+          type: array
+          nullable: true
+          items:
+            type: boolean
+        basePath:
+          type: array
+          nullable: true
+          description: "base paths to match"
+          items:
+            type: string
+
+    FilesSearchResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/File"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        search:
+          $ref: "#/components/schemas/FilesSearchParamsResponse"
+
+    FileResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/File"
+
+    FileLinkRequest:
+      type: object
+      description: "Signed-link request"
+      properties:
+        expiresIn:
+          type: integer
+          maximum: 31536000
+          description: "Lifetime of the link in seconds"
+
+    FileLinkResponse:
+      type: object
+      properties:
+        url:
+          type: string
+          format: uri
+          description: "Shareable download link"
+        expiresAt:
+          type: string
+          format: date-time
 
     # Misc
     Tax:
@@ -2763,6 +3562,15 @@ components:
             $ref: "#/components/schemas/Tax"
         pagination:
           $ref: "#/components/schemas/Pagination"
+
+    AccountingEntitiesListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: string
+            description: "Prefix of the accounting entity"
 
     Scope:
       type: object
