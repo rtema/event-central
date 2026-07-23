@@ -10,11 +10,10 @@ from babel.numbers import format_currency
 from jinja2 import Undefined
 from jinja2.sandbox import SandboxedEnvironment
 from markupsafe import escape
-
-from src.document_templates.models import DocumentTemplate
 from src.events.models import Event
 from src.invoices.models import INVOICE_TYPE_CANCELLATION, INVOICE_TYPE_INVOICE, Invoice
 from src.orders.models import Order
+from src.users.models import User
 
 
 def now_utc(exact: bool = True):
@@ -152,6 +151,21 @@ def generate_salutation(data: dict[str, str], locale: str) -> str:
     return salutation
 
 
+def generate_user_placeholders(user: User | None, locale: str) -> dict[str, str]:
+    placeholders = {
+        'email': "",
+        'firstName': "",
+        'lastName': "",
+        'salutation': "",
+    }
+    if user:
+        placeholders['salutation'] = escape(user.email)
+        placeholders['firstName'] = escape(user.first_name)
+        placeholders['lastName'] = escape(user.first_name)
+        placeholders['salutation'] = escape("") # TODO: use generate_salutation
+
+    return placeholders
+
 def generate_event_placeholders(event: Event | None, locale: str) -> dict[str, str]:
     placeholders = {
         'label': "",
@@ -193,7 +207,7 @@ def generate_order_placeholders(order: Order | None, locale: str) -> dict[str, s
         # if 'addressAddition' in order.billing and order.billing['addressAddition'] is not None:
         #     placeholders['address'] += f'{order.billing.get('addressAddition', '')}<br>'
         # placeholders['address'] += f'{order.billing.get('street', '')}<br>'
-        # placeholders['address'] += f'{order.billing.get('zip', '')} {order.billing.get('city', '')} <br>'
+        # placeholders['address'] += f'{order.billing.get('zip', '')} {order.billing.get('city', '')} <br>'  # noqa: E501
         # resolved_locale = Locale(locale)
         # placeholders[
         #     'address'] += f'{resolved_locale.territories[order.billing.get('country', '')]}<br>'
@@ -354,34 +368,4 @@ def generate_invoice_placeholders(invoice: Invoice | None, locale: str) -> dict[
                                                currency=invoice.currency,
                                                locale='de_DE' if locale == 'de' else 'en_GB')}</td>\
               </tr>'
-    return placeholders
-
-
-def generate_document_template_placeholders(
-        document_template: DocumentTemplate,
-        locale: str
-) -> dict[str, str]:
-    placeholders = {
-        'timeOfGeneration': format_date(now_utc(), 'medium', locale=locale),
-    }
-
-    return placeholders
-
-
-def generate_image_placeholders(
-        document_template: DocumentTemplate,
-        locale: str
-) -> dict[str, str]:
-    placeholders: dict[str, str] = {}
-    # add placeholders for every image
-
-    for document_template_file in document_template.document_template_files:
-        if (document_template_file.type == "image"):
-
-            file = document_template_file.file
-
-            placeholders[document_template_file.key] = f'image://{document_template_file.id}'
-            placeholders[f'{document_template_file.key}Width'] = f'image://{file.width}'
-            placeholders[f'{document_template_file.key}Height'] = f'image://{file.height}'
-
     return placeholders

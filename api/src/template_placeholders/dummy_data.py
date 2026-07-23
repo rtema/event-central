@@ -4,10 +4,19 @@ from zoneinfo import ZoneInfo
 
 import pydyf  # type: ignore
 from alembic.environment import Any
-
 from src.events.models import Event
 from src.invoices.models import INVOICE_TYPE_INVOICE, Invoice, InvoiceLineItem, Tax
 from src.orders.models import Order
+from src.users.models import User
+
+# generate test user
+dummy_user = User(
+    email="text@tema.de",
+    title="dr",
+    salutation="ms",
+    first_name="Lena",
+    last_name="Musterfrau"
+)
 
 # generate test event
 dummy_event = Event(

@@ -19,7 +19,7 @@ import pydyf  # pyright: ignore[reportMissingTypeStubs]
 from weasyprint import Attachment  # pyright: ignore[reportMissingTypeStubs]
 
 from src.document_templates.models import DocumentTemplate
-from src.document_templates.renderer.main import render_document
+from src.document_templates.renderer import render_document
 from src.events.models import Event
 from src.invoices.models import Invoice
 from src.orders.models import Order

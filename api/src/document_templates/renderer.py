@@ -6,25 +6,25 @@ from pathlib import Path
 from typing import Any
 
 import pydyf  # pyright: ignore[reportMissingTypeStubs]
+from babel.dates import format_date
 from jinja2 import exceptions
 from qrcode import QRCode, constants
 from weasyprint import CSS, HTML, Attachment  # type: ignore
 from weasyprint.text.fonts import FontConfiguration  # type: ignore
 
 from src.document_templates.models import DocumentTemplate, DocumentTemplateFile
-from src.document_templates.renderer.placeholders import (
-    generate_document_template_placeholders,
-    generate_event_placeholders,
-    generate_image_placeholders,
-    generate_invoice_placeholders,
-    generate_order_placeholders,
-    template_renderer_sandbox,
-)
 from src.events.models import Event
 from src.files.service import storage_key_for_file
 from src.invoices.models import Invoice
 from src.orders.models import Order
 from src.storage.s3 import get_storage
+from src.template_placeholders.__main__ import (
+    generate_event_placeholders,
+    generate_invoice_placeholders,
+    generate_order_placeholders,
+    now_utc,
+    template_renderer_sandbox,
+)
 
 log = logging.getLogger("src.document_templates")
 
@@ -47,6 +47,36 @@ DOCUMENT_FONTS: list[dict[str, str | int]] = [
     },
 
 ]
+
+
+def generate_document_template_placeholders(
+        document_template: DocumentTemplate,
+        locale: str
+) -> dict[str, str]:
+    placeholders = {
+        'timeOfGeneration': format_date(now_utc(), 'medium', locale=locale),
+    }
+
+    return placeholders
+
+
+def generate_image_placeholders(
+        document_template: DocumentTemplate,
+        locale: str
+) -> dict[str, str]:
+    placeholders: dict[str, str] = {}
+    # add placeholders for every image
+
+    for document_template_file in document_template.document_template_files:
+        if (document_template_file.type == "image"):
+
+            file = document_template_file.file
+
+            placeholders[document_template_file.key] = f'image://{document_template_file.id}'
+            placeholders[f'{document_template_file.key}Width'] = f'image://{file.width}'
+            placeholders[f'{document_template_file.key}Height'] = f'image://{file.height}'
+
+    return placeholders
 
 
 def resolve_font(
