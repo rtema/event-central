@@ -9,6 +9,7 @@ the order; cancelling an order is a soft operation that flips its status and
 from __future__ import annotations
 
 import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
@@ -23,7 +24,10 @@ from src.core.models import (
     UpdatedAtMixin,
     uuid_pk,
 )
-from src.events.models import Event
+
+if TYPE_CHECKING:
+    from src.events.models import Event
+    from src.invoices.models import Invoice
 
 ORDER_STATUSES = ("open", "paid", "cancelled")
 
@@ -58,7 +62,7 @@ class Order(Base, CreatedAtMixin, UpdatedAtMixin, CreatedByMixin, DeletedAtMixin
         JSONB, nullable=True, default=None)
 
     # Relationships
-    event: Mapped[Event] = relationship(back_populates="orders",)
-    invoices: Mapped[list["Invoice"]] = relationship(  # noqa: F821, UP037 # pyright: ignore[reportUndefinedVariable]
+    event: Mapped["Event"] = relationship(back_populates="orders",)  # noqa: UP037
+    invoices: Mapped[list["Invoice"]] = relationship(  # noqa: UP037
         back_populates="order", lazy="selectin", order_by="Invoice.invoice_number"
     )

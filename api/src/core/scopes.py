@@ -10,6 +10,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from sqlalchemy.orm import Session
+
+from src.events.service import get_event_ids
+
 # --------------------------------------------------------------------------- #
 # IMPORTANT:
 # Prevent any event name that is reserved and may lead to the expansion of access rights:
@@ -56,12 +60,8 @@ SCOPE_FILES_WRITE_ALL = "files:write:all"
 SCOPE_EMAILS_READ_ALL = "emails:read:all"
 
 # Backend / misc data (document templates, taxes, scope catalogue, ...)
-SCOPE_BACKEND_READ = "backend:read"
-SCOPE_BACKEND_WRITE = "backend:write"
-
-# A placeholder qualifier the catalogue documents for the per-event variants.
-# Concrete grants substitute a real event id (e.g. ``invoices:read:tema-2026``).
-EVENT_QUALIFIER = "{eventId}"
+SCOPE_BACKEND_READ_ALL = "backend:read:all"
+SCOPE_BACKEND_WRITE_ALL = "backend:write:all"
 
 
 @dataclass(frozen=True, slots=True)
@@ -100,7 +100,9 @@ def _qualifier_phrase(
     return f"{de_plural} eines Events", f"{en_plural} associated with an event"
 
 
-def _build_catalogue() -> list[ScopeDef]:
+def build_scope_catalogue(
+    db: Session, *, include_dynamic: bool = True
+) -> list[ScopeDef]:
     out: list[ScopeDef] = [
         ScopeDef(SCOPE_USERS_READ_ALL, "Zugriff auf alle Nutzer",
                  "Allow access to all users"),
@@ -109,9 +111,21 @@ def _build_catalogue() -> list[ScopeDef]:
             "Allow creation/modification of all users"
         ),
     ]
+
+    # get qualifiers
+    qualifiers: list[str] = ["all", "own"]
+
+
+    # get list of events
+    if(include_dynamic):
+        event_ids = get_event_ids(db)
+
+        # append event qualifiers
+        qualifiers += event_ids
+
     for resource, (de_plural, en_plural) in _RESOURCE_LABELS.items():
         for action, (de_verb, en_verb) in _ACTION_LABELS.items():
-            for qualifier in ("all", "own", EVENT_QUALIFIER):
+            for qualifier in qualifiers:
                 de_q, en_q = _qualifier_phrase(
                     resource, qualifier, de_plural, en_plural)
                 out.append(
@@ -121,20 +135,22 @@ def _build_catalogue() -> list[ScopeDef]:
                         f"{en_verb} {en_q}",
                     )
                 )
+    
+    # all 
     out.append(
         ScopeDef(SCOPE_EMAILS_READ_ALL, "Zugriff auf alle E-Mails",
                  "Allow access to all emails")
     )
     out.append(
         ScopeDef(
-            SCOPE_BACKEND_READ,
+            SCOPE_BACKEND_READ_ALL,
             "Backend-Daten lesen",
             "Read misc data necessary to access the backend",
         )
     )
     out.append(
         ScopeDef(
-            SCOPE_BACKEND_WRITE,
+            SCOPE_BACKEND_WRITE_ALL,
             "Backend-Daten schreiben",
             "Write misc data necessary to access the backend",
         )
@@ -154,17 +170,6 @@ def _build_catalogue() -> list[ScopeDef]:
         )
     )
     return out
-
-
-# The full documented catalogue mirrors the OpenAPI ``oAuth`` security scheme,
-# including the templated ``:{eventId}`` variants (shown to clients, never
-# granted directly — a concrete event id is substituted at grant time).
-SCOPES: list[ScopeDef] = _build_catalogue()
-
-# Backwards-compatible flat list of every documented scope string. The seed in
-# src/main.py grants the resource-wide (``:all``) and ``backend:`` scopes from
-# this list; the templated ``:{eventId}`` entries are intentionally not granted.
-SCOPE_CATALOGUE = [s.scope for s in SCOPES]
 
 
 def build_scope(resource: str, action: str, qualifier: str) -> str:

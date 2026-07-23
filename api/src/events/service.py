@@ -24,6 +24,11 @@ def list_events(
     stmt = base.order_by(Event.created_at.desc()).limit(limit).offset(offset)
     return list(db.execute(stmt).scalars().all()), total
 
+def get_event_ids(
+    db: Session
+) -> list[str]:
+    events = list(db.execute(select(Event).order_by(Event.id.desc())).scalars().all())
+    return [e.id for e in events]
 
 def search_events(
     db: Session,

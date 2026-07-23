@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from src.auth.deps import AuthenticatedActor, require_all_scopes
 from src.core.deps import PageParams, get_db, page_params
 from src.core.schemas import MultiLanguageLabel, make_pagination
-from src.core.scopes import SCOPE_BACKEND_READ, SCOPES
+from src.core.scopes import SCOPE_BACKEND_READ_ALL, build_scope_catalogue
 from src.invoices import service as invoicing_service
 from src.invoices.schemas import AccountingEntitiesListResponse, TaxesListResponse, TaxOut
 from src.misc.schemas import ScopeOut, ScopesListResponse
@@ -44,7 +44,7 @@ def health_storage(db: Session = Depends(get_db)) -> JSONResponse:
 def list_taxes(
     page: PageParams = Depends(page_params),
     db: Session = Depends(get_db),
-    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ)),
+    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ_ALL)),
 ) -> TaxesListResponse:
     taxes, total = invoicing_service.list_all_taxes(
         db, limit=page.limit, offset=page.offset)
@@ -62,7 +62,7 @@ def list_taxes(
 )
 def list_accounting_entities(
     db: Session = Depends(get_db),
-    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ)),
+    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ_ALL)),
 ) -> AccountingEntitiesListResponse:
     return AccountingEntitiesListResponse(
         data=invoicing_service.list_all_accounting_entities(db),
@@ -75,11 +75,13 @@ def list_accounting_entities(
     summary="List scopes"
 )
 def list_scopes(
-    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ)),
+     db: Session = Depends(get_db),
+    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ_ALL)),
 ) -> ScopesListResponse:
+    scope_catalogue = build_scope_catalogue(db, include_dynamic=True)
     return ScopesListResponse(
         data=[
             ScopeOut(scope=s.scope, label=MultiLanguageLabel(de=s.de, en=s.en))
-            for s in SCOPES
+            for s in scope_catalogue
         ]
     )

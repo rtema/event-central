@@ -9,6 +9,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import src.models  # type: ignore # noqa: F401 (import needs to be done here for sqlalchemy to build the full class registry)
 from src.auth.router import router as auth_router
 from src.config import settings
 from src.core.errors import register_exception_handlers

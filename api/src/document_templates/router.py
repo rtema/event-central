@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from src.auth.deps import AuthenticatedActor, require_all_scopes
 from src.core.deps import PageParams, get_db, page_params
 from src.core.schemas import make_pagination
-from src.core.scopes import SCOPE_BACKEND_READ, SCOPE_BACKEND_WRITE
+from src.core.scopes import SCOPE_BACKEND_READ_ALL, SCOPE_BACKEND_WRITE_ALL
 from src.document_templates import service
 from src.document_templates.renderer.dummy_data import (
     dummy_event,
@@ -51,7 +51,7 @@ router = APIRouter(prefix="/api/v1/document-templates",
 def list_public_document_templates(
     page: PageParams = Depends(page_params),
     db: Session = Depends(get_db),
-    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ)),
+    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ_ALL)),
 ) -> PublicDocumentTemplatesListResponse:
     public_document_templates, total = service.list_public_document_templates(
         db, limit=page.limit, offset=page.offset
@@ -74,7 +74,7 @@ def create_public_document_template(
     body: PublicDocumentTemplateCreateRequest,
     db: Session = Depends(get_db),
     actor: AuthenticatedActor = Depends(
-        require_all_scopes(SCOPE_BACKEND_WRITE)),
+        require_all_scopes(SCOPE_BACKEND_WRITE_ALL)),
 ) -> PublicDocumentTemplateResponse:
     public_document_template = service.create_public_document_template(
         db,
@@ -95,7 +95,7 @@ def create_public_document_template(
 def get_public_document_template(
     public_document_template_id: str,
     db: Session = Depends(get_db),
-    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ)),
+    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ_ALL)),
 ) -> PublicDocumentTemplateResponse:
     public_document_template = service.get_public_document_template(
         db, public_document_template_id)
@@ -114,7 +114,7 @@ def update_public_document_template(
     body: PublicDocumentTemplateUpdateRequest,
     db: Session = Depends(get_db),
     actor: AuthenticatedActor = Depends(
-        require_all_scopes(SCOPE_BACKEND_WRITE)),
+        require_all_scopes(SCOPE_BACKEND_WRITE_ALL)),
 ) -> PublicDocumentTemplateResponse:
     public_document_template = service.update_public_document_template(
         db, public_document_template_id, body=body, actor=actor.sub
@@ -131,7 +131,7 @@ def update_public_document_template(
 def list_document_templates(
     page: PageParams = Depends(page_params),
     db: Session = Depends(get_db),
-    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ)),
+    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ_ALL)),
 ) -> DocumentTemplatesListResponse:
     document_templates, total = service.list_document_templates(
         db, limit=page.limit, offset=page.offset)
@@ -151,7 +151,7 @@ def list_document_templates(
 def get_document_template(
     document_template_id: uuid.UUID,
     db: Session = Depends(get_db),
-    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ)),
+    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ_ALL)),
 ) -> DocumentTemplateResponse:
     document_template = service.get_document_template(db, document_template_id)
     return DocumentTemplateResponse(data=DocumentTemplateOut.model_validate(document_template))
@@ -165,7 +165,7 @@ def get_document_template(
 def get_document_template_files(
     document_template_id: uuid.UUID,
     db: Session = Depends(get_db),
-    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ)),
+    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ_ALL)),
 ) -> DocumentTemplateFilesResponse:
     document_template = service.get_document_template(db, document_template_id)
     return DocumentTemplateFilesResponse(
@@ -182,7 +182,7 @@ def get_document_template_files(
 def get_document_template_preview(
     document_template_id: uuid.UUID,
     db: Session = Depends(get_db),
-    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ)),
+    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ_ALL)),
 ) -> Response:
     document_template = service.get_document_template(db, document_template_id)
 

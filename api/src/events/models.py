@@ -9,6 +9,7 @@ scopes (e.g. ``invoices:read:tema-2026``) and in external references.
 from __future__ import annotations
 
 import datetime as dt
+from typing import TYPE_CHECKING
 
 from sqlalchemy import String
 from sqlalchemy.dialects.postgresql import JSONB
@@ -23,6 +24,9 @@ from src.core.models import (
     TZDateTime,
     UpdatedAtMixin,
 )
+
+if TYPE_CHECKING:
+    from src.orders.models import Order
 
 
 class Event(Base, CreatedAtMixin, UpdatedAtMixin, CreatedByMixin, DeletedAtMixin, DeletedByMixin):
@@ -41,6 +45,6 @@ class Event(Base, CreatedAtMixin, UpdatedAtMixin, CreatedByMixin, DeletedAtMixin
         TZDateTime, nullable=True)
 
     # Relationships
-    orders: Mapped[list["Order"]] = relationship(  # noqa: F821, UP037 # pyright: ignore[reportUndefinedVariable]
+    orders: Mapped[list["Order"]] = relationship(  # noqa: UP037
         back_populates="event", lazy="selectin", order_by="Order.created_at"
     )

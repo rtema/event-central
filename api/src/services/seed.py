@@ -10,7 +10,9 @@ from __future__ import annotations
 import logging
 import os
 
+import src.models  # type: ignore # noqa: F401 (import needs to be done here for sqlalchemy to build the full class registry)
 from src.config import settings
+from src.core.scopes import build_scope_catalogue
 from src.logger import configure_logger
 
 log = logging.getLogger("app.restore")
@@ -125,7 +127,6 @@ def create_admin_account(email: str | None, password: str | None) -> None:
 
     from src.auth.service import active_scopes_for_user
     from src.core.db import SessionLocal
-    from src.core.scopes import SCOPE_CATALOGUE
     from src.users import service as users_service
     from src.users.models import User, UserScope
 
@@ -134,13 +135,14 @@ def create_admin_account(email: str | None, password: str | None) -> None:
 
     email = email or os.getenv("SEED_ADMIN_EMAIL", "admin@example.com")
 
-    # Resource-wide admin scopes. A granted ":all" already satisfies ":own" and
-    # ":{eventId}", so we only need the ":all" grants plus the backend flags.
-    admin_scopes = sorted(
-        s for s in SCOPE_CATALOGUE if s.endswith(":all") or s.startswith("backend:")
-    )
-
     with SessionLocal() as db:
+        # Resource-wide admin scopes. A granted ":all" already satisfies ":own" and
+        # ":{eventId}", so we only need the ":all" grants.
+        scope_catalogue = build_scope_catalogue(db, include_dynamic=False)
+        admin_scopes = sorted(
+            s.scope for s in scope_catalogue if s.scope.endswith(":all")
+        )
+
         user = db.execute(select(User).where(
             User.email == email)).scalars().first()
 

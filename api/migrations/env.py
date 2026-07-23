@@ -6,7 +6,7 @@ from logging.config import fileConfig
 from typing import Any, Literal
 
 # Import all models so their tables are registered on Base.metadata.
-import src.models  # type: ignore # noqa: F401  (side-effect import)
+import src.models  # type: ignore # noqa: F401 (import needs to be done here for sqlalchemy to build the full class registry)
 from alembic import context
 from alembic.autogenerate.api import AutogenContext
 from sqlalchemy import engine_from_config, pool
