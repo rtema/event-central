@@ -135,24 +135,47 @@ export function Login() {
       >
         <Group gap="sm">
           <TemaLogo height={34} variant="mono" monoColor="#ffffff" />
-          <Text fw={700} fz="lg">
-            Event Central
-          </Text>
         </Group>
         <Stack gap="xs" maw={420}>
           <Title order={1} c="white" fz={34}>
-            <Trans>User administration</Trans>
+            <Trans>Event Central</Trans>
           </Title>
           <Text c="white" opacity={0.85}>
             <Trans>
-              Manage accounts, sign-in methods and access scopes for the
-              e-invoicing platform.
+              Centralized e-invoicing platform for events.
             </Trans>
           </Text>
         </Stack>
-        <Text size="xs" c="white" opacity={0.6}>
-          © {new Date().getFullYear()} TEMA Technologie Marketing AG
-        </Text>
+        <Group>
+          <Text size="xs" c="white" opacity={0.6}>
+            © {new Date().getFullYear()} TEMA Technologie Marketing AG
+          </Text>
+          <Anchor
+            href={i18n.locale === "de" ?
+              "https://www.tema.de/informationen/impressum" :
+              "https://www.tema.de/en/information/impressum"
+            }
+            target="_blank"
+            c="white"
+            size="xs"
+            opacity={0.6}
+          >
+            Imprint
+          </Anchor>
+          <Anchor
+            href={i18n.locale === "de" ?
+              "https://www.tema.de/informationen/datenschutz" :
+              "https://www.tema.de/en/information/datenschutz"
+            }
+            target="_blank"
+            c="white"
+            size="xs"
+            opacity={0.6}
+          >
+            Privacy Policy
+          </Anchor>
+        </Group>
+
       </Box>
 
       <Center p="md" style={{ flex: 1 }}>
@@ -163,7 +186,7 @@ export function Login() {
                 <Trans>Sign in</Trans>
               </Title>
               <Text size="sm" c="dimmed">
-                <Trans>Use your Event Central credentials.</Trans>
+                <Trans>To create your account, contact your TEMA account representative.</Trans>
               </Text>
             </Box>
 
@@ -198,7 +221,7 @@ export function Login() {
                 <Button loading={submitting} onClick={() => void submitPassword()}>
                   <Trans>Sign in</Trans>
                 </Button>
-                <Anchor component={Link} to={`/${i18n.locale}/reset`} size="sm" ta="center">
+                <Anchor component={Link} to={`/${i18n.locale}/auth/reset?email=${encodeURIComponent(form.getValues().email)}`} size="sm" ta="center">
                   <Trans>Forgot your password?</Trans>
                 </Anchor>
               </>

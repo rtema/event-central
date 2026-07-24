@@ -17,7 +17,7 @@ export function ProtectedRoute() {
   }
 
   if (status === "unauthenticated") {
-    return <Navigate to={`/${i18n.locale}/login`} replace state={{ from: location }} />;
+    return <Navigate to={`/${i18n.locale}/auth/login`} replace state={{ from: location }} />;
   }
 
   return <Outlet />;

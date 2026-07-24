@@ -22,17 +22,18 @@ export function PasswordReset() {
   const { i18n } = useLingui();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const code = params.get("code") ?? "";
-  const phase: "start" | "confirm" = code ? "confirm" : "start";
+  const [phase, setPhase] = useState<"start" | "confirm">(params.get("code") ? "confirm" : "start")
   const [submitting, setSubmitting] = useState(false);
 
   const form = useForm({
     initialValues: {
+      code: params.get("code") ?? "",
       email: params.get("email") ?? "",
       password: "",
       confirm: "",
     },
     validate: {
+      code: (v) => (/^[0-9]+$/.test(v) ? null : t`Enter a valid code`),
       email: (v) => (/^\S+@\S+$/.test(v) ? null : t`Enter a valid email`),
       password: (v) =>
         phase === "confirm" && v.length < 8
@@ -66,6 +67,7 @@ export function PasswordReset() {
         title: t`Check your inbox`,
         message: t`If the address exists, a reset link is on its way.`,
       });
+      setPhase("confirm")
     } catch (err) {
       fail(err);
     } finally {
@@ -79,7 +81,7 @@ export function PasswordReset() {
     try {
       await confirmPasswordReset({
         email: form.values.email,
-        code,
+        code: form.values.code,
         password: form.values.password,
       });
       notifications.show({
@@ -87,7 +89,7 @@ export function PasswordReset() {
         title: t`Password updated`,
         message: t`You can now sign in with your new password.`,
       });
-      navigate(`${i18n.locale}/login`, { replace: true });
+      navigate(`/${i18n.locale}/auth/login`, { replace: true });
     } catch (err) {
       fail(err);
     } finally {
@@ -115,6 +117,15 @@ export function PasswordReset() {
               )}
             </Text>
           </div>
+
+          {phase === "confirm" && (
+            <TextInput
+              label={t`Code`}
+              placeholder="0123456"
+              disabled={phase === "confirm" && Boolean(params.get("code"))}
+              {...form.getInputProps("code")}
+            />
+          )}
 
           <TextInput
             label={t`Email`}
@@ -149,7 +160,7 @@ export function PasswordReset() {
             )}
           </Button>
 
-          <Anchor component={Link} to={`/${i18n.locale}/login`} size="sm" ta="center">
+          <Anchor component={Link} to={`/${i18n.locale}/auth/login`} size="sm" ta="center">
             <Trans>Back to sign in</Trans>
           </Anchor>
         </Stack>

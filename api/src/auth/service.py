@@ -5,6 +5,7 @@ from __future__ import annotations
 import datetime as dt
 import logging
 import uuid
+from typing import TYPE_CHECKING
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -25,9 +26,14 @@ from src.core.security import (
     hash_secret,
     verify_hashed_secret,
 )
+from src.emails.deps import queue_email, send_queued_email_sync
+from src.emails.service import resolve_email_sender, resolve_email_template
 from src.users.models import User, UserAuth, UserScope
 
 log = logging.getLogger("src.auth")
+
+if TYPE_CHECKING:
+    from src.emails.models import EmailTemplate
 
 
 def _now() -> dt.datetime:
@@ -120,7 +126,13 @@ def grant_password(
     # Always run a hash verification to reduce username-enumeration timing leaks.
     auth = _active_auth(db, user.id, "password") if user else None
     valid = verify_hashed_secret(password, auth.secret if auth else None)
-    if not user or not auth or not valid:
+    log.info(f"User: {user.first_name if user else "Unknown"} {user.last_name if 
+                                                               user else "Unknown"}" +
+             f"Auth Method: password {auth.created_at if auth else "not allowed"}" +
+             f"Password valid: {valid}")  # noqa: E501
+    if (not user or
+        not auth or
+            not valid):
         raise AuthError(
             "invalid_grant",
             description="invalid username or password",
@@ -244,16 +256,49 @@ def create_challenge(
     client_id: str | None = None,
     scope: str | None = None,
     redirect_uri: str | None = None,
-) -> str:
-    """Create a one-time code challenge and return the *plaintext* code.
-
-    The caller is responsible for delivering the code (email/SMS). In this step
-    delivery is stubbed and the code is logged for development.
+) -> str | None:
+    """Create a one-time code challenge and send it to the user.
     """
     user = find_active_user_by_email(db, destination)
+    if user is None:
+        return None
+
+    # set locale
+    locale = "en"
+
+    # check purpose
+    email_template: EmailTemplate | None
+    if purpose == "password-reset":
+        auth = _active_auth(db, user.id, "password") if user else None
+        if auth is None:
+            # raise AuthError("invalid_request",
+            #                 description=f"purpose '{purpose}' not allowed for user")
+            return None
+
+        # get email template
+        email_template = resolve_email_template(
+            db, locale=locale, purpose="auth-reset-password")
+
+    elif purpose == "passwordless":
+        auth = _active_auth(db, user.id, "passwordless") if user else None
+        if auth is None:
+            # raise AuthError("invalid_request",
+            #                 description=f"purpose '{purpose}' not allowed for user")
+            return None
+
+        # get email template
+        email_template = resolve_email_template(
+            db, locale=locale, purpose="auth-passwordless")
+
+    else:
+        # raise AuthError("invalid_request",
+        #                 description=f"purpose '{purpose}' not supported")
+        return None
+
+    # generate code/challenge
     code = generate_numeric_code()
     challenge = AuthChallenge(
-        user_id=user.id if user else None,
+        user_id=user.id,
         purpose=purpose,
         channel=channel,
         destination=destination,
@@ -264,8 +309,49 @@ def create_challenge(
         expires_at=_now() + dt.timedelta(seconds=settings.otp_ttl_seconds),
     )
     db.add(challenge)
-    # NOTE: real email/SMS delivery is wired up in a later step. For now we log
-    # only in development so flows are testable; never log codes in production.
+
+    # send code by email
+    if channel == "email":
+        # get email template
+        if email_template is None:
+            raise AuthError("invalid_request",
+                            description=f"email template  for {purpose} is not configured")
+
+        email_sender = resolve_email_sender(db, purpose="auth")
+        if email_sender is None:
+            raise AuthError("invalid_request",
+                            description="email sender not configured")
+
+        # generate link
+        link = f"{settings.app_base_url}/{locale}/auth/reset?code={code}&email={user.email}"
+
+        # queue email
+        email = queue_email(
+            db,
+            email_template,
+            email_sender,
+            to=[user.email],
+            cc=[],
+            bcc=[],
+            attachments=[],
+            user=user,
+            extra={
+                'code': code,
+                'link': link
+            },
+
+            created_by="system",
+        )
+
+        # directly send email in dev
+        if not settings.is_production:
+            send_queued_email_sync(db, email)
+
+    else:
+        # raise AuthError("invalid_request",
+        #                 description=f"channel {channel} cannot be handled")
+        return None
+
     if not settings.is_production:
         log.info("[dev] %s code for %s: %s", purpose, destination, code)
     return code

@@ -44,7 +44,7 @@ export function AppLayout() {
 
   const handleLogout = async () => {
     await logout();
-    navigate(`/${i18n.locale}/login`, { replace: true });
+    navigate(`/${i18n.locale}/auth/login`, { replace: true });
   };
 
   const initials =

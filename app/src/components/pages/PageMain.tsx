@@ -62,8 +62,8 @@ export function PageMain() {
               <ModalsProvider>
                 <Routes>
                   <Route path="/:lang">
-                    <Route path="login" element={<Login />} />
-                    <Route path="reset" element={<PasswordReset />} />
+                    <Route path="auth/login" element={<Login />} />
+                    <Route path="auth/reset" element={<PasswordReset />} />
                     <Route element={<ProtectedRoute />}>
                       <Route element={<AppLayout />}>
                         <Route path="home" element={<PageHome />} />
