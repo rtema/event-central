@@ -13,6 +13,15 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/components/emails/EmailDetail.tsx:72
+msgid "(no subject)"
+msgstr "(kein Betreff)"
+
+#. placeholder {0}: selected.size
+#: src/components/users/UserScopesTab.tsx:594
+msgid "{0} selected"
+msgstr "{0} ausgewählt"
+
 #: src/components/ui/Pager.tsx:41
 msgid "{from}–{to}"
 msgstr "{von}–{bis}"
@@ -20,6 +29,11 @@ msgstr "{von}–{bis}"
 #: src/components/ui/Pager.tsx:37
 msgid "{from}–{to} of {total}"
 msgstr "{von}–{bis} von {insgesamt}"
+
+#. placeholder {0}: email.to.length - 1
+#: src/components/emails/EmailsList.tsx:280
+msgid "+{0} more"
+msgstr "+{0} weitere"
 
 #: src/components/users/UserAuthMethodsTab.tsx:310
 msgid "A QR code and setup key will be generated and shown once after creation, ready to scan into an authenticator app."
@@ -29,7 +43,7 @@ msgstr "Nach der Erstellung werden ein QR-Code und ein Einrichtungsschlüssel ge
 msgid "A secret will be generated and shown once after creation."
 msgstr "Ein Geheimnis wird erzeugt und nach dem Erstellen einmalig angezeigt."
 
-#: src/components/users/UserScopesTab.tsx:66
+#: src/components/users/UserScopesTab.tsx:339
 msgid "Access has been updated for this user."
 msgstr "Die Zugriffsrechte für diesen Benutzer wurden aktualisiert."
 
@@ -37,7 +51,7 @@ msgstr "Die Zugriffsrechte für diesen Benutzer wurden aktualisiert."
 msgid "Access key"
 msgstr "Zugriffstaste"
 
-#: src/components/ui/AppLayout.tsx:81
+#: src/components/ui/AppLayout.tsx:84
 msgid "Account menu"
 msgstr "Kontomenü"
 
@@ -98,6 +112,11 @@ msgstr "Einzelposten hinzufügen"
 msgid "Add method"
 msgstr "Methode hinzufügen"
 
+#: src/components/email-senders/EmailSenderForm.tsx:228
+#: src/components/email-templates/EmailTemplateForm.tsx:104
+msgid "Add purpose"
+msgstr "Zweck hinzufügen"
+
 #: src/components/invoices/InvoiceCreate.tsx:640
 msgid "Add tax rate"
 msgstr "Steuersatz hinzufügen"
@@ -117,6 +136,10 @@ msgstr "Adresszeile 1"
 msgid "Address line 2"
 msgstr "Adresszeile 2"
 
+#: src/components/email-senders/EmailSendersList.tsx:250
+msgid "Address, host or name…"
+msgstr "Adresse, Host oder Name…"
+
 #: src/components/payments/PaymentsList.tsx:91
 msgid "All payments and refunds recorded across orders."
 msgstr "Alle Zahlungen und Rückerstattungen, die im Zusammenhang mit Bestellungen erfasst wurden."
@@ -130,6 +153,12 @@ msgstr "Betrag"
 msgid "Amount (EUR)"
 msgstr "Betrag (EUR)"
 
+#: src/components/email-senders/EmailSendersList.tsx:261
+#: src/components/emails/EmailsList.tsx:127
+#: src/components/emails/EmailsList.tsx:145
+#: src/components/emails/EmailsList.tsx:158
+#: src/components/emails/EmailsList.tsx:171
+#: src/components/emails/EmailsList.tsx:189
 #: src/components/files/FilesList.tsx:141
 #: src/components/files/FilesList.tsx:159
 #: src/components/files/FilesList.tsx:175
@@ -147,6 +176,24 @@ msgstr "Irgendein"
 msgid "Applied tax rates"
 msgstr "Angewandte Steuersätze"
 
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:137
+msgid "Attach a file"
+msgstr "Datei anhängen"
+
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:187
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:302
+msgid "Attach file"
+msgstr "Datei anhängen"
+
+#: src/components/email-templates/EmailTemplateDetail.tsx:219
+msgid "Attached files"
+msgstr "Angehängte Dateien"
+
+#: src/components/emails/EmailDetail.tsx:147
+#: src/components/emails/EmailsList.tsx:170
+msgid "Attachments"
+msgstr "Anhänge"
+
 #: src/components/users/UserAuthMethodsTab.tsx:124
 msgid "Auth method added"
 msgstr "Anmeldemethode hinzugefügt"
@@ -154,6 +201,10 @@ msgstr "Anmeldemethode hinzugefügt"
 #: src/components/users/UserDetail.tsx:166
 msgid "Auth methods"
 msgstr "Anmeldemethoden"
+
+#: src/components/emails/EmailDetail.tsx:62
+msgid "Back to emails"
+msgstr "Zurück zu den E-Mails"
 
 #: src/components/events/EventDetail.tsx:64
 msgid "Back to events"
@@ -172,12 +223,13 @@ msgstr "Zurück zu den Rechnungen"
 msgid "Back to orders"
 msgstr "Zurück zu den Bestellungen"
 
-#: src/components/auth/PasswordReset.tsx:153
+#: src/components/auth/PasswordReset.tsx:164
 msgid "Back to sign in"
 msgstr "Zurück zur Anmeldung"
 
 #: src/components/document-templates/DocumentTemplateDetail.tsx:38
 #: src/components/document-templates/PublicDocumentTemplateEditor.tsx:115
+#: src/components/email-templates/EmailTemplateDetail.tsx:150
 msgid "Back to templates"
 msgstr "Zurück zu den Vorlagen"
 
@@ -197,15 +249,30 @@ msgstr "Basispfad"
 msgid "Base paths"
 msgstr "Basispfade"
 
+#: src/components/emails/EmailDetail.tsx:85
+msgid "Bcc"
+msgstr "Bcc"
+
 #: src/components/invoices/InvoicesList.tsx:179
 msgid "Browse issued invoices, generate new ones and export."
 msgstr "Ausgestellte Rechnungen anzeigen, neue Rechnungen erstellen und exportieren."
+
+#: src/components/email-templates/EmailTemplateDetail.tsx:255
+msgid "By"
+msgstr "Von"
 
 #: src/components/users/UserAuthMethodsTab.tsx:370
 msgid "Can't scan? Enter this key manually:"
 msgstr "Das Scannen funktioniert nicht? Geben Sie diesen Schlüssel manuell ein:"
 
 #: src/components/document-templates/DocumentTemplatesList.tsx:125
+#: src/components/email-senders/EmailSendersList.tsx:149
+#: src/components/email-senders/EmailSendersList.tsx:206
+#: src/components/email-templates/EmailTemplateDetail.tsx:116
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:184
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:220
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:268
+#: src/components/email-templates/EmailTemplatesList.tsx:94
 #: src/components/invoices/InvoiceCreate.tsx:764
 #: src/components/invoices/InvoicesList.tsx:103
 #: src/components/orders/OrderDetail.tsx:150
@@ -227,14 +294,24 @@ msgstr "Bestellung stornieren"
 msgid "Cancellation"
 msgstr "Stornierung"
 
+#: src/components/emails/EmailsList.tsx:134
+#: src/components/emails/EmailStatusBadge.tsx:27
 #: src/components/orders/OrdersList.tsx:107
 #: src/components/ui/StatusBadge.tsx:15
 msgid "Cancelled"
 msgstr "Abgesagt"
 
+#: src/components/emails/EmailDetail.tsx:84
+msgid "Cc"
+msgstr "Cc"
+
 #: src/components/invoices/InvoiceCreate.tsx:524
 msgid "CC emails"
 msgstr "E-Mails mit Kopie"
+
+#: src/components/auth/Login.tsx:144
+msgid "Centralized e-invoicing platform for events."
+msgstr "Zentrale Plattform für die elektronische Rechnungsstellung im Veranstaltungsbereich."
 
 #: src/components/ui/LanguageSwitcher.tsx:63
 msgid "Change language"
@@ -245,13 +322,25 @@ msgid "Check the form"
 msgstr "Überprüfen Sie das Formular"
 
 #: src/components/auth/Login.tsx:99
-#: src/components/auth/PasswordReset.tsx:66
+#: src/components/auth/PasswordReset.tsx:67
 msgid "Check your inbox"
 msgstr "Prüfen Sie Ihren Posteingang"
 
-#: src/components/auth/PasswordReset.tsx:107
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:106
+msgid "Choose a file"
+msgstr "Datei auswählen"
+
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:99
+msgid "Choose a file from the library first."
+msgstr "Wählen Sie zuerst eine Datei aus der Bibliothek aus."
+
+#: src/components/auth/PasswordReset.tsx:109
 msgid "Choose a new password"
 msgstr "Wählen Sie ein neues Passwort"
+
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:161
+msgid "Choose file"
+msgstr "Datei auswählen"
 
 #: src/components/invoices/InvoiceCreate.tsx:481
 #: src/components/invoices/InvoiceCreate.tsx:541
@@ -263,6 +352,7 @@ msgstr "Stadt"
 msgid "Clear"
 msgstr "Löschen"
 
+#: src/components/emails/EmailsList.tsx:211
 #: src/components/events/EventsList.tsx:92
 #: src/components/files/FilesList.tsx:219
 #: src/components/invoices/InvoicesList.tsx:281
@@ -271,11 +361,19 @@ msgstr "Löschen"
 msgid "Clear filters"
 msgstr "Filter löschen"
 
+#: src/components/email-senders/EmailSenderForm.tsx:204
+msgid "Clear password"
+msgstr "Passwort löschen"
+
+#: src/components/auth/PasswordReset.tsx:123
+msgid "Code"
+msgstr "Code"
+
 #: src/components/invoices/InvoiceCreate.tsx:457
 msgid "Commercial register"
 msgstr "Handelsregister"
 
-#: src/components/auth/PasswordReset.tsx:134
+#: src/components/auth/PasswordReset.tsx:145
 msgid "Confirm password"
 msgstr "Passwort bestätigen"
 
@@ -325,11 +423,15 @@ msgstr "Korrelations-ID"
 msgid "Could not add auth method"
 msgstr "Anmeldemethode konnte nicht hinzugefügt werden"
 
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:128
+msgid "Could not attach file"
+msgstr "Datei konnte nicht angehängt werden"
+
 #: src/components/orders/OrderDetail.tsx:200
 msgid "Could not cancel order"
 msgstr "Die Bestellung konnte nicht storniert werden"
 
-#: src/components/auth/PasswordReset.tsx:51
+#: src/components/auth/PasswordReset.tsx:52
 msgid "Could not complete request"
 msgstr "Anfrage konnte nicht abgeschlossen werden"
 
@@ -341,7 +443,12 @@ msgstr "Der Download-Link konnte nicht erstellt werden"
 msgid "Could not create invoice"
 msgstr "Rechnung konnte nicht erstellt werden"
 
+#: src/components/email-senders/EmailSendersList.tsx:126
+msgid "Could not create sender"
+msgstr "Absender konnte nicht erstellt werden"
+
 #: src/components/document-templates/DocumentTemplatesList.tsx:99
+#: src/components/email-templates/EmailTemplatesList.tsx:75
 msgid "Could not create template"
 msgstr "Vorlage konnte nicht erstellt werden"
 
@@ -349,6 +456,8 @@ msgstr "Vorlage konnte nicht erstellt werden"
 msgid "Could not create user"
 msgstr "Benutzer konnte nicht erstellt werden"
 
+#: src/components/email-senders/EmailSendersList.tsx:220
+#: src/components/email-templates/EmailTemplateDetail.tsx:131
 #: src/components/users/UserDetail.tsx:74
 msgid "Could not delete"
 msgstr "Löschen nicht möglich"
@@ -365,6 +474,10 @@ msgstr "Die Datei konnte nicht geöffnet werden"
 msgid "Could not record payment"
 msgstr "Die Zahlung konnte nicht verbucht werden"
 
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:282
+msgid "Could not remove file"
+msgstr "Datei konnte nicht entfernt werden"
+
 #: src/components/users/UserDetail.tsx:93
 msgid "Could not restore"
 msgstr "Wiederherstellen nicht möglich"
@@ -377,9 +490,21 @@ msgstr "Speichern nicht möglich"
 msgid "Could not save data"
 msgstr "Daten konnten nicht gespeichert werden"
 
-#: src/components/users/UserScopesTab.tsx:71
+#: src/components/email-templates/EmailTemplateDetail.tsx:97
+msgid "Could not save template"
+msgstr "Vorlage konnte nicht gespeichert werden"
+
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:235
+msgid "Could not update key"
+msgstr "Schlüssel konnte nicht aktualisiert werden"
+
+#: src/components/users/UserScopesTab.tsx:344
 msgid "Could not update scopes"
 msgstr "Berechtigungen konnten nicht aktualisiert werden"
+
+#: src/components/email-senders/EmailSendersList.tsx:126
+msgid "Could not update sender"
+msgstr "Absender konnte nicht aktualisiert werden"
 
 #: src/components/document-templates/PublicDocumentTemplateEditor.tsx:100
 msgid "Could not update template"
@@ -398,7 +523,12 @@ msgstr "Erstellen"
 msgid "Create invoice"
 msgstr "Rechnung erstellen"
 
+#: src/components/email-senders/EmailSendersList.tsx:152
+msgid "Create sender"
+msgstr "Absender erstellen"
+
 #: src/components/document-templates/DocumentTemplatesList.tsx:128
+#: src/components/email-templates/EmailTemplatesList.tsx:97
 msgid "Create template"
 msgstr "Vorlage erstellen"
 
@@ -409,6 +539,9 @@ msgstr "Benutzer erstellen"
 #: src/components/document-templates/DocumentTemplateDetail.tsx:53
 #: src/components/document-templates/DocumentTemplateFilesTable.tsx:53
 #: src/components/document-templates/DocumentTemplatesList.tsx:262
+#: src/components/email-templates/EmailTemplateDetail.tsx:185
+#: src/components/emails/EmailDetail.tsx:131
+#: src/components/emails/EmailsList.tsx:261
 #: src/components/events/EventDetail.tsx:50
 #: src/components/events/EventDetail.tsx:81
 #: src/components/files/FileDetail.tsx:172
@@ -423,6 +556,7 @@ msgid "Created"
 msgstr "Erstellt"
 
 #: src/components/document-templates/DocumentTemplateDetail.tsx:54
+#: src/components/emails/EmailDetail.tsx:132
 #: src/components/files/FileDetail.tsx:173
 #: src/components/invoices/InvoiceDetail.tsx:134
 msgid "Created by"
@@ -449,10 +583,32 @@ msgstr "Daten"
 msgid "Data saved"
 msgstr "Daten gespeichert"
 
+#: src/components/email-senders/EmailSendersList.tsx:206
+#: src/components/email-senders/EmailSendersList.tsx:398
+#: src/components/email-senders/EmailSendersList.tsx:403
+#: src/components/email-templates/EmailTemplateDetail.tsx:116
+#: src/components/email-templates/EmailTemplateDetail.tsx:178
 #: src/components/users/UserDetail.tsx:60
 #: src/components/users/UserDetail.tsx:154
 msgid "Delete"
 msgstr "Löschen"
+
+#: src/components/email-senders/EmailSendersList.tsx:197
+msgid "Delete sender"
+msgstr "Absender löschen"
+
+#: src/components/email-templates/EmailTemplateDetail.tsx:107
+msgid "Delete template"
+msgstr "Vorlage löschen"
+
+#. placeholder {0}: sender.fromEmail
+#: src/components/email-senders/EmailSendersList.tsx:200
+msgid "Delete the sender {0}? Mail already queued is unaffected, but it can no longer be selected for new mail."
+msgstr "Den Absender {0} löschen? Bereits eingereihte Mails bleiben unberührt, aber der Absender kann für neue Mails nicht mehr ausgewählt werden."
+
+#: src/components/email-templates/EmailTemplateDetail.tsx:110
+msgid "Delete this template? Emails already sent are unaffected, but it can no longer be used to compose new mail."
+msgstr "Diese Vorlage löschen? Bereits gesendete E-Mails bleiben unberührt, aber die Vorlage kann nicht mehr für neue Mails verwendet werden."
 
 #: src/components/users/UserDetail.tsx:51
 msgid "Delete user"
@@ -470,6 +626,16 @@ msgstr "Gelöscht"
 #: src/components/files/FileDetail.tsx:180
 msgid "Deleted by"
 msgstr "Gelöscht von"
+
+#: src/components/emails/EmailDetail.tsx:128
+#: src/components/emails/EmailsList.tsx:131
+#: src/components/emails/EmailStatusBadge.tsx:21
+msgid "Delivered"
+msgstr "Zugestellt"
+
+#: src/components/emails/EmailDetail.tsx:91
+msgid "Delivery"
+msgstr "Zustellung"
 
 #: src/components/invoices/InvoiceCreate.tsx:658
 #: src/components/invoices/InvoiceDetail.tsx:226
@@ -509,11 +675,15 @@ msgstr "Anmeldemethode deaktivieren"
 msgid "Disabled"
 msgstr "Deaktiviert"
 
+#: src/components/users/UserScopesTab.tsx:639
+msgid "Discard"
+msgstr "Verwerfen"
+
 #: src/components/document-templates/DocumentTemplatesList.tsx:294
 msgid "Document templates"
 msgstr "Dokumentvorlagen"
 
-#: src/components/ui/AppLayout.tsx:147
+#: src/components/ui/AppLayout.tsx:150
 msgid "Document Templates"
 msgstr "Dokumentvorlagen"
 
@@ -554,7 +724,7 @@ msgstr "Fällig"
 msgid "Due date"
 msgstr "Fälligkeitsdatum"
 
-#: src/components/ui/AppLayout.tsx:71
+#: src/components/ui/AppLayout.tsx:74
 msgid "E-invoicing console"
 msgstr "Konsole für die elektronische Rechnungsstellung"
 
@@ -568,16 +738,35 @@ msgstr "z. B. Dr."
 msgid "e.g. Mr, Ms"
 msgstr "z. B. Herr, Frau"
 
+#: src/components/email-templates/EmailTemplateForm.tsx:81
+#: src/components/email-templates/EmailTemplateForm.tsx:86
+msgid "e.g. Order confirmation"
+msgstr "z. B. Bestellbestätigung"
+
 #: src/components/invoices/InvoicesList.tsx:243
 msgid "e.g. TEMA26-"
 msgstr "z. B. TEMA26-"
+
+#: src/components/email-senders/EmailSenderForm.tsx:104
+#: src/components/email-senders/EmailSenderForm.tsx:109
+msgid "e.g. Tickets"
+msgstr "z. B. Tickets"
+
+#: src/components/email-senders/EmailSendersList.tsx:389
+#: src/components/email-senders/EmailSendersList.tsx:393
+msgid "Edit"
+msgstr "Bearbeiten"
 
 #: src/components/document-templates/DocumentTemplateDetail.tsx:131
 msgid "Edit public template"
 msgstr "Öffentliche Vorlage bearbeiten"
 
-#: src/components/auth/Login.tsx:184
-#: src/components/auth/PasswordReset.tsx:120
+#: src/components/email-senders/EmailSendersList.tsx:138
+msgid "Edit sender"
+msgstr "Absender bearbeiten"
+
+#: src/components/auth/Login.tsx:207
+#: src/components/auth/PasswordReset.tsx:131
 #: src/components/invoices/InvoiceDetail.tsx:181
 #: src/components/invoices/InvoiceDetail.tsx:193
 #: src/components/orders/OrderDetail.tsx:252
@@ -589,13 +778,36 @@ msgstr "Öffentliche Vorlage bearbeiten"
 msgid "Email"
 msgstr "E-Mail"
 
-#: src/components/auth/Login.tsx:179
+#: src/components/emails/EmailDetail.tsx:191
+msgid "Email body"
+msgstr "E-Mail-Text"
+
+#: src/components/auth/Login.tsx:202
 msgid "Email code"
 msgstr "Code per E-Mail"
 
 #: src/components/users/UserAuthMethodsTab.tsx:302
 msgid "Email or phone number"
 msgstr "E-Mail oder Telefonnummer"
+
+#: src/components/email-templates/EmailTemplatePreview.tsx:104
+msgid "Email preview"
+msgstr "E-Mail-Vorschau"
+
+#: src/components/email-senders/EmailSendersList.tsx:232
+#: src/components/ui/AppLayout.tsx:184
+msgid "Email senders"
+msgstr "E-Mail-Absender"
+
+#: src/components/email-templates/EmailTemplatesList.tsx:121
+#: src/components/ui/AppLayout.tsx:174
+msgid "Email templates"
+msgstr "E-Mail-Vorlagen"
+
+#: src/components/emails/EmailsList.tsx:105
+#: src/components/ui/AppLayout.tsx:166
+msgid "Emails"
+msgstr "E-Mails"
 
 #: src/components/invoices/TemplateAssetsFields.tsx:212
 #: src/components/invoices/TemplateAssetsFields.tsx:315
@@ -607,16 +819,26 @@ msgstr "Der Upload ist im Anhang beigefügt."
 msgid "Ends"
 msgstr "Ende"
 
+#: src/components/email-templates/EmailTemplateForm.tsx:98
+#: src/components/emails/EmailsList.tsx:192
 #: src/components/invoices/InvoiceCreate.tsx:408
 #: src/components/invoices/InvoicesList.tsx:232
 msgid "English"
 msgstr "Deutsch"
 
-#: src/components/auth/Login.tsx:53
 #: src/components/auth/PasswordReset.tsx:36
+msgid "Enter a valid code"
+msgstr "Geben Sie einen gültigen Code ein"
+
+#: src/components/auth/Login.tsx:53
+#: src/components/auth/PasswordReset.tsx:37
 #: src/components/users/UserProfileTab.tsx:33
 #: src/components/users/UsersList.tsx:66
 msgid "Enter a valid email"
+msgstr "Geben Sie eine gültige E-Mail-Adresse ein"
+
+#: src/components/email-senders/EmailSendersList.tsx:91
+msgid "Enter a valid email address"
 msgstr "Geben Sie eine gültige E-Mail-Adresse ein"
 
 #: src/components/orders/OrderDetail.tsx:82
@@ -631,7 +853,7 @@ msgstr "Geben Sie eine E-Mail-Adresse oder Telefonnummer ein"
 msgid "Enter the code"
 msgstr "Geben Sie den Code ein"
 
-#: src/components/auth/Login.tsx:216
+#: src/components/auth/Login.tsx:239
 msgid "Enter the code we emailed you."
 msgstr "Geben Sie den Code ein, den wir Ihnen per E-Mail gesendet haben."
 
@@ -644,9 +866,10 @@ msgstr "Veranstaltung"
 msgid "Event & basics"
 msgstr "Veranstaltung & Grundlagen"
 
+#: src/components/auth/Login.tsx:141
 #: src/components/pages/PageHome.tsx:17
 msgid "Event Central"
-msgstr "Veranstaltungszentrum"
+msgstr "Event Central"
 
 #: src/components/invoices/InvoiceCreate.tsx:395
 msgid "Event end"
@@ -674,7 +897,7 @@ msgstr "Veranstaltungsbeginn"
 
 #: src/components/events/EventsList.tsx:65
 #: src/components/orders/OrdersList.tsx:121
-#: src/components/ui/AppLayout.tsx:131
+#: src/components/ui/AppLayout.tsx:134
 msgid "Events"
 msgstr "Veranstaltungen"
 
@@ -685,6 +908,10 @@ msgstr "Jedes Ereignis mit Rechnungen oder Bestellungen auf der Plattform."
 #: src/components/files/FilesList.tsx:121
 msgid "Every file stored on the platform — images, fonts and generated documents."
 msgstr "Jede auf der Plattform gespeicherte Datei – Bilder, Schriftarten und erstellte Dokumente."
+
+#: src/components/emails/EmailsList.tsx:108
+msgid "Every queued, sent, and failed email. Open one to see its rendered body and delivery details."
+msgstr "Jede eingereihte, gesendete und fehlgeschlagene E-Mail. Öffnen Sie eine, um den gerenderten Inhalt und die Zustelldetails zu sehen."
 
 #: src/components/taxes/TaxesList.tsx:27
 msgid "Every tax rate referenced by an invoice line."
@@ -729,8 +956,25 @@ msgstr "Externe ID"
 msgid "External order ID"
 msgstr "Externe Bestellnummer"
 
+#: src/components/emails/EmailsList.tsx:133
+#: src/components/emails/EmailStatusBadge.tsx:25
+msgid "Failed"
+msgstr "Fehlgeschlagen"
+
+#: src/components/emails/EmailDetail.tsx:154
+msgid "File"
+msgstr "Datei"
+
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:121
+msgid "File attached"
+msgstr "Datei angehängt"
+
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:276
+msgid "File removed"
+msgstr "Datei entfernt"
+
 #: src/components/files/FilesList.tsx:118
-#: src/components/ui/AppLayout.tsx:155
+#: src/components/ui/AppLayout.tsx:158
 msgid "Files"
 msgstr "Dateien"
 
@@ -759,6 +1003,8 @@ msgstr "Erste Zahl"
 
 #: src/components/document-templates/DocumentTemplateFilesTable.tsx:18
 #: src/components/document-templates/DocumentTemplateFilesTable.tsx:45
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:42
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:322
 #: src/components/files/FilesList.tsx:144
 msgid "Font"
 msgstr "Schriftart"
@@ -771,7 +1017,7 @@ msgstr "Schriftartname (wie in CSS verwendet)"
 msgid "Fonts"
 msgstr "Schriftarten"
 
-#: src/components/auth/Login.tsx:202
+#: src/components/auth/Login.tsx:225
 msgid "Forgot your password?"
 msgstr "Passwort vergessen?"
 
@@ -779,10 +1025,28 @@ msgstr "Passwort vergessen?"
 msgid "Format"
 msgstr "Format"
 
+#: src/components/email-senders/EmailSendersList.tsx:308
+msgid "From"
+msgstr "Von"
+
+#: src/components/email-senders/EmailSenderForm.tsx:116
+msgid "From address"
+msgstr "Absenderadresse"
+
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:151
+msgid "From library"
+msgstr "Aus der Bibliothek"
+
+#: src/components/email-senders/EmailSenderForm.tsx:122
+msgid "From name"
+msgstr "Absendername"
+
 #: src/components/invoices/InvoiceCreate.tsx:360
 msgid "Generate an invoice and its e-invoice documents in one step."
 msgstr "Erstellen Sie eine Rechnung und die dazugehörigen E-Rechnungsdokumente in einem Schritt."
 
+#: src/components/email-templates/EmailTemplateForm.tsx:97
+#: src/components/emails/EmailsList.tsx:191
 #: src/components/invoices/InvoiceCreate.tsx:407
 #: src/components/invoices/InvoicesList.tsx:231
 msgid "German"
@@ -791,14 +1055,6 @@ msgstr "Deutsch"
 #: src/components/pages/NotFoundPage.tsx:19
 msgid "Go to home page"
 msgstr "Zur Startseite"
-
-#: src/components/pages/NotFoundPage.tsx:19
-#~ msgid "Go to users"
-#~ msgstr "Zu den Benutzern"
-
-#: src/components/users/UserScopesTab.tsx:89
-msgid "Granted scopes"
-msgstr "Erteilte Berechtigungen"
 
 #: src/components/invoices/InvoiceDetail.tsx:241
 #: src/components/invoices/InvoicesList.tsx:334
@@ -810,13 +1066,33 @@ msgstr "Brutto"
 msgid "Gross total"
 msgstr "Gesamtsumme"
 
+#: src/components/email-senders/EmailSenderForm.tsx:234
+msgid "Higher wins among senders sharing a purpose."
+msgstr "Bei Absendern mit gleichem Zweck gewinnt der höhere Wert."
+
+#: src/components/email-templates/EmailTemplateForm.tsx:112
+msgid "Higher wins among templates sharing a purpose."
+msgstr "Bei Vorlagen mit gleichem Zweck gewinnt der höhere Wert."
+
 #: src/components/users/UserDetail.tsx:184
 msgid "History"
 msgstr "Verlauf"
 
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:142
+msgid "How the template refers to this file, e.g. logo."
+msgstr "Wie die Vorlage auf diese Datei verweist, z. B. logo."
+
 #: src/components/document-templates/DocumentTemplateDetail.tsx:74
 msgid "HTML"
 msgstr "HTML"
+
+#: src/components/email-templates/EmailTemplateForm.tsx:135
+msgid "HTML body"
+msgstr "HTML-Inhalt"
+
+#: src/components/email-templates/EmailTemplatesList.tsx:52
+msgid "HTML body is required"
+msgstr "Der HTML-Inhalt ist erforderlich"
 
 #: src/components/invoices/TemplateAssetsFields.tsx:109
 msgid "HTML template"
@@ -833,11 +1109,12 @@ msgstr "IBAN"
 msgid "ID"
 msgstr "ID"
 
-#: src/components/auth/PasswordReset.tsx:67
+#: src/components/auth/PasswordReset.tsx:68
 msgid "If the address exists, a reset link is on its way."
 msgstr "Falls die Adresse existiert, ist ein Link zum Zurücksetzen unterwegs."
 
 #: src/components/document-templates/DocumentTemplateFilesTable.tsx:24
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:48
 #: src/components/files/FilesList.tsx:143
 msgid "Image"
 msgstr "Bild"
@@ -846,6 +1123,10 @@ msgstr "Bild"
 msgid "Images"
 msgstr "Bilder"
 
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:293
+msgid "Images and fonts the template can reference by key in its HTML."
+msgstr "Bilder und Schriftarten, auf die die Vorlage im HTML über einen Schlüssel verweisen kann."
+
 #: src/components/document-templates/DocumentTemplateDetail.tsx:56
 msgid "Inline fonts"
 msgstr "Inline-Schriftarten"
@@ -853,10 +1134,6 @@ msgstr "Inline-Schriftarten"
 #: src/components/document-templates/DocumentTemplateDetail.tsx:60
 msgid "Inline images"
 msgstr "Inline-Bilder"
-
-#: src/components/users/UserDataTab.tsx:55
-#~ msgid "Invalid JSON — please fix the syntax."
-#~ msgstr "Ungültiges JSON – bitte korrigieren Sie die Syntax."
 
 #: src/components/invoices/InvoicesList.tsx:213
 #: src/components/ui/StatusBadge.tsx:34
@@ -874,7 +1151,7 @@ msgstr "Rechnung erstellt"
 
 #: src/components/invoices/InvoicesList.tsx:176
 #: src/components/orders/OrderDetail.tsx:281
-#: src/components/ui/AppLayout.tsx:115
+#: src/components/ui/AppLayout.tsx:118
 msgid "Invoices"
 msgstr "Rechnungen"
 
@@ -884,14 +1161,23 @@ msgstr "Rechnungen"
 msgid "Issued"
 msgstr "Ausgestellt"
 
+#: src/components/email-senders/EmailSenderForm.tsx:195
+msgid "Keep current"
+msgstr "Aktuelles beibehalten"
+
 #: src/components/orders/OrderDetail.tsx:185
 msgid "Keep order"
 msgstr "Für Ordnung sorgen"
 
 #: src/components/document-templates/DocumentTemplateFilesTable.tsx:39
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:316
 #: src/components/invoices/TemplateAssetsFields.tsx:136
 msgid "Key"
 msgstr "Schlüssel"
+
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:229
+msgid "Key updated"
+msgstr "Schlüssel aktualisiert"
 
 #: src/components/document-templates/DocumentTemplatesList.tsx:180
 #: src/components/invoices/InvoiceCreate.tsx:586
@@ -929,6 +1215,10 @@ msgstr "Nachname ist erforderlich"
 msgid "Leave blank to use the default invoice template."
 msgstr "Lassen Sie das Feld leer, um die Standard-Rechnungsvorlage zu verwenden."
 
+#: src/components/email-senders/EmailSenderForm.tsx:197
+msgid "Leave unset"
+msgstr "Nicht festlegen"
+
 #: src/components/invoices/InvoiceCreate.tsx:453
 #: src/components/invoices/InvoiceDetail.tsx:163
 msgid "Legal name"
@@ -956,13 +1246,13 @@ msgstr "Gesamtsumme"
 msgid "Links & template"
 msgstr "Links & Vorlage"
 
+#: src/components/email-templates/EmailTemplateDetail.tsx:252
+#: src/components/email-templates/EmailTemplateForm.tsx:93
+#: src/components/email-templates/EmailTemplatesList.tsx:170
+#: src/components/emails/EmailsList.tsx:188
 #: src/components/invoices/InvoicesList.tsx:228
 msgid "Locale"
 msgstr "Ländereinstellung"
-
-#: src/components/auth/Login.tsx:147
-msgid "Manage accounts, sign-in methods and access scopes for the e-invoicing platform."
-msgstr "Verwalten Sie Konten, Anmeldemethoden und Zugriffsberechtigungen für die E-Rechnungs-Plattform."
 
 #: src/components/users/UsersList.tsx:194
 msgid "Manage accounts, sign-in methods and access."
@@ -996,11 +1286,22 @@ msgstr "Frau"
 msgid "Mx"
 msgstr "Mx"
 
+#: src/components/email-templates/EmailTemplatesList.tsx:164
 #: src/components/files/FilesList.tsx:259
 #: src/components/users/UsersList.tsx:297
 #: src/components/users/UsersTable.tsx:47
 msgid "Name"
 msgstr "Name"
+
+#: src/components/email-senders/EmailSenderForm.tsx:108
+#: src/components/email-templates/EmailTemplateForm.tsx:85
+msgid "Name (English)"
+msgstr "Name (Englisch)"
+
+#: src/components/email-senders/EmailSenderForm.tsx:103
+#: src/components/email-templates/EmailTemplateForm.tsx:80
+msgid "Name (German)"
+msgstr "Name (Deutsch)"
 
 #: src/components/users/UsersList.tsx:206
 msgid "Name or email…"
@@ -1018,12 +1319,17 @@ msgstr "Netto"
 msgid "Net total"
 msgstr "Gesamtbetrag"
 
+#: src/components/email-templates/EmailTemplatesList.tsx:87
+msgid "New email template"
+msgstr "Neue E-Mail-Vorlage"
+
 #: src/components/invoices/InvoiceCreate.tsx:357
 #: src/components/invoices/InvoicesList.tsx:194
 msgid "New invoice"
 msgstr "Neue Rechnung"
 
-#: src/components/auth/PasswordReset.tsx:129
+#: src/components/auth/PasswordReset.tsx:140
+#: src/components/email-senders/EmailSenderForm.tsx:211
 msgid "New password"
 msgstr "Neues Passwort"
 
@@ -1031,7 +1337,13 @@ msgstr "Neues Passwort"
 msgid "New public template"
 msgstr "Neue öffentliche Vorlage"
 
+#: src/components/email-senders/EmailSendersList.tsx:138
+#: src/components/email-senders/EmailSendersList.tsx:242
+msgid "New sender"
+msgstr "Neuer Absender"
+
 #: src/components/document-templates/DocumentTemplatesList.tsx:156
+#: src/components/email-templates/EmailTemplatesList.tsx:134
 msgid "New template"
 msgstr "Neue Vorlage"
 
@@ -1052,6 +1364,14 @@ msgstr "Keine Rechnungskreise"
 msgid "No data has been stored for this user yet."
 msgstr "Für diesen Benutzer wurden noch keine Daten gespeichert."
 
+#: src/components/emails/EmailsList.tsx:227
+msgid "No emails match these filters."
+msgstr "Es wurden keine E-Mails gefunden, die diesen Filtern entsprechen."
+
+#: src/components/emails/EmailsList.tsx:229
+msgid "No emails yet."
+msgstr "Noch keine E-Mails."
+
 #: src/components/orders/OrdersList.tsx:134
 msgid "No events"
 msgstr "Keine Veranstaltungen"
@@ -1064,8 +1384,14 @@ msgstr "Es wurden keine Veranstaltungen gefunden, die diesen Filtern entsprechen
 msgid "No events yet."
 msgstr "Noch keine Veranstaltungen."
 
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:158
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:167
+msgid "No file selected"
+msgstr "Keine Datei ausgewählt"
+
 #: src/components/document-templates/DocumentTemplateDetail.tsx:141
 #: src/components/document-templates/PublicDocumentTemplateEditor.tsx:176
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:308
 msgid "No files attached to this template."
 msgstr "Dieser Vorlage sind keine Dateien angehängt."
 
@@ -1097,7 +1423,7 @@ msgstr "Keine Einzelposten."
 msgid "No matching files."
 msgstr "Keine passenden Dateien gefunden."
 
-#: src/components/users/UserScopesTab.tsx:96
+#: src/components/users/UserScopesTab.tsx:588
 msgid "No matching scope"
 msgstr "Keine passende Berechtigung"
 
@@ -1129,13 +1455,33 @@ msgstr "Es gibt noch keine öffentlichen Vorlagen."
 msgid "No rendered templates yet."
 msgstr "Es sind noch keine gerenderten Vorlagen vorhanden."
 
-#: src/components/users/UserScopesTab.tsx:90
-msgid "No scopes granted"
-msgstr "Keine Berechtigungen erteilt"
+#: src/components/email-templates/EmailTemplateDetail.tsx:238
+msgid "No saved versions yet."
+msgstr "Noch keine gespeicherten Versionen."
+
+#: src/components/emails/EmailsList.tsx:166
+msgid "No senders"
+msgstr "Keine Absender"
+
+#: src/components/email-senders/EmailSendersList.tsx:288
+msgid "No senders match these filters."
+msgstr "Es wurden keine Absender gefunden, die diesen Filtern entsprechen."
+
+#: src/components/email-senders/EmailSendersList.tsx:290
+msgid "No senders yet. Add the first one."
+msgstr "Noch keine Absender. Fügen Sie den ersten hinzu."
 
 #: src/components/taxes/TaxesList.tsx:40
 msgid "No tax rates yet."
 msgstr "Es liegen noch keine Steuersätze vor."
+
+#: src/components/emails/EmailsList.tsx:153
+msgid "No templates"
+msgstr "Keine Vorlagen"
+
+#: src/components/email-templates/EmailTemplatesList.tsx:147
+msgid "No templates yet. Create the first one."
+msgstr "Noch keine Vorlagen. Erstellen Sie die erste."
 
 #: src/components/users/UsersList.tsx:275
 msgid "No users match these filters."
@@ -1148,6 +1494,10 @@ msgstr "Keine Benutzer entsprechen Ihrer Suche."
 #: src/components/users/UsersList.tsx:277
 msgid "No users yet. Create the first one."
 msgstr "Noch keine Benutzer. Erstellen Sie den ersten."
+
+#: src/components/email-senders/EmailSenderForm.tsx:157
+msgid "None (plain)"
+msgstr "Keine (unverschlüsselt)"
 
 #: src/components/ui/QueryState.tsx:59
 msgid "Nothing here yet"
@@ -1176,6 +1526,10 @@ msgstr "Öffnen"
 
 #: src/components/document-templates/DocumentTemplateFilesTable.tsx:93
 #: src/components/document-templates/DocumentTemplateFilesTable.tsx:98
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:362
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:367
+#: src/components/emails/EmailDetail.tsx:167
+#: src/components/emails/EmailDetail.tsx:172
 #: src/components/files/FilesList.tsx:333
 #: src/components/files/FilesList.tsx:338
 msgid "Open file"
@@ -1185,6 +1539,11 @@ msgstr "Datei öffnen"
 #: src/components/document-templates/DocumentTemplatePreview.tsx:81
 msgid "Open in new tab"
 msgstr "In einem neuen Tab öffnen"
+
+#: src/components/email-senders/EmailSenderForm.tsx:165
+#: src/components/email-senders/EmailSenderForm.tsx:172
+msgid "Optional"
+msgstr "Optional"
 
 #: src/components/invoices/InvoicesList.tsx:97
 msgid "Optional. Restrict the export to one accounting entity (prefix)."
@@ -1212,9 +1571,13 @@ msgstr "Bestell-Link"
 
 #: src/components/events/EventDetail.tsx:88
 #: src/components/orders/OrdersList.tsx:84
-#: src/components/ui/AppLayout.tsx:123
+#: src/components/ui/AppLayout.tsx:126
 msgid "Orders"
 msgstr "Bestellungen"
+
+#: src/components/users/UserScopesTab.tsx:567
+msgid "Other scopes"
+msgstr "Sonstige Anwendungsbereiche"
 
 #: src/components/invoices/InvoiceCreate.tsx:436
 msgid "Pad digits"
@@ -1229,21 +1592,28 @@ msgstr "Seite nicht gefunden"
 msgid "Paid"
 msgstr "Bezahlt"
 
-#: src/components/auth/Login.tsx:178
-#: src/components/auth/Login.tsx:193
+#: src/components/auth/Login.tsx:201
+#: src/components/auth/Login.tsx:216
+#: src/components/email-senders/EmailSenderForm.tsx:171
+#: src/components/email-senders/EmailSenderForm.tsx:184
 #: src/components/users/UserAuthMethodsTab.tsx:301
 msgid "Password"
 msgstr "Passwort"
+
+#: src/components/email-senders/EmailSendersList.tsx:341
+#: src/components/email-senders/EmailSendersList.tsx:345
+msgid "Password configured"
+msgstr "Passwort konfiguriert"
 
 #: src/components/auth/Login.tsx:55
 msgid "Password is required"
 msgstr "Passwort ist erforderlich"
 
-#: src/components/auth/PasswordReset.tsx:87
+#: src/components/auth/PasswordReset.tsx:89
 msgid "Password updated"
 msgstr "Passwort aktualisiert"
 
-#: src/components/auth/PasswordReset.tsx:43
+#: src/components/auth/PasswordReset.tsx:44
 msgid "Passwords do not match"
 msgstr "Passwörter stimmen nicht überein"
 
@@ -1263,7 +1633,7 @@ msgstr "Zahlung verbucht"
 
 #: src/components/orders/OrderDetail.tsx:284
 #: src/components/payments/PaymentsList.tsx:88
-#: src/components/ui/AppLayout.tsx:139
+#: src/components/ui/AppLayout.tsx:142
 msgid "Payments"
 msgstr "Zahlungen"
 
@@ -1276,6 +1646,8 @@ msgid "PhD"
 msgstr "PhD"
 
 #: src/components/document-templates/FilePickerModal.tsx:74
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:98
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:197
 msgid "Pick a file"
 msgstr "Wähle eine Datei aus"
 
@@ -1291,6 +1663,15 @@ msgstr "Wählen Sie einen Steuersatz"
 msgid "Pick an image"
 msgstr "Wähle ein Bild aus"
 
+#: src/components/email-senders/EmailSendersList.tsx:48
+#: src/components/email-senders/EmailSendersList.tsx:265
+msgid "Plain"
+msgstr "Unverschlüsselt"
+
+#: src/components/email-templates/EmailTemplateForm.tsx:129
+msgid "Please review your order '{{' order.number '}}'"
+msgstr "Bitte überprüfen Sie Ihre Bestellung „{{' order.number '}}“"
+
 #: src/components/pages/PageHome.tsx:20
 msgid "Please use the sidebar to navigate to your desired topic."
 msgstr "Bitte nutzen Sie die Seitenleiste, um zum gewünschten Thema zu gelangen."
@@ -1299,21 +1680,42 @@ msgstr "Bitte nutzen Sie die Seitenleiste, um zum gewünschten Thema zu gelangen
 msgid "PO reference"
 msgstr "Bestellnummer"
 
+#: src/components/email-senders/EmailSenderForm.tsx:143
+msgid "Port"
+msgstr "Port"
+
 #: src/components/invoices/InvoiceCreate.tsx:425
 msgid "Prefix"
 msgstr "Präfix"
 
 #: src/components/document-templates/DocumentTemplatePreview.tsx:73
+#: src/components/email-templates/EmailTemplatePreview.tsx:62
 msgid "Preview"
 msgstr "Vorschau"
 
+#: src/components/email-templates/EmailTemplateForm.tsx:126
+msgid "Preview text"
+msgstr "Vorschautext"
+
+#: src/components/email-templates/EmailTemplatesList.tsx:51
+msgid "Preview text is required"
+msgstr "Der Vorschautext ist erforderlich"
+
 #: src/components/document-templates/DocumentTemplatePreview.tsx:103
+#: src/components/email-templates/EmailTemplatePreview.tsx:80
 msgid "Preview unavailable"
 msgstr "Vorschau nicht verfügbar"
 
 #: src/components/ui/Pager.tsx:54
 msgid "Previous"
 msgstr "Zurück"
+
+#: src/components/email-senders/EmailSenderForm.tsx:233
+#: src/components/email-senders/EmailSendersList.tsx:320
+#: src/components/email-templates/EmailTemplateDetail.tsx:184
+#: src/components/email-templates/EmailTemplateForm.tsx:111
+msgid "Priority"
+msgstr "Priorität"
 
 #: src/components/files/FileDetail.tsx:124
 #: src/components/files/FileDetail.tsx:166
@@ -1377,6 +1779,13 @@ msgstr "Bei der Rechnungserstellung kann auf öffentliche Vorlagen anhand ihrer 
 msgid "Purchase order reference"
 msgstr "Bestellnummer"
 
+#: src/components/email-senders/EmailSenderForm.tsx:226
+#: src/components/email-senders/EmailSendersList.tsx:317
+#: src/components/email-templates/EmailTemplateForm.tsx:103
+#: src/components/email-templates/EmailTemplatesList.tsx:173
+msgid "Purposes"
+msgstr "Zwecke"
+
 #: src/components/invoices/InvoiceCreate.tsx:664
 #: src/components/invoices/InvoiceDetail.tsx:229
 msgid "Qty"
@@ -1391,6 +1800,7 @@ msgstr "Bewertung"
 msgid "Rate %"
 msgstr "Prozentsatz"
 
+#: src/components/emails/EmailsList.tsx:249
 #: src/components/events/EventDetail.tsx:38
 #: src/components/invoices/InvoiceCreate.tsx:506
 #: src/components/invoices/InvoiceDetail.tsx:187
@@ -1404,6 +1814,10 @@ msgstr "Empfänger"
 msgid "Recipient name is required"
 msgstr "Der Name des Empfängers ist erforderlich"
 
+#: src/components/emails/EmailsList.tsx:119
+msgid "Recipient or subject…"
+msgstr "Empfänger oder Betreff…"
+
 #: src/components/orders/OrderDetail.tsx:119
 #: src/components/orders/OrderDetail.tsx:153
 #: src/components/orders/OrderDetail.tsx:350
@@ -1415,10 +1829,19 @@ msgstr "Zahlung verbuchen"
 msgid "Recorded"
 msgstr "Aufgezeichnet"
 
+#: src/components/email-templates/EmailTemplateForm.tsx:136
+msgid "Reference attached files as '{{' images.key '}}' or '{{' font.key '}}'."
+msgstr "Verweise auf angehängte Dateien als '{{'' images.key '}}'' oder '{{' font.key '}}'."
+
 #: src/components/invoices/InvoiceCreate.tsx:571
 #: src/components/taxes/TaxesList.tsx:66
 msgid "Reference ID"
 msgstr "Referenz-ID"
+
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:140
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:214
+msgid "Reference key"
+msgstr "Referenzschlüssel"
 
 #: src/components/document-templates/DocumentTemplateDetail.tsx:109
 msgid "Referenced files"
@@ -1430,6 +1853,8 @@ msgstr "Wird bei der Rechnungserstellung anhand einer Vorlage herangezogen."
 
 #: src/components/document-templates/DocumentTemplatePreview.tsx:86
 #: src/components/document-templates/DocumentTemplatePreview.tsx:91
+#: src/components/email-templates/EmailTemplatePreview.tsx:64
+#: src/components/email-templates/EmailTemplatePreview.tsx:69
 msgid "Refresh preview"
 msgstr "Vorschau aktualisieren"
 
@@ -1437,6 +1862,16 @@ msgstr "Vorschau aktualisieren"
 #: src/components/ui/StatusBadge.tsx:43
 msgid "Refund"
 msgstr "Rückerstattung"
+
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:268
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:373
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:378
+msgid "Remove"
+msgstr "Entfernen"
+
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:259
+msgid "Remove file"
+msgstr "Datei entfernen"
 
 #: src/components/invoices/TemplateAssetsFields.tsx:307
 msgid "Remove font"
@@ -1454,6 +1889,24 @@ msgstr "Einzelposten entfernen"
 msgid "Remove tax rate"
 msgstr "Steuersatz entfernen"
 
+#. placeholder {0}: file.key ?? file.id
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:262
+msgid "Remove the reference \"{0}\" from this template? The underlying file in the library is not deleted."
+msgstr "Den Verweis „{0}“ aus dieser Vorlage entfernen? Die zugrunde liegende Datei in der Bibliothek wird nicht gelöscht."
+
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:352
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:356
+msgid "Rename key"
+msgstr "Schlüssel umbenennen"
+
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:211
+msgid "Rename reference key"
+msgstr "Referenzschlüssel umbenennen"
+
+#: src/components/emails/EmailDetail.tsx:188
+msgid "Rendered body"
+msgstr "Gerenderter Inhalt"
+
 #: src/components/document-templates/DocumentTemplatesList.tsx:307
 msgid "Rendered templates"
 msgstr "Gerenderte Vorlagen"
@@ -1463,6 +1916,7 @@ msgid "Rendered with WeasyPrint; use {{ }} for Jinja variables."
 msgstr "Erstellt mit WeasyPrint; verwende {{ }} für Jinja-Variablen."
 
 #: src/components/document-templates/DocumentTemplatePreview.tsx:112
+#: src/components/email-templates/EmailTemplatePreview.tsx:89
 msgid "Rendering preview…"
 msgstr "Vorschau wird gerendert…"
 
@@ -1471,23 +1925,40 @@ msgstr "Vorschau wird gerendert…"
 msgid "Replace upload"
 msgstr "Upload ersetzen"
 
+#: src/components/email-senders/EmailSenderForm.tsx:129
+msgid "Reply-to address"
+msgstr "Antwortadresse"
+
 #: src/components/invoices/InvoiceCreate.tsx:233
 #: src/components/invoices/InvoiceCreate.tsx:234
 #: src/components/invoices/InvoiceCreate.tsx:237
 msgid "Required"
 msgstr "Erforderlich"
 
-#: src/components/auth/Login.tsx:231
+#: src/components/auth/Login.tsx:254
 msgid "Resend code"
 msgstr "Code erneut senden"
 
-#: src/components/auth/PasswordReset.tsx:105
+#: src/components/auth/PasswordReset.tsx:107
 msgid "Reset password"
 msgstr "Passwort zurücksetzen"
+
+#: src/components/users/UserScopesTab.tsx:509
+msgid "Resource"
+msgstr "Ressource"
 
 #: src/components/users/UserDetail.tsx:145
 msgid "Restore"
 msgstr "Wiederherstellen"
+
+#: src/components/emails/EmailDetail.tsx:118
+msgid "Retries"
+msgstr "Wiederholungen"
+
+#: src/components/emails/EmailsList.tsx:132
+#: src/components/emails/EmailStatusBadge.tsx:23
+msgid "Retrying"
+msgstr "Wird wiederholt"
 
 #: src/components/users/UserHistoryTab.tsx:22
 #: src/components/users/UserProfileTab.tsx:85
@@ -1496,6 +1967,12 @@ msgstr "Wiederherstellen"
 msgid "Salutation"
 msgstr "Anrede"
 
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:220
+#: src/components/users/UserScopesTab.tsx:648
+msgid "Save"
+msgstr "Speichern"
+
+#: src/components/email-senders/EmailSendersList.tsx:152
 #: src/components/users/UserProfileTab.tsx:122
 msgid "Save changes"
 msgstr "Änderungen speichern"
@@ -1504,11 +1981,12 @@ msgstr "Änderungen speichern"
 msgid "Save data"
 msgstr "Daten speichern"
 
-#: src/components/users/UserScopesTab.tsx:109
+#: src/components/users/UserScopesTab.tsx:602
 msgid "Save scopes"
 msgstr "Berechtigungen speichern"
 
 #: src/components/document-templates/PublicDocumentTemplateEditor.tsx:147
+#: src/components/email-templates/EmailTemplateDetail.tsx:204
 msgid "Save template"
 msgstr "Vorlage speichern"
 
@@ -1516,6 +1994,7 @@ msgstr "Vorlage speichern"
 msgid "Save the template to generate a preview of the published version."
 msgstr "Speichern Sie die Vorlage, um eine Vorschau der veröffentlichten Version zu erstellen."
 
+#: src/components/email-templates/EmailTemplateDetail.tsx:246
 #: src/components/users/UserProfileTab.tsx:67
 msgid "Saved"
 msgstr "Gespeichert"
@@ -1524,13 +2003,15 @@ msgstr "Gespeichert"
 msgid "Saving publishes a new rendered version for this public template. Reference library files by picking them, or upload inline — inline uploads are only re-sent if you attach them again."
 msgstr "Durch das Speichern wird eine neue gerenderte Version dieser öffentlichen Vorlage veröffentlicht. Verweisen Sie auf Bibliotheksdateien, indem Sie diese auswählen, oder laden Sie sie direkt hoch – direkt hochgeladene Dateien werden nur dann erneut gesendet, wenn Sie sie erneut anhängen."
 
-#: src/components/document-templates/PublicDocumentTemplateEditor.tsx:100
-#~ msgid "Saving publishes a new rendered version for this public template. Uploaded fonts and images are only re-sent if you attach them again."
-#~ msgstr "Durch das Speichern wird eine neu gerenderte Version dieser öffentlichen Vorlage veröffentlicht. Hochgeladene Schriftarten und Bilder werden nur dann erneut gesendet, wenn Sie sie erneut anhängen."
-
 #: src/components/users/UserAuthMethodsTab.tsx:355
 msgid "Scan this QR code with an authenticator app (Google Authenticator, Microsoft Authenticator, 1Password, …)."
 msgstr "Scannen Sie diesen QR-Code mit einer Authentifizierungs-App (Google Authenticator, Microsoft Authenticator, 1Password, …)."
+
+#: src/components/emails/EmailDetail.tsx:120
+#: src/components/emails/EmailsList.tsx:129
+#: src/components/emails/EmailStatusBadge.tsx:17
+msgid "Scheduled"
+msgstr "Geplant"
 
 #: src/components/users/UserDataTab.tsx:98
 msgid "Schemaless data used by apps. Saving replaces the whole object — no server-side merge is performed."
@@ -1540,10 +2021,12 @@ msgstr "Schemalose Daten, die von Apps genutzt werden. Beim Speichern wird das g
 msgid "Scopes"
 msgstr "Berechtigungen"
 
-#: src/components/users/UserScopesTab.tsx:65
+#: src/components/users/UserScopesTab.tsx:338
 msgid "Scopes updated"
 msgstr "Berechtigungen aktualisiert"
 
+#: src/components/email-senders/EmailSendersList.tsx:249
+#: src/components/emails/EmailsList.tsx:118
 #: src/components/events/EventsList.tsx:75
 #: src/components/files/FilesList.tsx:132
 #: src/components/invoices/InvoicesList.tsx:202
@@ -1553,10 +2036,6 @@ msgstr "Berechtigungen aktualisiert"
 msgid "Search"
 msgstr "Suchen"
 
-#: src/components/events/EventsList.tsx:101
-#~ msgid "Search events"
-#~ msgstr "Veranstaltungen suchen"
-
 #: src/components/document-templates/FilePickerModal.tsx:79
 msgid "Search files"
 msgstr "Dateien suchen"
@@ -1565,21 +2044,78 @@ msgstr "Dateien suchen"
 msgid "Search name or email"
 msgstr "Name oder E-Mail suchen"
 
-#: src/components/users/UserScopesTab.tsx:83
-msgid "Select every scope this user should have. Removing a scope here revokes it; the change history is kept on the server."
-msgstr "Wählen Sie alle Berechtigungen aus, die dieser Benutzer haben soll. Das Entfernen einer Berechtigung widerruft sie; der Änderungsverlauf bleibt auf dem Server erhalten."
+#: src/components/users/UserScopesTab.tsx:481
+msgid "Search scopes"
+msgstr "Suchbereiche"
 
-#: src/components/auth/Login.tsx:211
+#: src/components/email-senders/EmailSenderForm.tsx:152
+#: src/components/email-senders/EmailSendersList.tsx:260
+#: src/components/email-senders/EmailSendersList.tsx:314
+msgid "Security"
+msgstr "Sicherheit"
+
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:107
+msgid "Select a file to upload first."
+msgstr "Wählen Sie zuerst eine Datei zum Hochladen aus."
+
+#: src/components/users/UserScopesTab.tsx:473
+msgid "Select every scope this user should have. Green cells are granted; removing a scope here revokes it. The change history is kept on the server."
+msgstr "Wählen Sie alle Berechtigungsbereiche aus, über die dieser Benutzer verfügen soll. Grüne Zellen sind bereits gewährt; wenn Sie hier einen Berechtigungsbereich entfernen, wird dieser widerrufen. Der Änderungsverlauf wird auf dem Server gespeichert."
+
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:176
+msgid "Select file"
+msgstr "Datei auswählen"
+
+#: src/components/emails/EmailDetail.tsx:124
+msgid "Send after"
+msgstr "Senden nach"
+
+#: src/components/auth/Login.tsx:234
 msgid "Send code"
 msgstr "Code senden"
 
-#: src/components/auth/PasswordReset.tsx:146
+#: src/components/auth/PasswordReset.tsx:157
 msgid "Send reset link"
 msgstr "Link zum Zurücksetzen senden"
 
-#: src/components/auth/PasswordReset.tsx:114
+#: src/components/emails/EmailDetail.tsx:97
+#: src/components/emails/EmailsList.tsx:157
+#: src/components/emails/EmailsList.tsx:258
+msgid "Sender"
+msgstr "Absender"
+
+#: src/components/email-senders/EmailSendersList.tsx:119
+msgid "Sender created"
+msgstr "Absender erstellt"
+
+#: src/components/email-senders/EmailSendersList.tsx:214
+msgid "Sender deleted"
+msgstr "Absender gelöscht"
+
+#: src/components/email-senders/EmailSendersList.tsx:119
+msgid "Sender updated"
+msgstr "Absender aktualisiert"
+
+#: src/components/emails/EmailsList.tsx:130
+#: src/components/emails/EmailStatusBadge.tsx:19
+msgid "Sending"
+msgstr "Wird gesendet"
+
+#: src/components/email-senders/EmailSendersList.tsx:311
+msgid "Server"
+msgstr "Server"
+
+#: src/components/emails/EmailDetail.tsx:134
+msgid "Server response"
+msgstr "Serverantwort"
+
+#: src/components/auth/PasswordReset.tsx:116
 msgid "Set a new password for your account."
 msgstr "Legen Sie ein neues Passwort für Ihr Konto fest."
+
+#: src/components/email-senders/EmailSenderForm.tsx:201
+msgid "Set new password"
+msgstr "Neues Passwort festlegen"
 
 #: src/components/users/UserAuthMethodsTab.tsx:340
 msgid "Set up authenticator app"
@@ -1589,8 +2125,12 @@ msgstr "Authentifizierungs-App einrichten"
 msgid "SHA-256"
 msgstr "SHA-256"
 
-#: src/components/auth/Login.tsx:163
-#: src/components/auth/Login.tsx:199
+#: src/components/email-senders/EmailSenderForm.tsx:123
+msgid "Shown as the sender"
+msgstr "Wird als Absender angezeigt"
+
+#: src/components/auth/Login.tsx:186
+#: src/components/auth/Login.tsx:222
 msgid "Sign in"
 msgstr "Anmelden"
 
@@ -1598,7 +2138,7 @@ msgstr "Anmelden"
 msgid "Sign in failed"
 msgstr "Anmeldung fehlgeschlagen"
 
-#: src/components/ui/AppLayout.tsx:102
+#: src/components/ui/AppLayout.tsx:105
 msgid "Sign out"
 msgstr "Abmelden"
 
@@ -1606,7 +2146,7 @@ msgstr "Abmelden"
 msgid "Sign-in methods configured for this user."
 msgstr "Für diesen Benutzer konfigurierte Anmeldemethoden."
 
-#: src/components/ui/AppLayout.tsx:91
+#: src/components/ui/AppLayout.tsx:94
 msgid "Signed in"
 msgstr "Angemeldet"
 
@@ -1614,6 +2154,18 @@ msgstr "Angemeldet"
 #: src/components/files/FilesList.tsx:265
 msgid "Size"
 msgstr "Größe"
+
+#: src/components/email-senders/EmailSendersList.tsx:235
+msgid "SMTP configurations used to deliver mail. The highest-priority sender for a purpose is chosen automatically."
+msgstr "SMTP-Konfigurationen für den Mailversand. Für jeden Zweck wird automatisch der Absender mit der höchsten Priorität gewählt."
+
+#: src/components/email-senders/EmailSenderForm.tsx:136
+msgid "SMTP host"
+msgstr "SMTP-Host"
+
+#: src/components/email-senders/EmailSendersList.tsx:92
+msgid "SMTP host is required"
+msgstr "Der SMTP-Host ist erforderlich"
 
 #: src/components/invoices/InvoiceCreate.tsx:270
 msgid "Some required fields are missing or invalid."
@@ -1626,6 +2178,12 @@ msgstr "Etwas ist schiefgelaufen"
 #: src/components/invoices/InvoicesList.tsx:89
 msgid "Spreadsheet (.xlsx)"
 msgstr "Tabellenkalkulation (.xlsx)"
+
+#: src/components/email-senders/EmailSenderForm.tsx:156
+#: src/components/email-senders/EmailSendersList.tsx:47
+#: src/components/email-senders/EmailSendersList.tsx:264
+msgid "SSL / TLS"
+msgstr "SSL / TLS"
 
 #: src/components/taxes/TaxesList.tsx:93
 msgid "Standard"
@@ -1644,6 +2202,14 @@ msgstr "Export starten"
 msgid "Starts"
 msgstr "Beginnt"
 
+#: src/components/email-senders/EmailSenderForm.tsx:155
+#: src/components/email-senders/EmailSendersList.tsx:49
+#: src/components/email-senders/EmailSendersList.tsx:263
+msgid "STARTTLS"
+msgstr "STARTTLS"
+
+#: src/components/emails/EmailsList.tsx:126
+#: src/components/emails/EmailsList.tsx:255
 #: src/components/events/EventDetail.tsx:44
 #: src/components/orders/OrdersList.tsx:102
 #: src/components/orders/OrdersList.tsx:194
@@ -1653,6 +2219,18 @@ msgstr "Beginnt"
 msgid "Status"
 msgstr "Status"
 
+#: src/components/email-templates/EmailTemplateDetail.tsx:249
+#: src/components/email-templates/EmailTemplateForm.tsx:118
+#: src/components/email-templates/EmailTemplatePreview.tsx:97
+#: src/components/email-templates/EmailTemplatesList.tsx:167
+#: src/components/emails/EmailsList.tsx:252
+msgid "Subject"
+msgstr "Betreff"
+
+#: src/components/email-templates/EmailTemplatesList.tsx:50
+msgid "Subject is required"
+msgstr "Der Betreff ist erforderlich"
+
 #: src/components/invoices/InvoiceDetail.tsx:118
 msgid "Summary"
 msgstr "Zusammenfassung"
@@ -1661,6 +2239,10 @@ msgstr "Zusammenfassung"
 #: src/components/invoices/InvoiceDetail.tsx:158
 msgid "Supplier"
 msgstr "Lieferant"
+
+#: src/components/email-templates/EmailTemplateForm.tsx:120
+msgid "Supports '{{' variables '}}'."
+msgstr "Unterstützt „{{“ Variablen „}}“."
 
 #: src/components/invoices/InvoiceCreate.tsx:680
 #: src/components/invoices/InvoiceDetail.tsx:235
@@ -1673,7 +2255,7 @@ msgstr "Grund für die Steuerbefreiung"
 
 #: src/components/invoices/InvoiceCreate.tsx:562
 #: src/components/taxes/TaxesList.tsx:24
-#: src/components/ui/AppLayout.tsx:163
+#: src/components/ui/AppLayout.tsx:194
 msgid "Tax rates"
 msgstr "Steuersätze"
 
@@ -1682,12 +2264,19 @@ msgid "Tax total"
 msgstr "Steuergesamtbetrag"
 
 #: src/components/document-templates/DocumentTemplateFilesTable.tsx:49
+#: src/components/emails/EmailDetail.tsx:105
+#: src/components/emails/EmailsList.tsx:144
 msgid "Template"
 msgstr "Vorlage"
 
 #: src/components/document-templates/DocumentTemplatesList.tsx:91
+#: src/components/email-templates/EmailTemplatesList.tsx:66
 msgid "Template created"
 msgstr "Vorlage erstellt"
+
+#: src/components/email-templates/EmailTemplateDetail.tsx:124
+msgid "Template deleted"
+msgstr "Vorlage gelöscht"
 
 #: src/components/document-templates/DocumentTemplatesList.tsx:116
 msgid "Template ID"
@@ -1701,6 +2290,10 @@ msgstr "Vorlagenname"
 msgid "Template preview"
 msgstr "Vorschau der Vorlage"
 
+#: src/components/email-templates/EmailTemplateDetail.tsx:91
+msgid "Template saved"
+msgstr "Vorlage gespeichert"
+
 #: src/components/document-templates/PublicDocumentTemplateEditor.tsx:94
 msgid "Template updated"
 msgstr "Vorlage aktualisiert"
@@ -1708,6 +2301,22 @@ msgstr "Vorlage aktualisiert"
 #: src/components/pages/NotFoundPage.tsx:16
 msgid "The page you are looking for doesn't exist."
 msgstr "Die gesuchte Seite existiert nicht."
+
+#: src/components/email-templates/EmailTemplateForm.tsx:127
+#~ msgid "The snippet shown in inbox list views."
+#~ msgstr "Der in der Posteingangsübersicht angezeigte Ausschnitt."
+
+#: src/components/email-templates/EmailTemplateForm.tsx:128
+msgid "The snippet shown in inbox list views. Supports '{{' variables '}}'."
+msgstr "Der Ausschnitt wird in den Listenansichten des Posteingangs angezeigt. Unterstützt „{{“ und „}}“-Variablen."
+
+#: src/components/email-senders/EmailSenderForm.tsx:218
+msgid "The stored password will be removed on save."
+msgstr "Das gespeicherte Passwort wird beim Speichern entfernt."
+
+#: src/components/email-templates/EmailTemplatesList.tsx:124
+msgid "The subject and HTML used to compose each kind of email. Saving keeps a full version history."
+msgstr "Der Betreff und das HTML zum Verfassen der jeweiligen E-Mail-Art. Beim Speichern wird ein vollständiger Versionsverlauf geführt."
 
 #: src/components/users/UserDataTab.tsx:62
 msgid "The top level must be a JSON object."
@@ -1750,6 +2359,30 @@ msgstr "Bezeichnung der Ticketoption (optional)"
 msgid "Title"
 msgstr "Titel"
 
+#: src/components/emails/EmailDetail.tsx:83
+msgid "To"
+msgstr "An"
+
+#: src/components/auth/Login.tsx:189
+msgid "To create your account, contact your TEMA account representative."
+msgstr "Um Ihr Konto einzurichten, wenden Sie sich bitte an Ihren TEMA-Kundenbetreuer."
+
+#. placeholder {0}: rg.resource
+#. placeholder {1}: ql.qualifier ?? ""
+#: src/components/users/UserScopesTab.tsx:439
+msgid "Toggle all {0} {1} scopes"
+msgstr "Alle {0} {1} Bereiche ein-/ausblenden"
+
+#. placeholder {0}: rg.resource
+#: src/components/users/UserScopesTab.tsx:401
+#: src/components/users/UserScopesTab.tsx:407
+msgid "Toggle all {0} scopes"
+msgstr "Alle {0} Bereiche ein-/ausblenden"
+
+#: src/components/users/UserScopesTab.tsx:525
+msgid "Toggle all {action} scopes"
+msgstr "Alle {action}-Bereiche umschalten"
+
 #: src/components/ui/ColorSchemeToggle.tsx:16
 msgid "Toggle color scheme"
 msgstr "Farbschema umschalten"
@@ -1763,6 +2396,7 @@ msgid "Track order status, payments and invoices."
 msgstr "Verfolgen Sie den Bestellstatus, Zahlungen und Rechnungen."
 
 #: src/components/document-templates/DocumentTemplateFilesTable.tsx:42
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:319
 #: src/components/files/FileDetail.tsx:155
 #: src/components/files/FilesList.tsx:140
 #: src/components/files/FilesList.tsx:262
@@ -1792,36 +2426,35 @@ msgstr "Einzigartig pro Veranstaltung"
 msgid "Unit price"
 msgstr "Stückpreis"
 
-#: src/components/auth/PasswordReset.tsx:148
+#: src/components/auth/PasswordReset.tsx:159
 msgid "Update password"
 msgstr "Passwort aktualisieren"
 
 #: src/components/document-templates/DocumentTemplatesList.tsx:183
+#: src/components/email-templates/EmailTemplateDetail.tsx:186
+#: src/components/email-templates/EmailTemplatesList.tsx:176
 #: src/components/users/UserDataTab.tsx:105
 msgid "Updated"
 msgstr "Aktualisiert"
 
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:152
 #: src/components/invoices/TemplateAssetsFields.tsx:186
 #: src/components/invoices/TemplateAssetsFields.tsx:293
 msgid "Upload"
 msgstr "Hochladen"
 
-#: src/components/auth/PasswordReset.tsx:39
+#: src/components/auth/PasswordReset.tsx:40
 #: src/components/users/UserAuthMethodsTab.tsx:98
 msgid "Use at least 8 characters"
 msgstr "Verwenden Sie mindestens 8 Zeichen"
 
+#: src/components/email-templates/EmailTemplateFilesTable.tsx:77
+msgid "Use letters, numbers, '-' and '_' only"
+msgstr "Verwenden Sie ausschließlich Buchstaben, Zahlen, „-“ und „_“"
+
 #: src/components/document-templates/DocumentTemplatesList.tsx:74
 msgid "Use lowercase letters, numbers, '-' and '_' only"
 msgstr "Verwende ausschließlich Kleinbuchstaben, Zahlen, „-“ und „_“"
-
-#: src/components/auth/Login.tsx:166
-msgid "Use your Event Central credentials."
-msgstr "Verwenden Sie Ihre Event-Central-Anmeldedaten."
-
-#: src/components/auth/Login.tsx:144
-msgid "User administration"
-msgstr "Benutzerverwaltung"
 
 #: src/components/users/UserHistoryTab.tsx:51
 #: src/components/users/UsersList.tsx:86
@@ -1840,7 +2473,11 @@ msgstr "Benutzer gelöscht"
 msgid "User restored"
 msgstr "Benutzer wiederhergestellt"
 
-#: src/components/ui/AppLayout.tsx:171
+#: src/components/email-senders/EmailSenderForm.tsx:164
+msgid "Username"
+msgstr "Benutzername"
+
+#: src/components/ui/AppLayout.tsx:202
 #: src/components/users/UsersList.tsx:191
 msgid "Users"
 msgstr "Benutzer"
@@ -1853,9 +2490,13 @@ msgstr "Benutzer"
 msgid "VAT ID"
 msgstr "Umsatzsteuer-Identifikationsnummer"
 
-#: src/components/auth/Login.tsx:228
+#: src/components/auth/Login.tsx:251
 msgid "Verify and sign in"
 msgstr "Bestätigen und anmelden"
+
+#: src/components/email-templates/EmailTemplateDetail.tsx:233
+msgid "Version history"
+msgstr "Versionsverlauf"
 
 #: src/components/payments/PaymentsList.tsx:58
 msgid "View order"
@@ -1872,7 +2513,7 @@ msgstr "Sichtbarkeit"
 msgid "We sent a one-time code to {0}."
 msgstr "Wir haben einen Einmalcode an {0} gesendet."
 
-#: src/components/auth/PasswordReset.tsx:112
+#: src/components/auth/PasswordReset.tsx:114
 msgid "We'll email you a link to reset it."
 msgstr "Wir senden Ihnen einen Link zum Zurücksetzen per E-Mail."
 
@@ -1880,17 +2521,37 @@ msgstr "Wir senden Ihnen einen Link zum Zurücksetzen per E-Mail."
 msgid "Weight"
 msgstr "Gewicht"
 
+#: src/components/email-senders/EmailSenderForm.tsx:227
+msgid "Which mail this sender may deliver, e.g. auth or default."
+msgstr "Welche Mails dieser Absender zustellen darf, z. B. auth oder default."
+
+#: src/components/emails/EmailsList.tsx:173
+msgid "With attachments"
+msgstr "Mit Anhängen"
+
+#: src/components/emails/EmailsList.tsx:174
+msgid "Without"
+msgstr "Ohne"
+
 #: src/components/invoices/InvoiceDetail.tsx:109
 msgid "XRechnung (XML)"
 msgstr "XRechnung (XML)"
 
-#: src/components/auth/PasswordReset.tsx:88
+#: src/components/auth/PasswordReset.tsx:90
 msgid "You can now sign in with your new password."
 msgstr "Sie können sich jetzt mit Ihrem neuen Passwort anmelden."
+
+#: src/components/users/UserScopesTab.tsx:629
+msgid "You have unsaved scope changes"
+msgstr "Sie haben ungespeicherte Änderungen am Geltungsbereich."
 
 #: src/components/invoices/InvoicesList.tsx:69
 msgid "Your download should start in a new tab."
 msgstr "Der Download sollte in einem neuen Tab starten."
+
+#: src/components/email-templates/EmailTemplateForm.tsx:121
+msgid "Your order '{{' order.number '}}'"
+msgstr "Ihre Bestellung „{{' order.number '}}“"
 
 #: src/components/invoices/InvoiceCreate.tsx:477
 #: src/components/invoices/InvoiceCreate.tsx:537
