@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import datetime as dt
 import uuid
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from sqlalchemy import ColumnElement, Select, func, or_, select
 from sqlalchemy.orm import InstrumentedAttribute, Session
