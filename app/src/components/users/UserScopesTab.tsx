@@ -1,18 +1,28 @@
 import { Trans, useLingui } from "@lingui/react/macro";
 import {
+  Affix,
   Badge,
   Button,
   Checkbox,
   Chip,
   Group,
+  Loader,
+  Paper,
   Stack,
   Table,
   Text,
   TextInput,
+  Transition,
 } from "@mantine/core";
+import { useDebouncedValue } from "@mantine/hooks";
 import { notifications } from "@mantine/notifications";
-import { IconDeviceFloppy, IconSearch } from "@tabler/icons-react";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import {
+  IconAlertTriangle,
+  IconDeviceFloppy,
+  IconSearch,
+} from "@tabler/icons-react";
+import { useVirtualizer } from "@tanstack/react-virtual";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { toRequestError } from "../../api/client";
 import type { MultiLanguageLabel } from "../../api/types";
 import { usersApi } from "../../api/users";
@@ -36,6 +46,13 @@ type ResourceGroup = {
   scopes: string[]; // every scope across all qualifiers
 };
 
+// A single entry in the flattened, virtualized row list. The tree of
+// resources -> qualifiers is flattened so the virtualizer can index it as one
+// contiguous list. `inline` collapses a resource that has only a bare row.
+type FlatRow =
+  | { kind: "resource"; rg: ResourceGroup; inline: boolean }
+  | { kind: "qualifier"; rg: ResourceGroup; ql: QualifierRow };
+
 // Scope ids look like `resource:action[:qualifier]`, e.g. `invoices:read:own`
 // or `backend:read`. The ACTION is always the second segment (a column); the
 // resource groups the section and the optional qualifier identifies the row.
@@ -51,6 +68,13 @@ function parseScope(scope: string) {
 const ACTION_ORDER = ["read", "list", "write", "create", "update", "delete", "manage", "admin"];
 // Qualifier row order within a resource.
 const QUALIFIER_ORDER = ["all", "own"];
+
+// Layout constants. Fixed column widths + a fixed table layout keep column
+// widths from jittering as rows scroll in and out of the virtual window.
+const ROW_HEIGHT = 44; // estimated/rendered row height for the virtualizer
+const RESOURCE_COL_WIDTH = 220;
+const ACTION_COL_WIDTH = 110;
+const SCROLL_MAX_HEIGHT = 560;
 
 function actionRank(a: string) {
   const i = ACTION_ORDER.indexOf(a);
@@ -85,6 +109,14 @@ export function UserScopesTab({
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [query, setQuery] = useState("");
+
+  // Debounce the filter term so the (potentially thousands of scopes) pivot and
+  // filtering below don't recompute on every keystroke. The input itself stays
+  // bound to `query` so typing remains responsive; only the expensive work keys
+  // off `debouncedQuery`. `searching` is true while the debounce is catching up,
+  // which we use to show a spinner in the search field.
+  const [debouncedQuery] = useDebouncedValue(query, 200);
+  const searching = query !== debouncedQuery;
 
   // Active scopes are those that have not been revoked (no deletedAt).
   const active = useMemo(
@@ -164,7 +196,7 @@ export function UserScopesTab({
     };
   }, [rows]);
 
-  const q = query.trim().toLowerCase();
+  const q = useMemo(() => debouncedQuery.trim().toLowerCase(), [debouncedQuery]);
   const visibleResources = useMemo(() => {
     if (!q) return resources;
     return resources
@@ -194,6 +226,63 @@ export function UserScopesTab({
     [ungrouped, q],
   );
 
+  // Precompute the scopes that make up each action column across the visible
+  // resources. This flatMap only depends on the (debounced) filtered set, so it
+  // is memoized here instead of recomputing on every render — in particular it
+  // no longer reruns each time a checkbox toggles `selected`. It also reads from
+  // the full data, not the DOM, so the "toggle whole column" header checkboxes
+  // stay correct even though most rows are virtualized away.
+  const columnScopes = useMemo(() => {
+    const map = new Map<string, string[]>();
+    for (const action of actions) {
+      map.set(
+        action,
+        visibleResources.flatMap((rg) =>
+          rg.qualifiers
+            .map((ql) => ql.cells.get(action)?.scope)
+            .filter((s): s is string => Boolean(s)),
+        ),
+      );
+    }
+    return map;
+  }, [actions, visibleResources]);
+
+  // Flatten resources + qualifier rows into one list the virtualizer can index.
+  const flatRows = useMemo<FlatRow[]>(() => {
+    const out: FlatRow[] = [];
+    for (const rg of visibleResources) {
+      // Collapse a resource that has a single bare (no-qualifier) row —
+      // e.g. `backend` -> put its read/write cells on the header row.
+      const inline =
+        rg.qualifiers.length === 1 && rg.qualifiers[0].qualifier === null;
+      out.push({ kind: "resource", rg, inline });
+      if (!inline) {
+        for (const ql of rg.qualifiers) out.push({ kind: "qualifier", rg, ql });
+      }
+    }
+    return out;
+  }, [visibleResources]);
+
+  // Row virtualization: only the rows in (and just outside) the scroll viewport
+  // are rendered, so thousands of scopes stay fast. We keep real <tr> rows and
+  // pad the top/bottom with spacer rows, which preserves Mantine's table layout
+  // and column borders (unlike absolute positioning).
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const virtualizer = useVirtualizer({
+    count: flatRows.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    // Generous overscan also absorbs the sticky header's height offset so no
+    // blank strip appears under it while scrolling.
+    overscan: 12,
+  });
+  const virtualItems = virtualizer.getVirtualItems();
+  const totalSize = virtualizer.getTotalSize();
+  const padTop = virtualItems.length ? virtualItems[0].start : 0;
+  const padBottom = virtualItems.length
+    ? totalSize - virtualItems[virtualItems.length - 1].end
+    : 0;
+
   const toggle = (scope: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -217,6 +306,12 @@ export function UserScopesTab({
     setDirty(true);
   };
 
+  // Revert every pending edit back to the currently-granted scopes.
+  const reset = () => {
+    setSelected(new Set(active));
+    setDirty(false);
+  };
+
   // Aggregate checkbox state for any set of scopes.
   const aggregate = (scopes: string[]) => {
     const on = scopes.filter((s) => selected.has(s)).length;
@@ -228,11 +323,7 @@ export function UserScopesTab({
   };
 
   const columnState = (action: string) => {
-    const scopes = visibleResources.flatMap((rg) =>
-      rg.qualifiers
-        .map((ql) => ql.cells.get(action)?.scope)
-        .filter((s): s is string => Boolean(s)),
-    );
+    const scopes = columnScopes.get(action) ?? [];
     return { scopes, ...aggregate(scopes) };
   };
 
@@ -297,11 +388,86 @@ export function UserScopesTab({
     );
   };
 
+  // Render one flattened row (resource header or qualifier row).
+  const renderFlatRow = (item: FlatRow) => {
+    if (item.kind === "resource") {
+      const { rg, inline } = item;
+      const agg = aggregate(rg.scopes);
+      return (
+        <Table.Tr style={{ backgroundColor: "var(--mantine-color-gray-light)" }}>
+          <Table.Td
+            onClick={() => !disabled && toggleScopes(rg.scopes)}
+            style={{ cursor: disabled ? "default" : "pointer" }}
+            title={t`Toggle all ${rg.resource} scopes`}
+          >
+            <Group gap="xs" wrap="nowrap">
+              <Checkbox
+                size="sm"
+                color="green"
+                aria-label={t`Toggle all ${rg.resource} scopes`}
+                checked={agg.checked}
+                indeterminate={agg.indeterminate}
+                disabled={disabled}
+                onChange={() => toggleScopes(rg.scopes)}
+                onClick={(e) => e.stopPropagation()}
+              />
+              <Text size="sm" fw={700} ff="monospace" tt="uppercase">
+                {rg.resource}
+              </Text>
+            </Group>
+          </Table.Td>
+          {inline
+            ? actions.map((action) =>
+              actionCell(action, rg.qualifiers[0].cells.get(action)),
+            )
+            : // spacer so the header stretches across the action columns
+            actions.map((action) => <Table.Td key={action} />)}
+        </Table.Tr>
+      );
+    }
+
+    const { rg, ql } = item;
+    const meta = ql.qualifier ? qualifierBadge(ql.qualifier) : null;
+    return (
+      <Table.Tr>
+        <Table.Td
+          onClick={() => !disabled && toggleScopes(ql.scopes)}
+          style={{
+            cursor: disabled ? "default" : "pointer",
+            paddingLeft: "2.25rem", // indent under the resource
+          }}
+          title={t`Toggle all ${rg.resource} ${ql.qualifier ?? ""} scopes`}
+        >
+          {meta ? (
+            <Badge
+              size="lg"
+              radius="sm"
+              variant="light"
+              color={meta.color}
+              style={{ textTransform: "none" }}
+            >
+              {meta.label}
+            </Badge>
+          ) : (
+            <Text size="sm" c="dimmed">
+              —
+            </Text>
+          )}
+        </Table.Td>
+        {actions.map((action) => actionCell(action, ql.cells.get(action)))}
+      </Table.Tr>
+    );
+  };
+
   const nothingToShow =
     visibleResources.length === 0 && visibleUngrouped.length === 0;
+  const tableMinWidth = RESOURCE_COL_WIDTH + actions.length * ACTION_COL_WIDTH;
 
   return (
-    <QueryState isLoading={userScopes.isLoading} error={userScopes.error}>
+    <QueryState
+      isLoading={userScopes.isLoading || catalog.isLoading}
+      error={userScopes.error ?? catalog.error}
+    >
       <Stack maw={760}>
         <Text size="sm" c="dimmed">
           <Trans>
@@ -314,133 +480,85 @@ export function UserScopesTab({
         <TextInput
           placeholder={t`Search scopes`}
           leftSection={<IconSearch size={16} />}
+          rightSection={searching ? <Loader size="xs" /> : null}
           value={query}
           onChange={(e) => setQuery(e.currentTarget.value)}
           disabled={disabled}
         />
 
         {visibleResources.length > 0 && (
-          <Table highlightOnHover withTableBorder withColumnBorders verticalSpacing="xs">
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>
-                  <Trans>Resource</Trans>
-                </Table.Th>
-                {actions.map((action) => {
-                  const st = columnState(action);
-                  return (
-                    <Table.Th key={action} w={110} style={{ textAlign: "center" }}>
-                      <Stack gap={4} align="center">
-                        <Text size="sm" fw={600} tt="capitalize">
-                          {action}
-                        </Text>
-                        <Checkbox
-                          size="xs"
-                          color="green"
-                          aria-label={t`Toggle all ${action} scopes`}
-                          checked={st.checked}
-                          indeterminate={st.indeterminate}
-                          disabled={disabled || st.empty}
-                          onChange={() => toggleScopes(st.scopes)}
-                        />
-                      </Stack>
-                    </Table.Th>
-                  );
-                })}
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {visibleResources.map((rg) => {
-                const agg = aggregate(rg.scopes);
-                // Collapse a resource that has a single bare (no-qualifier) row —
-                // e.g. `backend` -> put its read/write cells on the header row.
-                const inline =
-                  rg.qualifiers.length === 1 && rg.qualifiers[0].qualifier === null;
-
-                const header = (
-                  <Table.Tr
-                    key={`${rg.resource}:header`}
-                    style={{ backgroundColor: "var(--mantine-color-gray-light)" }}
-                  >
+          <div
+            ref={scrollRef}
+            style={{
+              maxHeight: SCROLL_MAX_HEIGHT,
+              overflow: "auto",
+              position: "relative",
+            }}
+          >
+            <Table
+              highlightOnHover
+              withTableBorder
+              withColumnBorders
+              verticalSpacing="xs"
+              stickyHeader
+              style={{ tableLayout: "fixed", minWidth: tableMinWidth }}
+            >
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th style={{ width: RESOURCE_COL_WIDTH }}>
+                    <Trans>Resource</Trans>
+                  </Table.Th>
+                  {actions.map((action) => {
+                    const st = columnState(action);
+                    return (
+                      <Table.Th
+                        key={action}
+                        style={{ width: ACTION_COL_WIDTH, textAlign: "center" }}
+                      >
+                        <Stack gap={4} align="center">
+                          <Text size="sm" fw={600} tt="capitalize">
+                            {action}
+                          </Text>
+                          <Checkbox
+                            size="xs"
+                            color="green"
+                            aria-label={t`Toggle all ${action} scopes`}
+                            checked={st.checked}
+                            indeterminate={st.indeterminate}
+                            disabled={disabled || st.empty}
+                            onChange={() => toggleScopes(st.scopes)}
+                          />
+                        </Stack>
+                      </Table.Th>
+                    );
+                  })}
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {padTop > 0 && (
+                  <Table.Tr aria-hidden>
                     <Table.Td
-                      onClick={() => !disabled && toggleScopes(rg.scopes)}
-                      style={{ cursor: disabled ? "default" : "pointer" }}
-                      title={t`Toggle all ${rg.resource} scopes`}
-                    >
-                      <Group gap="xs" wrap="nowrap">
-                        <Checkbox
-                          size="sm"
-                          color="green"
-                          aria-label={t`Toggle all ${rg.resource} scopes`}
-                          checked={agg.checked}
-                          indeterminate={agg.indeterminate}
-                          disabled={disabled}
-                          onChange={() => toggleScopes(rg.scopes)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                        <Text size="sm" fw={700} ff="monospace" tt="uppercase">
-                          {rg.resource}
-                        </Text>
-                      </Group>
-                    </Table.Td>
-                    {inline
-                      ? actions.map((action) =>
-                        actionCell(action, rg.qualifiers[0].cells.get(action)),
-                      )
-                      : // spacer so the header stretches across the action columns
-                      actions.map((action) => (
-                        <Table.Td key={action} />
-                      ))}
+                      colSpan={actions.length + 1}
+                      style={{ height: padTop, padding: 0, border: 0 }}
+                    />
                   </Table.Tr>
-                );
-
-                if (inline) return header;
-
-                return (
-                  <Fragment key={rg.resource}>
-                    {header}
-                    {rg.qualifiers.map((ql) => {
-                      const meta = ql.qualifier
-                        ? qualifierBadge(ql.qualifier)
-                        : null;
-                      return (
-                        <Table.Tr key={`${rg.resource}:${ql.qualifier}`}>
-                          <Table.Td
-                            onClick={() => !disabled && toggleScopes(ql.scopes)}
-                            style={{
-                              cursor: disabled ? "default" : "pointer",
-                              paddingLeft: "2.25rem", // indent under the resource
-                            }}
-                            title={t`Toggle all ${rg.resource} ${ql.qualifier ?? ""
-                              } scopes`}
-                          >
-                            {meta ? (
-                              <Badge
-                                size="lg"
-                                radius="sm"
-                                variant="light"
-                                color={meta.color}
-                                style={{ textTransform: "none" }}
-                              >
-                                {meta.label}
-                              </Badge>
-                            ) : (
-                              <Text size="sm" c="dimmed">
-                                —
-                              </Text>
-                            )}
-                          </Table.Td>
-                          {actions.map((action) =>
-                            actionCell(action, ql.cells.get(action)),
-                          )}
-                        </Table.Tr>
-                      );
-                    })}
+                )}
+                {virtualItems.map((vi) => (
+                  <Fragment key={vi.key}>
+                    {renderFlatRow(flatRows[vi.index])}
                   </Fragment>
-                );
-              })}
-            </Table.Tbody>
-          </Table>
+                ))}
+                {padBottom > 0 && (
+                  <Table.Tr aria-hidden>
+                    <Table.Td
+                      colSpan={actions.length + 1}
+                      style={{ height: padBottom, padding: 0, border: 0 }}
+                    />
+                  </Table.Tr>
+                )}
+              </Table.Tbody>
+            </Table>
+          </div>
         )}
 
         {visibleUngrouped.length > 0 && (
@@ -485,6 +603,56 @@ export function UserScopesTab({
           </Button>
         </Group>
       </Stack>
+
+      {/* Floating reminder + Save, pinned to the viewport as soon as anything
+          changes, so the save action is reachable even far down a long list. */}
+      <Affix
+        position={{ bottom: 24, left: "50%" }}
+        style={{ transform: "translateX(-50%)" }}
+      >
+        <Transition mounted={dirty && !disabled} transition="slide-up" duration={150}>
+          {(styles) => (
+            <Paper
+              withBorder
+              shadow="md"
+              radius="md"
+              p="sm"
+              style={{
+                ...styles,
+                backgroundColor: "var(--mantine-color-white)",
+              }}
+            >
+              <Group gap="lg" wrap="nowrap">
+                <Group gap="xs" wrap="nowrap">
+                  <IconAlertTriangle size={18} />
+                  <Text size="sm" fw={500}>
+                    <Trans>You have unsaved scope changes</Trans>
+                  </Text>
+                </Group>
+                <Group gap="xs" wrap="nowrap">
+                  <Button
+                    variant="default"
+                    size="xs"
+                    disabled={saving}
+                    onClick={reset}
+                  >
+                    <Trans>Discard</Trans>
+                  </Button>
+                  <Button
+                    size="xs"
+                    color="green"
+                    leftSection={<IconDeviceFloppy size={14} />}
+                    loading={saving}
+                    onClick={() => void onSave()}
+                  >
+                    <Trans>Save</Trans>
+                  </Button>
+                </Group>
+              </Group>
+            </Paper>
+          )}
+        </Transition>
+      </Affix>
     </QueryState>
   );
 }
