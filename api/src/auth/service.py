@@ -126,7 +126,7 @@ def grant_password(
     # Always run a hash verification to reduce username-enumeration timing leaks.
     auth = _active_auth(db, user.id, "password") if user else None
     valid = verify_hashed_secret(password, auth.secret if auth else None)
-    log.info(f"User: {user.first_name if user else "Unknown"} {user.last_name if 
+    log.info(f"User: {user.first_name if user else "Unknown"} {user.last_name if
                                                                user else "Unknown"}" +
              f"Auth Method: password {auth.created_at if auth else "not allowed"}" +
              f"Password valid: {valid}")  # noqa: E501
@@ -323,7 +323,9 @@ def create_challenge(
                             description="email sender not configured")
 
         # generate link
-        link = f"{settings.app_base_url}/{locale}/auth/reset?code={code}&email={user.email}"
+        link = ""
+        if purpose == "password-reset":
+            link = f"{settings.app_base_url}/{locale}/auth/reset?code={code}&email={user.email}"
 
         # queue email
         email = queue_email(
