@@ -16,6 +16,11 @@ import { PasswordReset } from "../auth/PasswordReset";
 import { DocumentTemplateDetail } from "../document-templates/DocumentTemplateDetail";
 import { DocumentTemplatesList } from "../document-templates/DocumentTemplatesList";
 import { PublicDocumentTemplateEditor } from "../document-templates/PublicDocumentTemplateEditor";
+import { EmailDetail } from "../emails/EmailDetail";
+import { EmailsList } from "../emails/EmailsList";
+import { EmailSendersList } from "../email-senders/EmailSendersList";
+import { EmailTemplateDetail } from "../email-templates/EmailTemplateDetail";
+import { EmailTemplatesList } from "../email-templates/EmailTemplatesList";
 import { EventDetail } from "../events/EventDetail";
 import { EventsList } from "../events/EventsList";
 import { FilesList } from "../files/FilesList";
@@ -92,6 +97,23 @@ export function PageMain() {
                         <Route
                           path="files/:fileId"
                           element={<FileDetail />}
+                        />
+
+                        <Route path="emails" element={<EmailsList />} />
+                        <Route path="emails/:emailId" element={<EmailDetail />} />
+
+                        <Route
+                          path="email-templates"
+                          element={<EmailTemplatesList />}
+                        />
+                        <Route
+                          path="email-templates/:templateId"
+                          element={<EmailTemplateDetail />}
+                        />
+
+                        <Route
+                          path="email-senders"
+                          element={<EmailSendersList />}
                         />
                       </Route>
                     </Route>

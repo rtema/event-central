@@ -14,6 +14,7 @@ from src.auth.router import router as auth_router
 from src.config import settings
 from src.core.errors import register_exception_handlers
 from src.document_templates.router import router as document_templates_router
+from src.emails.router import email_router, email_senders_router, email_templates_router
 from src.events.router import router as events_router
 from src.files.router import router as files_router
 from src.invoices.router import router as invoicing_router
@@ -58,6 +59,9 @@ def create_app() -> FastAPI:
     app.include_router(payments_router)
     app.include_router(document_templates_router)
     app.include_router(files_router)
+    app.include_router(email_router)
+    app.include_router(email_senders_router)
+    app.include_router(email_templates_router)
 
     return app
 

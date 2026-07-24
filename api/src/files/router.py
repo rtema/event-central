@@ -31,9 +31,11 @@ from sqlalchemy.orm import Session
 from src.auth.deps import AuthenticatedActor, require_all_scopes
 from src.config import settings
 from src.core.deps import PageParams, get_db, page_params
+from src.core.errors import NotFoundError
 from src.core.schemas import make_pagination
 from src.core.scopes import SCOPE_FILES_READ_ALL
 from src.core.security import verify_download_token
+from src.emails.service import get_email_template, get_email_template_file
 from src.files import service
 from src.files.models import File
 from src.files.schemas import (
@@ -227,6 +229,33 @@ def create_file_link(
         db, file_id, expires_in=body.expires_in
     )
 
+@router.get(
+    "/public/email-templates/{email_template_id}/{email_template_file_id}.{ext}",
+    tags=["Files"],
+    summary="Access an image  public file",
+)
+def get_public_file(
+    email_template_id: uuid.UUID,
+    email_template_file_id: uuid.UUID,
+    ext: str,
+    locale: str | None = Query(None),
+    accept_language: str | None = Header(None, alias="Accept-Language"),
+    db: Session = Depends(get_db),
+) -> Response:
+    loc = _resolve_locale(locale, accept_language)
+
+    email_template = get_email_template(db, email_template_id)
+    email_template_file = get_email_template_file(
+        db, email_template_file_id)
+
+    # don't serve the file if any parent was deleted
+    if (email_template.deleted_at is not None or
+            email_template_file.deleted_at is not None):
+        raise NotFoundError(message="file unknown")
+
+    return _serve_file(email_template_file.file, loc)
+
+
 # @router.get(
 #     "/public/{access_key}",
 #     tags=["Files"],
@@ -244,7 +273,6 @@ def create_file_link(
 #         # Same response whether the key is missing or simply not published.
 #         return _expired_page(loc)
 #     return _serve_file(file, loc)
-
 
 @router.get(
     "/private/{access_key}",

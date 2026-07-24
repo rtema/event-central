@@ -12,6 +12,7 @@
     "Factur",
     "facturx",
     "fastapi",
+    "fernet",
     "getbands",
     "getcolors",
     "gethostname",

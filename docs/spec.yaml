@@ -28,6 +28,12 @@ tags:
     description: "Get all invoices/payments associated with an order"
   - name: "Document Templates"
     description: "Templates to generate documents"
+  - name: "Email Templates"
+    description: "Create, update, preview, and manage email templates and their referenced files"
+  - name: "Email Senders"
+    description: "Configure SMTP senders used to deliver email"
+  - name: "Emails"
+    description: "Inspect queued and delivered email and its attachments"
   - name: "Files"
     description: "Download files, secured with signed token as URL parameters"
   - name: "Misc"
@@ -587,7 +593,7 @@ paths:
   /api/v1/invoices/search:
     get:
       tags: ["Invoicing"]
-      operationId: "listInvoices"
+      operationId: "searchInvoices"
       summary: "Get all invoices"
       description: "Get a list of all invoices, returns at most 100 invoices"
       parameters:
@@ -1238,7 +1244,7 @@ paths:
       security:
         - oAuth: ["backend:write"]
 
-  /api/v1/document-templates/public/{documentTemplateId}:
+  /api/v1/document-templates/public/{publicDocumentTemplateId}:
     parameters:
       - $ref: "#/components/parameters/PublicDocumentTemplateId"
     get:
@@ -1279,6 +1285,516 @@ paths:
           $ref: "#/components/responses/Error"
       security:
         - oAuth: ["backend:write"]
+
+  /api/v1/email-templates:
+    get:
+      tags: ["Email Templates"]
+      operationId: "listEmailTemplates"
+      summary: "List email templates"
+      description: "Get a paginated list of email templates"
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: "List of email templates"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplatesListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+    post:
+      tags: ["Email Templates"]
+      operationId: "createEmailTemplate"
+      summary: "Create an email template"
+      description: "Create a new email template"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailTemplateRequest"
+      responses:
+        "200":
+          description: "Email template successfully created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplateResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:write"]
+
+  /api/v1/email-templates/{emailTemplateId}:
+    parameters:
+      - $ref: "#/components/parameters/EmailTemplateId"
+    get:
+      tags: ["Email Templates"]
+      operationId: "getEmailTemplate"
+      summary: "Get an email template"
+      description: "Get a single email template"
+      responses:
+        "200":
+          description: "Email template"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplateResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+    patch:
+      tags: ["Email Templates"]
+      operationId: "updateEmailTemplate"
+      summary: "Update an email template"
+      description: "Update an existing email template"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailTemplateRequest"
+      responses:
+        "200":
+          description: "Email template successfully updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplateResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:write"]
+    delete:
+      tags: ["Email Templates"]
+      operationId: "deleteEmailTemplate"
+      summary: "Delete an email template"
+      description: "Delete an email template"
+      responses:
+        "200":
+          description: "Email template successfully deleted"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplateResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:write"]
+
+  /api/v1/email-templates/{emailTemplateId}/files:
+    parameters:
+      - $ref: "#/components/parameters/EmailTemplateId"
+    get:
+      tags: ["Email Templates"]
+      operationId: "getEmailTemplateFiles"
+      summary: "Get all files referenced in an email template"
+      description: "Get all files referenced by an email template"
+      responses:
+        "200":
+          description: "Email template files"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplateFilesResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+    post:
+      tags: ["Email Templates"]
+      operationId: "createEmailTemplateFile"
+      summary: "Create a new email template file"
+      description: "Reference an existing file or upload base64-encoded file data for an email template"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailTemplateFileCreateRequest"
+      responses:
+        "200":
+          description: "Email template file successfully created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplateFileResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:write"]
+
+  /api/v1/email-templates/{emailTemplateId}/files/{emailTemplateFileId}:
+    parameters:
+      - $ref: "#/components/parameters/EmailTemplateId"
+      - $ref: "#/components/parameters/EmailTemplateFileId"
+    get:
+      tags: ["Email Templates"]
+      operationId: "getEmailTemplateFile"
+      summary: "Get an email template file"
+      description: "Get a single file referenced by an email template"
+      responses:
+        "200":
+          description: "Email template file"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplateFileResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+    patch:
+      tags: ["Email Templates"]
+      operationId: "updateEmailTemplateFile"
+      summary: "Update an email template file"
+      description: "Update the template-local key of an email template file"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailTemplateFileUpdateRequest"
+      responses:
+        "200":
+          description: "Email template file successfully updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplateFileResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:write"]
+    delete:
+      tags: ["Email Templates"]
+      operationId: "deleteEmailTemplateFile"
+      summary: "Remove an email template file"
+      description: "Remove a file reference from an email template"
+      responses:
+        "200":
+          description: "Email template file successfully removed"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplateFileResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:write"]
+
+  /api/v1/email-templates/{emailTemplateId}/versions:
+    parameters:
+      - $ref: "#/components/parameters/EmailTemplateId"
+    get:
+      tags: ["Email Templates"]
+      operationId: "getEmailTemplateVersions"
+      summary: "Get all versions (history) of the email template"
+      description: "Get the version history of an email template"
+      responses:
+        "200":
+          description: "Email template version history"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplateVersionsResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+
+  /api/v1/email-templates/{emailTemplateId}/preview:
+    parameters:
+      - $ref: "#/components/parameters/EmailTemplateId"
+    get:
+      tags: ["Email Templates"]
+      operationId: "getEmailTemplatePreview"
+      summary: "Generate a preview of the email template"
+      description: "Render a preview using representative user, event, order, and invoice data"
+      responses:
+        "200":
+          description: "Rendered email template preview"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailTemplatePreviewResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+
+  /api/v1/email-senders:
+    get:
+      tags: ["Email Senders"]
+      operationId: "listEmailSenders"
+      summary: "List email senders"
+      description: "Get a paginated list of configured email senders"
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: "List of email senders"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailSendersListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+    post:
+      tags: ["Email Senders"]
+      operationId: "createEmailSender"
+      summary: "Create an email sender"
+      description: "Create a new SMTP email sender configuration"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailSenderRequest"
+      responses:
+        "200":
+          description: "Email sender successfully created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailSenderResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:write"]
+
+  /api/v1/email-senders/search:
+    get:
+      tags: ["Email Senders"]
+      operationId: "searchEmailSenders"
+      summary: "Search email senders"
+      description: "Search configured email senders"
+      parameters:
+        - name: q
+          in: query
+          description: "Generic free-text search term"
+          schema:
+            type: string
+        - name: security
+          in: query
+          description: "Comma-separated security modes, e.g. starttls,ssl"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/SmtpSecurity"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: "Matching email senders"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailSenderSearchResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+
+  /api/v1/email-senders/{emailSenderId}:
+    parameters:
+      - $ref: "#/components/parameters/EmailSenderId"
+    get:
+      tags: ["Email Senders"]
+      operationId: "getEmailSender"
+      summary: "Get an email sender"
+      description: "Get a single email sender configuration"
+      responses:
+        "200":
+          description: "Email sender"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailSenderResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+    patch:
+      tags: ["Email Senders"]
+      operationId: "updateEmailSender"
+      summary: "Update an email sender"
+      description: "Replace the configured values of an email sender; a null password clears the stored password"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmailSenderRequest"
+      responses:
+        "200":
+          description: "Email sender successfully updated"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailSenderResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:write"]
+    delete:
+      tags: ["Email Senders"]
+      operationId: "deleteEmailSender"
+      summary: "Delete an email sender"
+      description: "Delete an email sender configuration"
+      responses:
+        "200":
+          description: "Email sender successfully deleted"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailSenderResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:write"]
+
+  /api/v1/emails:
+    get:
+      tags: ["Emails"]
+      operationId: "listEmails"
+      summary: "List emails"
+      description: "Get a paginated list of emails"
+      parameters:
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: "List of emails"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailsListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+
+  /api/v1/emails/search:
+    get:
+      tags: ["Emails"]
+      operationId: "searchEmails"
+      summary: "Search emails"
+      description: "Search emails using free-text and structured filters"
+      parameters:
+        - name: q
+          in: query
+          description: "Generic free-text search term"
+          schema:
+            type: string
+        - name: emailTemplate
+          in: query
+          description: "Comma-separated list of email templates"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: hasAttachments
+          in: query
+          description: "Comma-separated booleans, e.g. true,false"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: boolean
+        - name: emailSender
+          in: query
+          description: "Comma-separated list of email senders"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              type: string
+        - name: status
+          in: query
+          description: "Comma-separated email statuses"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/EmailStatus"
+        - name: locale
+          in: query
+          description: "Comma-separated locales, e.g. de,en"
+          style: form
+          explode: false
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Locale"
+        - $ref: "#/components/parameters/Limit"
+        - $ref: "#/components/parameters/Offset"
+      responses:
+        "200":
+          description: "Matching emails"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailSearchResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+
+  /api/v1/emails/{emailId}:
+    parameters:
+      - $ref: "#/components/parameters/EmailId"
+    get:
+      tags: ["Emails"]
+      operationId: "getEmail"
+      summary: "Get an email"
+      description: "Get a single email"
+      responses:
+        "200":
+          description: "Email"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+
+  /api/v1/emails/{emailId}/attachments:
+    parameters:
+      - $ref: "#/components/parameters/EmailId"
+    get:
+      tags: ["Emails"]
+      operationId: "getEmailAttachments"
+      summary: "Get all attachments of an email"
+      description: "Get metadata for all files attached to an email"
+      responses:
+        "200":
+          description: "Email attachments"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmailAttachmentsResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
 
   /api/v1/files/:
     get:
@@ -1601,6 +2117,38 @@ components:
       description: "ID of the document template file"
       schema:
         type: string
+    EmailTemplateId:
+      name: emailTemplateId
+      in: path
+      required: true
+      description: "ID of the email template"
+      schema:
+        type: string
+        format: uuid
+    EmailTemplateFileId:
+      name: emailTemplateFileId
+      in: path
+      required: true
+      description: "ID of the email template file"
+      schema:
+        type: string
+        format: uuid
+    EmailSenderId:
+      name: emailSenderId
+      in: path
+      required: true
+      description: "ID of the email sender"
+      schema:
+        type: string
+        format: uuid
+    EmailId:
+      name: emailId
+      in: path
+      required: true
+      description: "ID of the email"
+      schema:
+        type: string
+        format: uuid
     JobId:
       name: jobId
       in: path
@@ -3371,6 +3919,573 @@ components:
       properties:
         data:
           $ref: "#/components/schemas/DocumentTemplateFile"
+
+    # Email Senders
+    SmtpSecurity:
+      type: string
+      enum: [starttls, ssl, plain]
+      description: "Transport security mode used for the SMTP connection"
+
+    EmailSenderRequest:
+      type: object
+      description: "SMTP sender configuration used when creating or updating an email sender"
+      required: [label, fromEmail, host]
+      properties:
+        label:
+          type: object
+          description: "Localized labels keyed by locale"
+          additionalProperties:
+            type: string
+        fromEmail:
+          type: string
+          description: "Envelope/from email address"
+        fromName:
+          type: string
+          nullable: true
+          description: "Optional display name for the sender"
+        replyTo:
+          type: string
+          nullable: true
+          description: "Optional reply-to address"
+        host:
+          type: string
+          description: "SMTP server hostname"
+        port:
+          type: integer
+          default: 587
+          description: "SMTP server port"
+        security:
+          allOf:
+            - $ref: "#/components/schemas/SmtpSecurity"
+          default: starttls
+        username:
+          type: string
+          nullable: true
+          description: "Optional SMTP username"
+        password:
+          type: string
+          format: password
+          nullable: true
+          writeOnly: true
+          description: >
+            SMTP password. During update, null clears the stored password rather
+            than leaving it unchanged.
+        purposes:
+          type: array
+          default: []
+          description: "Purposes for which this sender may be selected, e.g. auth or default"
+          items:
+            type: string
+        priority:
+          type: integer
+          default: 0
+          description: "Selection priority; higher values win among senders serving the same purpose"
+
+    EmailSenderOut:
+      type: object
+      description: "Stored email sender configuration"
+      required: [id, fromEmail, host, port, security, priority, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        label:
+          allOf:
+            - $ref: "#/components/schemas/MultiLanguageLabel"
+          nullable: true
+        fromEmail:
+          type: string
+        fromName:
+          type: string
+          nullable: true
+        replyTo:
+          type: string
+          nullable: true
+        host:
+          type: string
+        port:
+          type: integer
+        security:
+          type: string
+        username:
+          type: string
+          nullable: true
+        password:
+          type: string
+          nullable: true
+          readOnly: true
+          description: "A fixed masked placeholder when a password is configured; otherwise null"
+        purposes:
+          type: array
+          default: []
+          items:
+            type: string
+        priority:
+          type: integer
+        createdBy:
+          allOf:
+            - $ref: "#/components/schemas/ActorIdentifier"
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        deletedBy:
+          allOf:
+            - $ref: "#/components/schemas/ActorIdentifier"
+          nullable: true
+        deletedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    EmailSenderResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/EmailSenderOut"
+
+    EmailSendersListResponse:
+      type: object
+      required: [data, pagination]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailSenderOut"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    EmailSenderSearchParams:
+      type: object
+      properties:
+        q:
+          type: string
+          nullable: true
+          description: "Generic free-text search term"
+        security:
+          type: array
+          nullable: true
+          description: "SMTP security modes to match"
+          items:
+            $ref: "#/components/schemas/SmtpSecurity"
+
+    EmailSenderSearchResponse:
+      type: object
+      required: [data, pagination, search]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailSenderOut"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        search:
+          $ref: "#/components/schemas/EmailSenderSearchParams"
+
+    # Email Templates
+    EmailTemplateFileCreateRequest:
+      type: object
+      description: "Create a file reference for an email template"
+      required: [key]
+      properties:
+        key:
+          type: string
+          description: "Template-local key used to reference the file"
+        fileId:
+          type: string
+          format: uuid
+          nullable: true
+          description: "ID of an existing file"
+        file:
+          type: string
+          format: base64
+          nullable: true
+          description: "Base64-encoded file contents"
+
+    EmailTemplateFileUpdateRequest:
+      type: object
+      required: [key]
+      properties:
+        key:
+          type: string
+          description: "Updated template-local key"
+
+    EmailTemplateFileOut:
+      type: object
+      description: "A file referenced by an email template"
+      required: [id, emailTemplateId, fileId, type]
+      properties:
+        id:
+          type: string
+          format: uuid
+        emailTemplateId:
+          type: string
+          format: uuid
+        fileId:
+          type: string
+          format: uuid
+        type:
+          type: string
+        key:
+          type: string
+          nullable: true
+        fontName:
+          type: string
+          nullable: true
+        fontWeight:
+          type: integer
+          nullable: true
+
+    EmailTemplateFileResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/EmailTemplateFileOut"
+
+    EmailTemplateVersionOut:
+      type: object
+      description: "Historical version of an email template"
+      required: [id, emailTemplateId, locale, label, subject, previewText, html, priority, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        emailTemplateId:
+          type: string
+          format: uuid
+        locale:
+          type: string
+        label:
+          $ref: "#/components/schemas/MultiLanguageLabel"
+        subject:
+          type: string
+        previewText:
+          type: string
+        html:
+          type: string
+        purposes:
+          type: array
+          default: []
+          items:
+            type: string
+        priority:
+          type: integer
+        createdBy:
+          allOf:
+            - $ref: "#/components/schemas/ActorIdentifier"
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    EmailTemplateVersionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/EmailTemplateVersionOut"
+
+    EmailTemplateRequest:
+      type: object
+      description: "Email template values used for create and update operations"
+      required: [locale, label, subject, previewText, html]
+      properties:
+        locale:
+          type: string
+        label:
+          type: object
+          description: "Localized labels keyed by locale"
+          additionalProperties:
+            type: string
+        subject:
+          type: string
+        previewText:
+          type: string
+        html:
+          type: string
+        purposes:
+          type: array
+          default: []
+          items:
+            type: string
+        priority:
+          type: integer
+          default: 0
+
+    EmailTemplateOut:
+      type: object
+      description: "Stored email template"
+      required: [id, locale, subject, previewText, html, priority, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        locale:
+          type: string
+        label:
+          allOf:
+            - $ref: "#/components/schemas/MultiLanguageLabel"
+          nullable: true
+        subject:
+          type: string
+        previewText:
+          type: string
+        html:
+          type: string
+        purposes:
+          type: array
+          default: []
+          items:
+            type: string
+        priority:
+          type: integer
+        createdBy:
+          allOf:
+            - $ref: "#/components/schemas/ActorIdentifier"
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        deletedBy:
+          allOf:
+            - $ref: "#/components/schemas/ActorIdentifier"
+          nullable: true
+        deletedAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    EmailTemplateResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/EmailTemplateOut"
+
+    EmailTemplateFilesResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailTemplateFileOut"
+
+    EmailTemplateVersionsResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailTemplateVersionOut"
+
+    EmailTemplatePreviewResponse:
+      type: object
+      required: [subject, body, versionId]
+      properties:
+        subject:
+          type: string
+        body:
+          type: string
+        versionId:
+          type: string
+          format: uuid
+
+    EmailTemplatesListResponse:
+      type: object
+      required: [data, pagination]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailTemplateOut"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    # Emails
+    EmailStatus:
+      type: string
+      enum: [scheduled, in-progress, delivered, retry, failed, cancelled]
+      description: "Email delivery status"
+
+    EmailAttachmentOut:
+      type: object
+      description: "File attached to an email"
+      required: [id, emailId, fileId, fileName]
+      properties:
+        id:
+          type: string
+          format: uuid
+        emailId:
+          type: string
+          format: uuid
+        fileId:
+          type: string
+          format: uuid
+        fileName:
+          type: string
+
+    EmailOut:
+      type: object
+      description: "Queued, in-progress, or delivered email"
+      required:
+        - id
+        - emailTemplateId
+        - emailSenderId
+        - locale
+        - to
+        - cc
+        - bcc
+        - sender
+        - subject
+        - body
+        - status
+        - scheduledAt
+        - sendAfter
+        - retryAfter
+        - retries
+        - deliveredAt
+        - serverResponse
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        emailTemplateId:
+          type: string
+          format: uuid
+        emailSenderId:
+          type: string
+          format: uuid
+        locale:
+          type: string
+        to:
+          type: array
+          items:
+            type: string
+        cc:
+          type: array
+          items:
+            type: string
+        bcc:
+          type: array
+          items:
+            type: string
+        sender:
+          type: string
+        subject:
+          type: string
+        body:
+          type: string
+        status:
+          type: string
+        scheduledAt:
+          type: string
+          format: date-time
+        sendAfter:
+          type: string
+          format: date-time
+        retryAfter:
+          type: string
+          format: date-time
+        retries:
+          type: integer
+        deliveredAt:
+          type: string
+          format: date-time
+        serverResponse:
+          type: string
+        createdBy:
+          allOf:
+            - $ref: "#/components/schemas/ActorIdentifier"
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    EmailResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: "#/components/schemas/EmailOut"
+
+    EmailAttachmentsResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailAttachmentOut"
+
+    EmailsListResponse:
+      type: object
+      required: [data, pagination]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailOut"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+
+    EmailSearchParams:
+      type: object
+      properties:
+        q:
+          type: string
+          nullable: true
+          description: "Generic free-text search term"
+        emailTemplate:
+          type: array
+          nullable: true
+          description: "Email templates to match"
+          items:
+            type: string
+        hasAttachments:
+          type: array
+          nullable: true
+          description: "Attachment-presence values to match"
+          items:
+            type: boolean
+        emailSender:
+          type: array
+          nullable: true
+          description: "Email senders to match"
+          items:
+            type: string
+        status:
+          type: array
+          nullable: true
+          description: "Email statuses to match"
+          items:
+            $ref: "#/components/schemas/EmailStatus"
+        locale:
+          type: array
+          nullable: true
+          description: "Locales to match"
+          items:
+            $ref: "#/components/schemas/Locale"
+
+    EmailSearchResponse:
+      type: object
+      required: [data, pagination, search]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/EmailOut"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+        search:
+          $ref: "#/components/schemas/EmailSearchParams"
 
     # Files
 

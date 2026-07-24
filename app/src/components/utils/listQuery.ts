@@ -15,7 +15,13 @@
 const PREFIX = "event-central.list-query:";
 
 /** Collections that persist their filter state. */
-export type ListKey = "users" | "invoices" | "events" | "orders" | "files";
+export type ListKey =
+  | "users"
+  | "invoices"
+  | "events"
+  | "orders"
+  | "files"
+  | "emails";
 
 function storage(): Storage | undefined {
   try {

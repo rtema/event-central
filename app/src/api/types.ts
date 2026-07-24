@@ -822,3 +822,233 @@ export interface TaxesListResponse {
 export interface AccountingEntitiesListResponse {
   data: string[];
 }
+
+// ---- Email senders --------------------------------------------------------
+
+/** Transport security mode for the SMTP connection. */
+export type SmtpSecurity = "starttls" | "ssl" | "plain";
+
+/**
+ * SMTP sender configuration payload (create + update).
+ *
+ * On update, a `null` password clears the stored password; omitting the field
+ * leaves the current password untouched.
+ */
+export interface EmailSenderRequest {
+  label?: Record<string, string>;
+  fromEmail: string;
+  fromName?: string | null;
+  replyTo?: string | null;
+  host: string;
+  port?: number;
+  security?: SmtpSecurity;
+  username?: string | null;
+  password?: string | null;
+  purposes?: string[];
+  priority?: number;
+}
+
+/** Stored SMTP sender configuration. */
+export interface EmailSender {
+  id: string;
+  label?: MultiLanguageLabel | null;
+  fromEmail: string;
+  fromName?: string | null;
+  replyTo?: string | null;
+  host: string;
+  port: number;
+  security: string;
+  username?: string | null;
+  /** Masked placeholder when a password is set, otherwise null. */
+  password?: string | null;
+  purposes?: string[];
+  priority: number;
+  createdBy?: string | null;
+  createdAt: string;
+  deletedBy?: string | null;
+  deletedAt?: string | null;
+}
+
+export interface EmailSenderResponse {
+  data: EmailSender;
+}
+
+export interface EmailSendersListResponse {
+  data: EmailSender[];
+  pagination?: Pagination;
+}
+
+export interface EmailSenderSearchParams {
+  q?: string;
+  security?: SmtpSecurity[];
+  limit?: number;
+  offset?: string;
+}
+
+export interface EmailSendersSearchResponse {
+  data: EmailSender[];
+  pagination?: Pagination;
+  search?: EmailSenderSearchParams;
+}
+
+// ---- Email templates ------------------------------------------------------
+
+export interface EmailTemplateRequest {
+  locale: string;
+  label?: Record<string, string>;
+  subject: string;
+  previewText: string;
+  html: string;
+  purposes?: string[];
+  priority?: number;
+}
+
+export interface EmailTemplate {
+  id: string;
+  locale: string;
+  label?: MultiLanguageLabel | null;
+  subject: string;
+  previewText: string;
+  html: string;
+  purposes?: string[];
+  priority: number;
+  createdBy?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedBy?: string | null;
+  deletedAt?: string | null;
+}
+
+export interface EmailTemplateResponse {
+  data: EmailTemplate;
+}
+
+export interface EmailTemplatesListResponse {
+  data: EmailTemplate[];
+  pagination?: Pagination;
+}
+
+export interface EmailTemplateVersion {
+  id: string;
+  emailTemplateId: string;
+  locale: string;
+  label?: MultiLanguageLabel;
+  subject: string;
+  previewText: string;
+  html: string;
+  purposes?: string[];
+  priority: number;
+  createdBy?: string | null;
+  createdAt: string;
+}
+
+export interface EmailTemplateVersionsResponse {
+  data: EmailTemplateVersion[];
+}
+
+export interface EmailTemplatePreview {
+  subject: string;
+  body: string;
+  versionId: string;
+}
+
+export type EmailTemplateFileType = "image" | "font";
+
+export interface EmailTemplateFile {
+  id: string;
+  emailTemplateId: string;
+  fileId: string;
+  type: string;
+  key?: string | null;
+  fontName?: string | null;
+  fontWeight?: number | null;
+}
+
+export interface EmailTemplateFilesResponse {
+  data: EmailTemplateFile[];
+}
+
+export interface EmailTemplateFileResponse {
+  data: EmailTemplateFile;
+}
+
+export interface EmailTemplateFileCreateRequest {
+  key: string;
+  fileId?: string | null;
+  /** Base64-encoded file contents for an inline upload. */
+  file?: string | null;
+}
+
+export interface EmailTemplateFileUpdateRequest {
+  key: string;
+}
+
+// ---- Emails ---------------------------------------------------------------
+
+export type EmailStatus =
+  | "scheduled"
+  | "in-progress"
+  | "delivered"
+  | "retry"
+  | "failed"
+  | "cancelled";
+
+/** A queued, in-progress, or delivered email. */
+export interface Email {
+  id: string;
+  emailTemplateId: string;
+  emailSenderId: string;
+  locale: string;
+  to: string[];
+  cc: string[];
+  bcc: string[];
+  sender: string;
+  subject: string;
+  body: string;
+  status: string;
+  scheduledAt: string;
+  sendAfter: string;
+  retryAfter: string;
+  retries: number;
+  deliveredAt: string;
+  serverResponse: string;
+  createdBy?: string | null;
+  createdAt: string;
+}
+
+export interface EmailResponse {
+  data: Email;
+}
+
+export interface EmailsListResponse {
+  data: Email[];
+  pagination?: Pagination;
+}
+
+export interface EmailAttachment {
+  id: string;
+  emailId: string;
+  fileId: string;
+  fileName: string;
+}
+
+export interface EmailAttachmentsResponse {
+  data: EmailAttachment[];
+}
+
+export interface EmailSearchParams {
+  q?: string;
+  emailTemplate?: string[];
+  hasAttachments?: boolean[];
+  emailSender?: string[];
+  status?: EmailStatus[];
+  locale?: Locale[];
+  limit?: number;
+  offset?: string;
+}
+
+export interface EmailsSearchResponse {
+  data: Email[];
+  pagination?: Pagination;
+  search?: EmailSearchParams;
+}

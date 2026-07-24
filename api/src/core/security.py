@@ -11,11 +11,13 @@ import hmac
 import secrets
 import uuid
 from dataclasses import dataclass
+from functools import lru_cache
 from typing import Any
 
 import jwt
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
+from cryptography.fernet import Fernet, MultiFernet
 
 from src.config import settings
 
@@ -207,3 +209,41 @@ def verify_download_token(token: str, *, resource: str) -> bool:
         hashlib.sha256,
     ).hexdigest()
     return hmac.compare_digest(expected, sig)
+
+
+# --------------------------------------------------------------------------- #
+# Data that is encrypted at rest
+# --------------------------------------------------------------------------- #
+
+def _secret_as_bytes(value: str | bytes) -> bytes:
+    return value.encode() if isinstance(value, str) else value
+
+
+@lru_cache(maxsize=1)
+def _fernet() -> MultiFernet:
+    """Build (once) the MultiFernet used for encrypt/decrypt.
+
+    Accepts a single key.
+    """
+    raw = settings.api_secrets_encryption_key
+
+    # The key is cast to an list to support zero downtime rotation later on.
+    keys = [raw]
+    if not keys[0]:
+        raise RuntimeError("api_secrets_encryption_key is not configured")
+
+    return MultiFernet([Fernet(_secret_as_bytes(k)) for k in keys])
+
+
+def encrypt_secret(plaintext: str) -> str:
+    """Encrypt a secret and return a URL-safe base64 token."""
+    return _fernet().encrypt(_secret_as_bytes(plaintext)).decode()
+
+
+def decrypt_secret(token: str) -> str:
+    """Decrypt a token produced by :func:`encrypt_secret`.
+
+    Raises ``cryptography.fernet.InvalidToken`` if the value was not produced by
+    one of the configured keys (e.g. legacy plaintext that was never migrated).
+    """
+    return _fernet().decrypt(_secret_as_bytes(token)).decode()

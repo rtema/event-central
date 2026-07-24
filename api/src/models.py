@@ -10,6 +10,14 @@ from src.document_templates.models import (
     DocumentTemplateFile,
     PublicDocumentTemplate,
 )
+from src.emails.models import (
+    Email,
+    EmailAttachment,
+    EmailSender,
+    EmailTemplate,
+    EmailTemplateFile,
+    EmailTemplateVersion,
+)
 from src.events.models import Event
 from src.files.models import File
 from src.invoices.models import Invoice, InvoiceLineItem, Tax
@@ -19,22 +27,47 @@ from src.payments.models import Payment
 from src.users.models import User, UserAuth, UserData, UserHistory, UserScope
 
 __all__ = [
+    # Auth
     "AuthChallenge",
     "RefreshToken",
-    "User",
-    "UserAuth",
-    "UserScope",
-    "UserHistory",
-    "UserData",
+
+    # Document templates
+    "DocumentTemplate",
+    "DocumentTemplateFile",
+    "PublicDocumentTemplate",
+
+    # Emails
+    "Email",
+    "EmailAttachment",
+    "EmailSender",
+    "EmailTemplate",
+    "EmailTemplateFile",
+    "EmailTemplateVersion",
+
+    # Events
     "Event",
-    "Order",
-    "Payment",
+
+    # Files
+    "File",
+
+    # Invoices
     "Invoice",
     "InvoiceLineItem",
     "Tax",
+
+    # Jobs
     "Job",
-    "DocumentTemplate",
-    "PublicDocumentTemplate",
-    "DocumentTemplateFile",
-    "File"
+
+    # Orders
+    "Order",
+
+    # Payments
+    "Payment",
+
+    # Users
+    "User",
+    "UserAuth",
+    "UserData",
+    "UserHistory",
+    "UserScope",
 ]

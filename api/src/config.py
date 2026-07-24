@@ -171,6 +171,15 @@ class Settings(BaseSettings):
     # -- Localization --------------------------------------------------------
     default_locale: str = "en"
 
+    # -- Email delivery  --------------------------------------------------------
+    api_email_max_retries: int = 10
+    api_email_backoff_minutes: int = 2
+    api_email_smtp_timeout_seconds: int = 20
+
+    # -- Email delivery  --------------------------------------------------------
+    api_secrets_encryption_key: str = Field(
+        default="change-me-in-production", min_length=8)
+
     @property
     def is_production(self) -> bool:
         return self.environment == "production"

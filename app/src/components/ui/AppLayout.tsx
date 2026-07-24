@@ -19,6 +19,9 @@ import {
   IconFileInvoice,
   IconFiles,
   IconLogout,
+  IconMail,
+  IconMailForward,
+  IconMailbox,
   IconPercentage,
   IconShoppingCart,
   IconTemplate,
@@ -155,6 +158,34 @@ export function AppLayout() {
             label={<Trans>Files</Trans>}
             leftSection={<IconFiles size={18} />}
             active={location.pathname.startsWith(`/${i18n.locale}/files`)}
+            onClick={close}
+          />
+          <NavLink
+            component={RouterNavLink}
+            to={`/${i18n.locale}/emails`}
+            label={<Trans>Emails</Trans>}
+            leftSection={<IconMailbox size={18} />}
+            active={location.pathname.startsWith(`/${i18n.locale}/emails`)}
+            onClick={close}
+          />
+          <NavLink
+            component={RouterNavLink}
+            to={`/${i18n.locale}/email-templates`}
+            label={<Trans>Email templates</Trans>}
+            leftSection={<IconMailForward size={18} />}
+            active={location.pathname.startsWith(
+              `/${i18n.locale}/email-templates`,
+            )}
+            onClick={close}
+          />
+          <NavLink
+            component={RouterNavLink}
+            to={`/${i18n.locale}/email-senders`}
+            label={<Trans>Email senders</Trans>}
+            leftSection={<IconMail size={18} />}
+            active={location.pathname.startsWith(
+              `/${i18n.locale}/email-senders`,
+            )}
             onClick={close}
           />
           <NavLink

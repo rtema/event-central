@@ -22,6 +22,7 @@ from sqlalchemy.orm import Session
 
 from src.config import settings
 from src.core.db import SessionLocal
+from src.emails.deps import drain_email_queue
 from src.jobs.models import Job
 from src.logger import configure_logger
 
@@ -32,7 +33,8 @@ log = logging.getLogger("app.worker")
 JobHandler = Callable[[dict[str, Any]], dict[str, Any] | None]
 _HANDLERS: dict[str, JobHandler] = {}
 
-POLL_INTERVAL_SECONDS = 2.0
+POLL_INTERVAL_SECONDS = 10.0
+EMAIL_BATCH_SIZE = 10
 _shutdown = False
 
 
@@ -48,7 +50,7 @@ def _now() -> dt.datetime:
     return dt.datetime.now(dt.UTC)
 
 
-def _claim_one(db: Session, worker_id: str) -> Job | None:
+def _claim_job(db: Session, worker_id: str) -> Job | None:
     stmt = (
         select(Job)
         .where(
@@ -109,27 +111,46 @@ def _install_signal_handlers() -> None:
 def run() -> None:
     configure_logger(settings.log_level)
     _install_signal_handlers()
+
     worker_id = _worker_id()
     log.info("queue handler started (%s); %d handler(s) registered",
              worker_id, len(_HANDLERS))
 
     while not _shutdown:
+        loop_started = time.monotonic()
+
+        # 1) generic jobs: claim and run one job this iteration
         with SessionLocal() as db:
             try:
-                job = _claim_one(db, worker_id)
-                if job is None:
+                job = _claim_job(db, worker_id)
+                if job is not None:
+                    job_id = job.id
+                    db.commit()  # release the row lock; job is marked running
+                    _run_job(db, job)
                     db.commit()
-                    time.sleep(POLL_INTERVAL_SECONDS)
-                    continue
-                job_id = job.id
-                db.commit()  # release the row lock; job is marked running
-
-                _run_job(db, job)
-                db.commit()
-                log.info("job %s finished with status=%s", job_id, job.status)
+                    log.info("job %s finished with status=%s",
+                             job_id, job.status)
+                else:
+                    db.commit()
             except Exception:
                 db.rollback()
                 log.exception("worker loop error")
-                time.sleep(POLL_INTERVAL_SECONDS)
+
+        # 2) email queue: deliver a batch of due, scheduled emails straight from
+        # the emails table. drain_email_queue claims rows with FOR UPDATE SKIP
+        # LOCKED, holds each lock for its send, and commits on its own session.
+        with SessionLocal() as db:
+            try:
+                sent = drain_email_queue(db, batch_size=EMAIL_BATCH_SIZE)
+                if sent:
+                    log.info("delivered %d queued email(s)", sent)
+            except Exception:
+                db.rollback()
+                log.exception("email drain error")
+
+        # Cap the loop to one pass per POLL_INTERVAL_SECONDS: sleep off whatever
+        # is left of the budget, or not at all if the pass already ran over.
+        elapsed = time.monotonic() - loop_started
+        time.sleep(max(0.0, POLL_INTERVAL_SECONDS - elapsed))
 
     log.info("queue handler stopped")

@@ -11,6 +11,8 @@ from alembic.environment import Any
 from pydantic import AfterValidator, BaseModel, BeforeValidator, ConfigDict
 from pydantic.alias_generators import to_camel
 
+from src.core.security import encrypt_secret
+
 Locale = Literal["de", "en"]
 Currency = Literal["EUR"]
 
@@ -138,3 +140,26 @@ class InvoiceRecipient(CamelModel):
     contact_cc_email: list[str] | None = None
     purchase_order_reference: str | None = None
     vat_id: str | None = None
+
+
+# Placeholder returned in place of a stored secret. It signals "a
+# password is set" without ever exposing the secret. When this exact value is
+# sent back on update, the service treats it as "unchanged" and keeps the
+# stored password (see src.emails.service._resolve_password).
+MASKED_SECRET = "******"
+
+
+def resolve_secret(incoming: str | None, existing: str | None) -> str | None:
+    """Decide what to store in EmailSender.password given the request value.
+
+    The API never receives (or returns) the real password directly:
+      - ``MASKED_SECRET``  -> keep the currently stored (encrypted) value
+      - falsy (None / "")  -> clear the password
+      - anything else      -> encrypt the new plaintext and store the ciphertext
+    ``existing`` is already ciphertext, so it is passed through untouched.
+    """
+    if incoming == MASKED_SECRET:
+        return existing
+    if not incoming:
+        return None
+    return encrypt_secret(incoming)
