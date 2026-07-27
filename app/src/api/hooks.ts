@@ -1,5 +1,7 @@
 import useSWR, { useSWRConfig } from "swr";
+import { parse as parseYaml } from "yaml";
 import { accountingEntitiesApi } from "./accountingEntities";
+import { docsApi } from "./docs";
 import { documentTemplatesApi } from "./documentTemplates";
 import { emailSendersApi } from "./emailSenders";
 import { emailTemplatesApi } from "./emailTemplates";
@@ -88,6 +90,9 @@ export const invKeys = {
   emailSearch: (key: string) => ["emails-search", key] as const,
   email: (id: string) => ["email", id] as const,
   emailAttachments: (id: string) => ["email", id, "attachments"] as const,
+
+  // Docs.
+  docsApiSpec: () => ["docs-api-spec"] as const,
 };
 
 // ---- Invoices -------------------------------------------------------------
@@ -369,6 +374,14 @@ export function useEmailAttachments(id: string | undefined) {
   return useSWR(id ? invKeys.emailAttachments(id) : null, () =>
     emailsApi.attachments(id!),
   );
+}
+
+// ---- Docs -----------------------------------------------------------------
+export function useDocsApiSpec() {
+  return useSWR(invKeys.docsApiSpec(), async () => {
+    const raw = await docsApi.spec();
+    return { raw, spec: parseYaml(raw) as Record<string, unknown> };
+  });
 }
 
 /** Revalidate every order-scoped cache entry after a mutation. */

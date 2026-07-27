@@ -13,6 +13,7 @@ import src.models  # type: ignore # noqa: F401 (import needs to be done here for
 from src.auth.router import router as auth_router
 from src.config import settings
 from src.core.errors import register_exception_handlers
+from src.docs.router import router as docs_router
 from src.document_templates.router import router as document_templates_router
 from src.emails.router import email_router, email_senders_router, email_templates_router
 from src.events.router import router as events_router
@@ -62,6 +63,7 @@ def create_app() -> FastAPI:
     app.include_router(email_router)
     app.include_router(email_senders_router)
     app.include_router(email_templates_router)
+    app.include_router(docs_router)
 
     return app
 

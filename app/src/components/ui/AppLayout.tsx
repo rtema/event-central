@@ -14,6 +14,7 @@ import {
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
+  IconApi,
   IconCalendarEvent,
   IconCash,
   IconFileInvoice,
@@ -202,6 +203,14 @@ export function AppLayout() {
             label={<Trans>Users</Trans>}
             leftSection={<IconUsers size={18} />}
             active={location.pathname.startsWith(`/${i18n.locale}/users`)}
+            onClick={close}
+          />
+          <NavLink
+            component={RouterNavLink}
+            to={`/${i18n.locale}/docs`}
+            label={<Trans>API docs</Trans>}
+            leftSection={<IconApi size={18} />}
+            active={location.pathname.startsWith(`/${i18n.locale}/docs`)}
             onClick={close}
           />
         </AppShell.Section>

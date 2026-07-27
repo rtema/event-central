@@ -13,18 +13,19 @@ import { SWRConfig } from "swr";
 import { AuthProvider } from "../auth/AuthProvider";
 import { Login } from "../auth/Login";
 import { PasswordReset } from "../auth/PasswordReset";
+import { DocsApi } from "../docs/DocsApi";
 import { DocumentTemplateDetail } from "../document-templates/DocumentTemplateDetail";
 import { DocumentTemplatesList } from "../document-templates/DocumentTemplatesList";
 import { PublicDocumentTemplateEditor } from "../document-templates/PublicDocumentTemplateEditor";
-import { EmailDetail } from "../emails/EmailDetail";
-import { EmailsList } from "../emails/EmailsList";
 import { EmailSendersList } from "../email-senders/EmailSendersList";
 import { EmailTemplateDetail } from "../email-templates/EmailTemplateDetail";
 import { EmailTemplatesList } from "../email-templates/EmailTemplatesList";
+import { EmailDetail } from "../emails/EmailDetail";
+import { EmailsList } from "../emails/EmailsList";
 import { EventDetail } from "../events/EventDetail";
 import { EventsList } from "../events/EventsList";
-import { FilesList } from "../files/FilesList";
 import { FileDetail } from "../files/FileDetail";
+import { FilesList } from "../files/FilesList";
 import { InvoiceCreate } from "../invoices/InvoiceCreate";
 import { InvoiceDetail } from "../invoices/InvoiceDetail";
 import { InvoicesList } from "../invoices/InvoicesList";
@@ -114,6 +115,11 @@ export function PageMain() {
                         <Route
                           path="email-senders"
                           element={<EmailSendersList />}
+                        />
+
+                        <Route
+                          path="docs"
+                          element={<DocsApi />}
                         />
                       </Route>
                     </Route>

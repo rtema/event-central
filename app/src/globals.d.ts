@@ -11,3 +11,11 @@ declare const __APP_BASE_URL__: string;
 declare const __APP_CLIENT_ID__: string;
 declare const __APP_PATH_PREFIX__: string;
 declare const __APP_DEFAULT_SCOPE__: string;
+
+// `import css from "...css?raw"` — verbatim file contents (Vite `?raw` suffix).
+// Vite's own `vite/client` types also declare this; kept here in case
+// `vite/client` isn't in the tsconfig `types`/`include`.
+declare module "*?raw" {
+  const content: string;
+  export default content;
+}

@@ -36,6 +36,8 @@ tags:
     description: "Inspect queued and delivered email and its attachments"
   - name: "Files"
     description: "Download files, secured with signed token as URL parameters"
+  - name: "Docs"
+    description: "Documentation"
   - name: "Misc"
     description: "General data that needs to be exposed"
 
@@ -2005,6 +2007,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ScopesListResponse"
+        default:
+          $ref: "#/components/responses/Error"
+      security:
+        - oAuth: ["backend:read"]
+
+  /api/v1/docs/api-spec.yaml:
+    get:
+      tags: ["Docs"]
+      operationId: "getApiSpec"
+      summary: "Get API spec"
+      description: "Returns the current version of the OpenAPI specification used"
+      responses:
+        "200":
+          description: "OpenAPI spec"
+          content:
+            application/yaml:
+              schema:
+                type: string
+                format: binary
         default:
           $ref: "#/components/responses/Error"
       security:

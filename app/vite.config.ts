@@ -134,6 +134,12 @@ export default defineConfig({
       },
     },
   },
+    optimizeDeps: {
+    // swagger-ui-react is only reached via a dynamic import (React.lazy),
+    // so Vite won't pre-bundle it unless we say so. Without this, the
+    // lazy chunk fails to load in dev.
+    include: ["swagger-ui-react"],
+  },
   server: {
     port: 7430,
   },
