@@ -1,0 +1,358 @@
+# Production stack.
+#
+# Secrets are provided as files under ./secrets (dev placeholders included).
+
+name: event-central
+
+# Only non-sensitive configuration lives here; secrets are mounted as files.
+x-api-env: &api-env
+  ENVIRONMENT: production
+  API_SERVICE_NAME: event-central
+  LOG_LEVEL: INFO
+  API_REGION: EU-01
+
+  DB_HOST: db
+  DB_PORT: 5432
+
+  API_BASE_URL: http://eu-01.event-central.tema-dev.de
+  APP_BASE_URL: http://event-central.tema-dev.de
+
+  STORAGE_PRIMARY_ENDPOINT: "http://storage-primary:${storage_primary_port}"
+  STORAGE_SECONDARY_ENDPOINT: "http://storage-secondary:${storage_secondary_port}"
+
+  CLAMAV_HOST: clamav
+  CLAMAV_PORT: 3310
+
+# Sensitive configuration
+x-api-secrets: &api-secrets
+  - db_password
+  - api_jwt_secret
+  - api_signed_url_secret
+  - storage_primary_user_key
+  - storage_primary_user_secret
+  - storage_secondary_user_key
+  - storage_secondary_user_secret
+  - api_secrets_encryption_key
+
+secrets:
+  db_password:
+    file: ./secrets/db_password
+  storage_root_key:
+    file: ./secrets/storage_root_key
+  storage_root_secret:
+    file: ./secrets/storage_root_secret
+  storage_primary_user_key:
+    file: ./secrets/storage_primary_user_key
+  storage_primary_user_secret:
+    file: ./secrets/storage_primary_user_secret
+  storage_secondary_user_key:
+    file: ./secrets/storage_secondary_user_key
+  storage_secondary_user_secret:
+    file: ./secrets/storage_secondary_user_secret
+  api_jwt_secret:
+    file: ./secrets/api_jwt_secret
+  api_signed_url_secret:
+    file: ./secrets/api_signed_url_secret
+  api_secrets_encryption_key:
+    file: ./secrets/api_secrets_encryption_key
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: event_central
+      POSTGRES_DB: event_central
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    # ports:
+    #   - "127.0.0.1:${db_port}:5432"
+    networks:
+      - db-backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U event_central"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+  
+  storage-primary:
+    image: rustfs/rustfs:latest # pin to a tested tag for reproducibility
+    environment:
+      RUSTFS_ADDRESS: "0.0.0.0:${storage_primary_port}"
+      RUSTFS_CONSOLE_ADDRESS: "0.0.0.0:${storage_primary_console_port}"
+      RUSTFS_CONSOLE_ENABLE: "true"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        export RUSTFS_ACCESS_KEY="$$(cat /run/secrets/storage_root_key)"
+        export RUSTFS_SECRET_KEY="$$(cat /run/secrets/storage_root_secret)"
+        exec rustfs /data
+    ports:
+      - "127.0.0.1:${storage_primary_port}:${storage_primary_port}"
+      - "127.0.0.1:${storage_primary_console_port}:${storage_primary_console_port}"
+    volumes:
+      - storage-primary-data:/data
+    secrets:
+      - storage_root_key
+      - storage_root_secret
+    networks:
+      - storage-backend
+    restart: unless-stopped
+
+  storage-secondary:
+    image: rustfs/rustfs:latest
+    environment:
+      RUSTFS_ADDRESS: "0.0.0.0:${storage_secondary_port}"
+      RUSTFS_CONSOLE_ADDRESS: "0.0.0.0:${storage_secondary_console_port}"
+      RUSTFS_CONSOLE_ENABLE: "true"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        export RUSTFS_ACCESS_KEY="$$(cat /run/secrets/storage_root_key)"
+        export RUSTFS_SECRET_KEY="$$(cat /run/secrets/storage_root_secret)"
+        exec rustfs /data
+    ports:
+      - "127.0.0.1:${storage_secondary_port}:${storage_secondary_port}"
+      - "127.0.0.1:${storage_secondary_console_port}:${storage_secondary_console_port}"
+    volumes:
+      - storage-secondary-data:/data
+    secrets:
+      - storage_root_key
+      - storage_root_secret
+    networks:
+      - storage-backend
+    restart: unless-stopped
+
+  storage-init:
+    build: ./storage/init
+    depends_on:
+      storage-primary:
+        condition: service_started
+      storage-secondary:
+        condition: service_started
+    environment:
+      PRIMARY_ENDPOINT: "http://storage-primary:${storage_primary_port}"
+      SECONDARY_ENDPOINT: "http://storage-secondary:${storage_secondary_port}"
+      PRIMARY_CONSOLE: "http://localhost:${storage_primary_console_port}"
+      SECONDARY_CONSOLE: "http://localhost:${storage_secondary_console_port}"
+      BUCKETS: "event-central,invoices,backups"
+    secrets:
+      - storage_root_key
+      - storage_root_secret
+      - storage_primary_user_key
+      - storage_primary_user_secret
+      - storage_secondary_user_key
+      - storage_secondary_user_secret
+    networks:
+      - storage-backend
+  
+  clamav:
+    image: clamav/clamav:1.4 
+    restart: unless-stopped
+    volumes:
+      - clamav-data:/var/lib/clamav 
+      - ./clamav/clamd.conf:/etc/clamav/clamd.conf:ro
+    healthcheck:
+      test: ["CMD", "clamdcheck.sh"]
+      interval: 60s
+      timeout: 10s
+      retries: 5
+      start_period: 6m # first boot downloads + loads the signature DB (~minutes)
+    mem_limit: 4g
+    # ports:
+    #   - "127.0.0.1:${clamd_port}:3310"
+    networks:
+      - clamav-backend
+
+  # Validator not running in production
+  # validator-mustang:
+  #   build:
+  #     context: ./validator-mustang
+  #     # Bump these two together to move to a newer engine; find the SHA at
+  #     # https://repo1.maven.org/maven2/org/mustangproject/Mustang-CLI/
+  #     args:
+  #       MUSTANG_VERSION: "2.24.0"
+  #       MUSTANG_SHA256: "e4904ffa0afdce3f5836dceb927c440a05ed5d60386fdd37e17a4b2f7652edbf"
+  #   image: mustang-validator:2.24.0
+  #   restart: unless-stopped
+  #   # ports:
+  #   #   - "127.0.0.1:${validator_mustang_port}:8080"
+  #   environment:
+  #     JAVA_MEM: "1G"
+  #     MAX_CONCURRENCY: "1" # keep small: each validation is a fresh JVM
+  #     VALIDATE_TIMEOUT: "120"
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+  #     interval: 30s
+  #     timeout: 5s
+  #     start_period: 20s
+  #     retries: 3
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         # veraPDF + JVM: give it headroom above JAVA_MEM.
+  #         memory: 2g
+
+  # Validator not running in production
+  # validator-kosit:
+  #   profiles: ["strict"]
+  #   build:
+  #     context: ./validator-kosit
+  #     # Bump these to move to newer official releases (find checksums next to the
+  #     # assets on the itplr-kosit GitHub releases pages).
+  #     args:
+  #       KOSIT_VALIDATOR_VERSION: "1.6.2"
+  #       KOSIT_VALIDATOR_SHA256: "244978514ad48f67c7573acfffc8f4fd73d81feda6f276710033f9913579857e"
+  #       XR_CONFIG_DATE: "2026-01-31"
+  #       XR_CONFIG_XR_VERSION: "3.0.2"
+  #       XR_CONFIG_SHA256: "6a5a5911a421b25fbc423f62f93f894df7b236f5d73ca4f84bb222a945082704"
+  #   image: kosit-xrechnung:1.6.2-2026-01-31
+  #   restart: unless-stopped
+  #   # ports:
+  #   #   - "127.0.0.1:${validator_kosit_port}:8081"
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-fsS", "http://localhost:8081/server/health"]
+  #     interval: 30s
+  #     timeout: 5s
+  #     start_period: 45s
+  #     retries: 5
+
+  api-worker-01:
+    build: api
+    command: ["web"]
+    environment: 
+      <<: *api-env
+      API_PORT: 7435
+      API_REGION: EU
+      API_NODE: 01
+    secrets: *api-secrets
+    ports:
+      - "127.0.0.1:7435:7435"
+    networks:
+      - db-backend
+      - storage-backend
+      - clamav-backend
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:7435/health').status==200 else 1)\""]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+  api-worker-02:
+    build: api
+    command: ["web"]
+    environment: 
+      <<: *api-env
+      API_PORT: 7436
+      API_NODE: 02
+    secrets: *api-secrets
+    ports:
+      - "127.0.0.1:7436:7436"
+    networks:
+      - db-backend
+      - storage-backend
+      - clamav-backend
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:7436/health').status==200 else 1)\""]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+  api-worker-03:
+    build: api
+    command: ["web"]
+    environment: 
+      <<: *api-env
+      API_PORT: 7437
+      API_NODE: 03
+    secrets: *api-secrets
+    ports:
+      - "127.0.0.1:7437:7437"
+    networks:
+      - db-backend
+      - storage-backend
+      - clamav-backend
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:7437/health').status==200 else 1)\""]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+  api-worker-04:
+    build: api
+    command: ["web"]
+    environment: 
+      <<: *api-env
+      API_PORT: 7438
+      API_NODE: 04
+    secrets: *api-secrets
+    ports:
+      - "127.0.0.1:7438:7438"
+    networks:
+      - db-backend
+      - storage-backend
+      - clamav-backend
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:7438/health').status==200 else 1)\""]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+  api-worker-05:
+    build: api
+    command: ["web"]
+    environment: 
+      <<: *api-env
+      API_PORT: 7439
+      API_NODE: 05
+    secrets: *api-secrets
+    ports:
+      - "127.0.0.1:7439:7439"
+    networks:
+      - db-backend
+      - storage-backend
+      - clamav-backend
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:7439/health').status==200 else 1)\""]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+  api-async-worker-01:
+    build: api
+    command: ["async_worker"]
+    environment: 
+      <<: *api-env
+      API_PORT: 7439
+      API_NODE: async-worker-01
+    secrets: *api-secrets
+    networks:
+      - db-backend
+      - storage-backend
+      - clamav-backend
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:7435/health').status==200 else 1)\""]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+
+  # One-shot: apply migrations, then exit. Other services wait on completion.
+  migrate:
+    build: api
+    command: ["migrate"]
+    environment: *api-env
+    secrets: *api-secrets
+    depends_on:
+      db:
+        condition: service_healthy
+
+
+networks:
+  db-backend:
+  storage-backend:
+  clamav-backend:
+
+volumes:
+  db-data:
+  storage-primary-data:
+  storage-secondary-data:
+  clamav-data:

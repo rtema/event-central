@@ -1,0 +1,187 @@
+# event-central.caddy — site blocks for a natively-hosted Caddy (HTTPS only)
+# =============================================================================
+# Import from the main Caddyfile with a TOP-level line, e.g.:
+#     import /etc/caddy/conf.d/*.caddy
+# Do NOT paste a global "{ ... }" block here — the host Caddyfile has the only
+# one allowed. Since Caddy is the public edge, do NOT set `trusted_proxies`
+# in that global block (it would let direct clients spoof X-Forwarded-For);
+# only add it if this host actually sits behind another load balancer.
+#
+# Upstreams are the ports compose publishes on 127.0.0.1:
+#   api workers:  7435-7439 (hardcoded in compose.yml)
+#   storage:      ${storage_*_port} / ${storage_*_console_port} (from .env)
+# The {$...} placeholders read from Caddy's OWN process environment — export
+# them for the Caddy service or replace with the literal ports from your .env.
+#
+# TLS: bare hostnames => automatic certs, HTTPS on 443, auto HTTP->HTTPS
+# redirect on 80. Only TLS 1.2/1.3 accepted (see tls_modern snippet).
+#
+# Body size: app max file size is 50MB. Upload routes allow 50MB; everything
+# else is capped at 10MB (over-limit => 413). NB: Caddy parses "MB" as
+# 1,000,000 bytes (decimal); use "MiB" if you meant binary, and add a little
+# headroom if clients wrap uploads (multipart/encoding).
+# =============================================================================
+
+# ── Reusable snippets (defined before use) ───────────────────────────────────
+(tls_modern) {
+	tls {
+		# Drop legacy TLS 1.0/1.1. Use `protocols tls1.3` for 1.3-only (stricter,
+		# but rejects some older API clients/SDKs). Cipher suites and curves are
+		# left at Caddy's defaults, which are already AEAD-only and hardened.
+		protocols tls1.2 tls1.3
+	}
+}
+
+(sec_headers) {
+	header {
+		# Enforce HTTPS in browsers. Add includeSubDomains/preload only once
+		# EVERY subdomain of tema-dev.de is HTTPS.
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options    "nosniff"
+		X-Frame-Options           "SAMEORIGIN"
+		Referrer-Policy           "strict-origin-when-cross-origin"
+		# Don't advertise the server software.
+		-Server
+	}
+}
+
+# ── API worker pool ──────────────────────────────────────────────────────────
+eu-01.event-central.tema-dev.de {
+
+	import tls_modern
+	import sec_headers
+	encode zstd gzip
+
+	log {
+		output stdout
+		format json
+	}
+
+  max_size 50MB
+
+	reverse_proxy \
+		127.0.0.1:7435 \
+		127.0.0.1:7436 \
+		127.0.0.1:7437 \
+		127.0.0.1:7438 \
+		127.0.0.1:7439 {
+
+		lb_policy       least_conn
+		lb_try_duration 5s
+		lb_try_interval 250ms
+
+		health_uri      /health
+		health_interval 10s
+		health_timeout  3s
+		health_status   200
+
+		fail_duration 30s
+		max_fails     3
+	}
+}
+
+# ── RustFS storage nodes ─────────────────────────────────────────────────────
+# Each node is split across two hostnames (one upstream port each), mirroring
+# the four ports compose publishes on 127.0.0.1:
+#   storage-01         -> {$storage_primary_port}           (S3 API,  primary)
+#   storage-01-console -> {$storage_primary_console_port}   (console, primary)
+#   storage-02         -> {$storage_secondary_port}         (S3 API,  secondary)
+#   storage-02-console -> {$storage_secondary_console_port} (console, secondary)
+# The S3 API is served at the host root (no /api/ prefix) so path-style and
+# virtual-host-style S3 addressing both work for presigned-URL traffic.
+
+# ── RustFS primary — S3 API ──────────────────────────────────────────────────
+storage-01.event-central.tema-dev.de {
+
+	import tls_modern
+	import sec_headers
+	encode zstd gzip
+
+	# SECURITY: this publishes the S3 API to the public internet (needed if
+	# clients hit presigned URLs directly). If only the app talks to storage,
+	# it does so over the internal compose network and this host can be locked
+	# down. Restrict to trusted networks by uncommenting — everything else is
+	# refused:
+	# @external not remote_ip 203.0.113.0/24 198.51.100.7
+	# abort @external
+
+	log {
+		output stdout
+		format json
+	}
+
+	# S3 API carries the file bytes → allow the full 50MB.
+	request_body {
+		max_size 50MB
+	}
+	reverse_proxy 127.0.0.1:7450
+}
+
+# ── RustFS primary — admin console ───────────────────────────────────────────
+storage-01-console.event-central.tema-dev.de {
+
+	import tls_modern
+	import sec_headers
+	encode zstd gzip
+
+	# SECURITY: this is the storage ADMIN console. Strongly recommended to
+	# restrict to trusted networks — uncomment and set your CIDRs; everything
+	# else is refused:
+	# @external not remote_ip 203.0.113.0/24 198.51.100.7
+	# abort @external
+
+	log {
+		output stdout
+		format json
+	}
+
+	# Console = management calls (object uploads go via the S3 API host) → 10MB.
+	# Bump this if you rely on uploading large objects through the console UI.
+	request_body {
+		max_size 10MB
+	}
+	reverse_proxy 127.0.0.1:7451
+}
+
+# ── RustFS secondary — S3 API ────────────────────────────────────────────────
+storage-02.event-central.tema-dev.de {
+
+	import tls_modern
+	import sec_headers
+	encode zstd gzip
+
+	# @external not remote_ip 203.0.113.0/24 198.51.100.7
+	# abort @external
+
+	log {
+		output stdout
+		format json
+	}
+
+	request_body {
+		max_size 50MB
+	}
+	reverse_proxy 127.0.0.1:7452
+}
+
+# ── RustFS secondary — admin console ─────────────────────────────────────────
+storage-02-console.event-central.tema-dev.de {
+
+	import tls_modern
+	import sec_headers
+	encode zstd gzip
+
+	# SECURITY: admin console — restrict to trusted networks.
+	# @external not remote_ip 203.0.113.0/24 198.51.100.7
+	# abort @external
+
+	log {
+		output stdout
+		format json
+	}
+
+	request_body {
+		max_size 10MB
+	}
+	reverse_proxy 127.0.0.1:7453
+}

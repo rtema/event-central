@@ -1,45 +1,26 @@
 # Local development stack.
 #
-# Brings up Postgres and MinIO, runs migrations once, then starts the web and
-# queue handlers. The web port is published directly; a reverse proxy / TLS
-# terminator will be added separately later.
-#
-#   docker compose up --build
-#
-# Scale the web tier horizontally:
-#   docker compose up --scale web=3
-#
-# Run an ad-hoc backup / restore:
-#   docker compose run --rm backup
-#   docker compose run --rm cli restore --key backups/eventcentral-<ts>.dump
-#
 # Secrets are provided as files under ./secrets (dev placeholders included).
-# In production, supply them via your orchestrator's secret store (the app
-# reads any setting from /run/secrets/<field_name>).
 
 name: event-central-dev
 
 # Only non-sensitive configuration lives here; secrets are mounted as files.
-x-app-env: &app-env
-  ENVIRONMENT: development
-  LOG_LEVEL: INFO
-  LOG_FORMAT: json
-  S3_PRIMARY_ENDPOINT: http://minio:9000
-  S3_PRIMARY_ACCESS_KEY: minioadmin
-  S3_PRIMARY_BUCKET: event-central
-  # OpenObserve log shipping (optional). Uncomment to enable; otherwise logs
-  # are emitted as JSON on stdout for a collector to ship.
-  # OPENOBSERVE_URL: http://openobserve:5080
-  # OPENOBSERVE_ORGANIZATION: default
-  # OPENOBSERVE_STREAM: event_central
-  # OPENOBSERVE_TOKEN: <base64 user:password>
+# x-api-env: &api-env
+#   ENVIRONMENT: development
+#   API_SERVICE_NAME: event-central
+#   LOG_LEVEL: INFO
+#   API_REGION: DEV
 
-x-app-secrets: &app-secrets
-  - db_password
-  - storage_primary_user_key
-  - storage_primary_user_secret
-  - storage_secondary_user_key
-  - storage_secondary_user_secret
+# Sensitive configuration
+# x-api-secrets: &api-secrets
+#   - db_password
+#   - api_jwt_secret
+#   - api_signed_url_secret
+#   - storage_primary_user_key
+#   - storage_primary_user_secret
+#   - storage_secondary_user_key
+#   - storage_secondary_user_secret
+#   - api_secrets_encryption_key
 
 secrets:
   db_password:
@@ -56,6 +37,12 @@ secrets:
     file: ./secrets/storage_secondary_user_key
   storage_secondary_user_secret:
     file: ./secrets/storage_secondary_user_secret
+  api_jwt_secret:
+    file: ./secrets/api_jwt_secret
+  api_signed_url_secret:
+    file: ./secrets/api_signed_url_secret
+  api_secrets_encryption_key:
+    file: ./secrets/api_secrets_encryption_key
 
 services:
   db:
@@ -69,13 +56,14 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
     ports:
-      - 53542:5432
+      - "${db_port}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U event_central"]
       interval: 5s
       timeout: 3s
       retries: 10
     restart: unless-stopped
+
   storage-primary:
     image: rustfs/rustfs:latest # pin to a tested tag for reproducibility
     environment:
@@ -146,12 +134,12 @@ services:
       - storage_secondary_user_secret
     networks:
       - storage-backend
-  
+
   clamav:
-    image: clamav/clamav:1.4 
+    image: clamav/clamav:1.4
     restart: unless-stopped
     volumes:
-      - clamav-data:/var/lib/clamav 
+      - clamav-data:/var/lib/clamav
       - ./clamav/clamd.conf:/etc/clamav/clamd.conf:ro
     healthcheck:
       test: ["CMD", "clamdcheck.sh"]
@@ -163,6 +151,7 @@ services:
     ports:
       - "${clamd_port}:3310"
 
+  # Validator ONLY running in production
   validator-mustang:
     build:
       context: ./validator-mustang
@@ -177,7 +166,7 @@ services:
       - "${validator_mustang_port}:8080"
     environment:
       JAVA_MEM: "1G"
-      MAX_CONCURRENCY: "1"     # keep small: each validation is a fresh JVM
+      MAX_CONCURRENCY: "1" # keep small: each validation is a fresh JVM
       VALIDATE_TIMEOUT: "120"
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
@@ -190,6 +179,8 @@ services:
         limits:
           # veraPDF + JVM: give it headroom above JAVA_MEM.
           memory: 2g
+
+  # Validator ONLY running in production
   validator-kosit:
     profiles: ["strict"]
     build:
@@ -212,7 +203,6 @@ services:
       timeout: 5s
       start_period: 45s
       retries: 5
-
 
 networks:
   storage-backend:

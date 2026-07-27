@@ -197,8 +197,9 @@ def list_all_accounting_entities(db: Session) -> list[str]:
         .distinct()\
         .order_by(Invoice.accounting_entity)
 
-    # type: ignore see stmt, none is not allowed
-    accounting_entities: list[str] = list(db.execute(stmt).scalars().all())
+    # see stmt, none is not allowed, therefore type: ignore is ok
+    accounting_entities: list[str] = list(
+        db.execute(stmt).scalars().all())  # type: ignore
 
     return accounting_entities
 

@@ -73,6 +73,8 @@ class Settings(BaseSettings):
     api_log_format: Literal["json", "text"] = "json"
     api_host: str = "0.0.0.0"  # noqa: S104 - intentional inside a container
     api_port: int = 7435
+    api_region: str = "UNDEFINED"
+    api_node: str = "UNDEFINED"
 
     # -- Database -----------------------------------------------------------
     # The SQLAlchemy URL is assembled from these individual parts (see the
@@ -82,7 +84,7 @@ class Settings(BaseSettings):
     db_user: str = "event_central"
     db_password: str = "event_central"
     db_host: str = "127.0.0.1"
-    db_port: int = 53542
+    db_port: int = 7480
     db_name: str = "event_central"
     api_db_scheme: str = "postgresql+psycopg"
     api_db_pool_size: int = 5

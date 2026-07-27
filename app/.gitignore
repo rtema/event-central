@@ -24,8 +24,5 @@ temp
 *.sln
 *.sw?
 .env
+tsconfig.node.tsbuildinfo
 
-# huge files
-public/videos
-src/assets/originals
-videos

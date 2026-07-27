@@ -17,6 +17,7 @@ import os
 import sys
 
 from src.config import settings
+from src.logger import configure_logger
 
 
 def _run_web() -> None:
@@ -32,14 +33,15 @@ def _run_web() -> None:
     )
 
 
-# def _run_migrate() -> None:
-#     from alembic import command
-#     from alembic.config import Config
+def _run_migrate() -> None:
+    from alembic import command
+    from alembic.config import Config
 
-#     configure_logger(settings.log_level)
-#     cfg = Config("alembic.ini")
-#     cfg.set_main_option("sqlalchemy.url", settings.database_url)
-#     command.upgrade(cfg, "head")
+    configure_logger(settings.log_level)
+    cfg = Config("alembic.ini")
+    cfg.set_main_option("sqlalchemy.url", settings.database_url)
+    command.upgrade(cfg, "head")
+
 
 def _run_seed(email: str | None, password: str | None) -> None:
     from src.services import seed
@@ -77,6 +79,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     # Mode: web
     mode_parser.add_parser("web", help="Run the web request handler")
+
+    # Mode: async_worker
+    mode_parser.add_parser("async_worker", help="Async handler for jobs + emails")
 
     # Mode: seed
     seed_parser = mode_parser.add_parser(
@@ -121,7 +126,7 @@ def main(argv: list[str] | None = None) -> None:
         "web": _run_web,
         "smoke_test": _run_smoke_tests,
         "async_worker": _run_async_worker,
-        # "migrate": _run_migrate,
+        "migrate": _run_migrate,
         # "backup": _run_backup,
     }
 

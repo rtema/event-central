@@ -8,6 +8,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from src.auth.deps import AuthenticatedActor, require_all_scopes
+from src.config import settings
 from src.core.deps import PageParams, get_db, page_params
 from src.core.schemas import MultiLanguageLabel, make_pagination
 from src.core.scopes import SCOPE_BACKEND_READ_ALL, build_scope_catalogue
@@ -21,7 +22,11 @@ router = APIRouter(tags=["Misc"])
 
 @router.get("/health", summary="Liveness probe")
 def health() -> dict[str, str]:
-    return {"status": "ok"}
+    return {
+        "status": "ok",
+        "region": settings.api_region,
+        "node": settings.api_node,
+    }
 
 
 @router.get("/health/db", summary="DB connection probe")
@@ -44,7 +49,8 @@ def health_storage(db: Session = Depends(get_db)) -> JSONResponse:
 def list_taxes(
     page: PageParams = Depends(page_params),
     db: Session = Depends(get_db),
-    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ_ALL)),
+    _: AuthenticatedActor = Depends(
+        require_all_scopes(SCOPE_BACKEND_READ_ALL)),
 ) -> TaxesListResponse:
     taxes, total = invoicing_service.list_all_taxes(
         db, limit=page.limit, offset=page.offset)
@@ -62,7 +68,8 @@ def list_taxes(
 )
 def list_accounting_entities(
     db: Session = Depends(get_db),
-    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ_ALL)),
+    _: AuthenticatedActor = Depends(
+        require_all_scopes(SCOPE_BACKEND_READ_ALL)),
 ) -> AccountingEntitiesListResponse:
     return AccountingEntitiesListResponse(
         data=invoicing_service.list_all_accounting_entities(db),
@@ -75,8 +82,9 @@ def list_accounting_entities(
     summary="List scopes"
 )
 def list_scopes(
-     db: Session = Depends(get_db),
-    _: AuthenticatedActor = Depends(require_all_scopes(SCOPE_BACKEND_READ_ALL)),
+    db: Session = Depends(get_db),
+    _: AuthenticatedActor = Depends(
+        require_all_scopes(SCOPE_BACKEND_READ_ALL)),
 ) -> ScopesListResponse:
     scope_catalogue = build_scope_catalogue(db, include_dynamic=True)
     return ScopesListResponse(
