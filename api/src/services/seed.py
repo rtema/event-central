@@ -41,6 +41,10 @@ def create_secrets(secret_names: list[str], directory: str) -> bool:
     configure_logger(settings.log_level)
     log = logging.getLogger("seed")
 
+    # skip this step in production
+    if settings.environment == "production":
+        return True
+
     target = Path(directory)
 
     # --- Make sure the target directory exists and is usable ---------------
