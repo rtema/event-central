@@ -14,8 +14,8 @@ x-api-env: &api-env
   DB_HOST: db
   DB_PORT: 5432
 
-  API_BASE_URL: http://eu-01.event-central.tema-dev.de
-  APP_BASE_URL: http://event-central.tema-dev.de
+  API_BASE_URL: https://eu-01.event-central.tema-dev.de
+  APP_BASE_URL: https://event-central.tema-dev.de
 
   STORAGE_PRIMARY_ENDPOINT: "http://storage-primary:${storage_primary_port}"
   STORAGE_SECONDARY_ENDPOINT: "http://storage-secondary:${storage_secondary_port}"
