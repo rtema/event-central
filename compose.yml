@@ -132,7 +132,7 @@ services:
   storage-init:
     build: ./storage/init
     container_name: event-central-storage-init
-    restart: never
+    restart: no
     depends_on:
       storage-primary:
         condition: service_started
@@ -357,7 +357,7 @@ services:
     build: api
     command: ["migrate"]
     container_name: event-central-api-migrate
-    restart: never
+    restart: no
     environment: 
       <<: *api-env
     secrets: *api-secrets
