@@ -62,6 +62,9 @@ importers:
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
+      pnpm:
+        specifier: ^11.17.0
+        version: 11.17.0
       postcss-preset-mantine:
         specifier: ^1.18.0
         version: 1.18.0(postcss@8.5.15)
@@ -108,6 +111,9 @@ importers:
       axios-mock-adapter:
         specifier: ^2.1.0
         version: 2.1.0(axios@1.17.0)
+      basic-ftp:
+        specifier: ^6.0.2
+        version: 6.0.2
       deepl-node:
         specifier: ^1.27.0
         version: 1.27.0
@@ -1194,6 +1200,10 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
+  basic-ftp@6.0.2:
+    resolution: {integrity: sha512-R6+2Z0XWky9zW2iGyUC8OYG91rwSU+zWS1Iiai9lC31vC1nuHOUbBMeOG5yv5+oZOqnqKvggVkE+UbAoJWWuAg==}
+    engines: {node: '>=10.0.0'}
+
   binary-extensions@2.3.0:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
@@ -2002,6 +2012,11 @@ packages:
   picomatch@4.0.4:
     resolution: {integrity: sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==}
     engines: {node: '>=12'}
+
+  pnpm@11.17.0:
+    resolution: {integrity: sha512-zKPOozKtJUu4QUX5ZtGfSHlhUhA0b8kseaBH8joNezzKPDeS8AdrofGDHSd++88KkRmzGppg7Kf7PWIx8zHvcg==}
+    engines: {node: '>=22.13'}
+    hasBin: true
 
   pofile@1.1.4:
     resolution: {integrity: sha512-r6Q21sKsY1AjTVVjOuU02VYKVNQGJNQHjTIvs4dEbeuuYfxgYk/DGD2mqqq4RDaVkwdSq0VEtmQUOPe/wH8X3g==}
@@ -3997,6 +4012,8 @@ snapshots:
 
   baseline-browser-mapping@2.10.35: {}
 
+  basic-ftp@6.0.2: {}
+
   binary-extensions@2.3.0: {}
 
   bl@4.1.0:
@@ -4799,6 +4816,8 @@ snapshots:
   picomatch@2.3.2: {}
 
   picomatch@4.0.4: {}
+
+  pnpm@11.17.0: {}
 
   pofile@1.1.4: {}
 
