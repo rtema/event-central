@@ -59,6 +59,8 @@ secrets:
 services:
   db:
     build: ./db
+    container_name: event-central-db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: event_central
       POSTGRES_DB: event_central
@@ -76,10 +78,11 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
-    restart: unless-stopped
   
   storage-primary:
     build: ./storage/rustfs
+    container_name: event-central-storage-primary
+    restart: unless-stopped
     environment:
       RUSTFS_ADDRESS: "0.0.0.0:${storage_primary_port}"
       RUSTFS_CONSOLE_ADDRESS: "0.0.0.0:${storage_primary_console_port}"
@@ -100,10 +103,11 @@ services:
       - storage_root_secret
     networks:
       - storage-backend
-    restart: unless-stopped
 
   storage-secondary:
     build: ./storage/rustfs
+    container_name: event-central-storage-secondary
+    restart: unless-stopped
     environment:
       RUSTFS_ADDRESS: "0.0.0.0:${storage_secondary_port}"
       RUSTFS_CONSOLE_ADDRESS: "0.0.0.0:${storage_secondary_console_port}"
@@ -124,10 +128,11 @@ services:
       - storage_root_secret
     networks:
       - storage-backend
-    restart: unless-stopped
 
   storage-init:
     build: ./storage/init
+    container_name: event-central-storage-init
+    restart: never
     depends_on:
       storage-primary:
         condition: service_started
@@ -151,6 +156,7 @@ services:
   
   clamav:
     image: clamav/clamav:1.4 
+    container_name: event-central-clamav
     restart: unless-stopped
     volumes:
       - clamav-data:/var/lib/clamav 
@@ -223,10 +229,11 @@ services:
   api-worker-01:
     build: api
     command: ["web"]
+    container_name: event-central-api-worker-01
+    restart: unless-stopped
     environment: 
       <<: *api-env
       API_PORT: 7435
-      API_REGION: EU
       API_NODE: 01
     secrets: *api-secrets
     ports:
@@ -243,6 +250,8 @@ services:
   api-worker-02:
     build: api
     command: ["web"]
+    container_name: event-central-api-worker-02
+    restart: unless-stopped
     environment: 
       <<: *api-env
       API_PORT: 7436
@@ -262,6 +271,8 @@ services:
   api-worker-03:
     build: api
     command: ["web"]
+    container_name: event-central-api-worker-03
+    restart: unless-stopped
     environment: 
       <<: *api-env
       API_PORT: 7437
@@ -281,6 +292,8 @@ services:
   api-worker-04:
     build: api
     command: ["web"]
+    container_name: event-central-api-worker-04
+    restart: unless-stopped
     environment: 
       <<: *api-env
       API_PORT: 7438
@@ -300,6 +313,8 @@ services:
   api-worker-05:
     build: api
     command: ["web"]
+    container_name: event-central-api-worker-05
+    restart: unless-stopped
     environment: 
       <<: *api-env
       API_PORT: 7439
@@ -319,6 +334,8 @@ services:
   api-async-worker-01:
     build: api
     command: ["async_worker"]
+    container_name: event-central-api-async-worker-01
+    restart: unless-stopped
     environment: 
       <<: *api-env
       API_PORT: 7439
@@ -339,7 +356,10 @@ services:
   migrate:
     build: api
     command: ["migrate"]
-    environment: *api-env
+    container_name: event-central-api-migrate
+    restart: never
+    environment: 
+      <<: *api-env
     secrets: *api-secrets
     depends_on:
       db:
