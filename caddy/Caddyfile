@@ -24,60 +24,62 @@
 
 # ── Reusable snippets (defined before use) ───────────────────────────────────
 (tls_modern) {
-	tls {
-		# Drop legacy TLS 1.0/1.1. Use `protocols tls1.3` for 1.3-only (stricter,
-		# but rejects some older API clients/SDKs). Cipher suites and curves are
-		# left at Caddy's defaults, which are already AEAD-only and hardened.
-		protocols tls1.2 tls1.3
-	}
+        tls {
+                # Drop legacy TLS 1.0/1.1. Use `protocols tls1.3` for 1.3-only (stricter,
+                # but rejects some older API clients/SDKs). Cipher suites and curves are
+                # left at Caddy's defaults, which are already AEAD-only and hardened.
+                protocols tls1.2 tls1.3
+        }
 }
 
 (sec_headers) {
-	header {
-		# Enforce HTTPS in browsers. Add includeSubDomains/preload only once
-		# EVERY subdomain of tema-dev.de is HTTPS.
-		Strict-Transport-Security "max-age=31536000"
-		X-Content-Type-Options    "nosniff"
-		X-Frame-Options           "SAMEORIGIN"
-		Referrer-Policy           "strict-origin-when-cross-origin"
-		# Don't advertise the server software.
-		-Server
-	}
+        header {
+                # Enforce HTTPS in browsers. Add includeSubDomains/preload only once
+                # EVERY subdomain of tema-dev.de is HTTPS.
+                Strict-Transport-Security "max-age=31536000"
+                X-Content-Type-Options    "nosniff"
+                X-Frame-Options           "SAMEORIGIN"
+                Referrer-Policy           "strict-origin-when-cross-origin"
+                # Don't advertise the server software.
+                -Server
+        }
 }
 
 # ── API worker pool ──────────────────────────────────────────────────────────
 eu-01.event-central.tema-dev.de {
 
-	import tls_modern
-	import sec_headers
-	encode zstd gzip
+        import tls_modern
+        import sec_headers
+        encode zstd gzip
 
-	log {
-		output stdout
-		format json
-	}
+        log {
+                output stdout
+                format json
+        }
 
-  max_size 50MB
+        request_body {
+                max_size 50MB
+        }
 
-	reverse_proxy \
-		127.0.0.1:7435 \
-		127.0.0.1:7436 \
-		127.0.0.1:7437 \
-		127.0.0.1:7438 \
-		127.0.0.1:7439 {
+        reverse_proxy \
+                127.0.0.1:7435 \
+                127.0.0.1:7436 \
+                127.0.0.1:7437 \
+                127.0.0.1:7438 \
+                127.0.0.1:7439 {
 
-		lb_policy       least_conn
-		lb_try_duration 5s
-		lb_try_interval 250ms
+                lb_policy       least_conn
+                lb_try_duration 5s
+                lb_try_interval 250ms
 
-		health_uri      /health
-		health_interval 10s
-		health_timeout  3s
-		health_status   200
+                health_uri      /health
+                health_interval 10s
+                health_timeout  3s
+                health_status   200
 
-		fail_duration 30s
-		max_fails     3
-	}
+                fail_duration 30s
+                max_fails     3
+        }
 }
 
 # ── RustFS storage nodes ─────────────────────────────────────────────────────
@@ -93,95 +95,95 @@ eu-01.event-central.tema-dev.de {
 # ── RustFS primary — S3 API ──────────────────────────────────────────────────
 storage-01.event-central.tema-dev.de {
 
-	import tls_modern
-	import sec_headers
-	encode zstd gzip
+        import tls_modern
+        import sec_headers
+        encode zstd gzip
 
-	# SECURITY: this publishes the S3 API to the public internet (needed if
-	# clients hit presigned URLs directly). If only the app talks to storage,
-	# it does so over the internal compose network and this host can be locked
-	# down. Restrict to trusted networks by uncommenting — everything else is
-	# refused:
-	# @external not remote_ip 203.0.113.0/24 198.51.100.7
-	# abort @external
+        # SECURITY: this publishes the S3 API to the public internet (needed if
+        # clients hit presigned URLs directly). If only the app talks to storage,
+        # it does so over the internal compose network and this host can be locked
+        # down. Restrict to trusted networks by uncommenting — everything else is
+        # refused:
+        # @external not remote_ip 203.0.113.0/24 198.51.100.7
+        # abort @external
 
-	log {
-		output stdout
-		format json
-	}
+        log {
+                output stdout
+                format json
+        }
 
-	# S3 API carries the file bytes → allow the full 50MB.
-	request_body {
-		max_size 50MB
-	}
-	reverse_proxy 127.0.0.1:7450
+        # S3 API carries the file bytes → allow the full 50MB.
+        request_body {
+                max_size 50MB
+        }
+        reverse_proxy 127.0.0.1:7450
 }
 
 # ── RustFS primary — admin console ───────────────────────────────────────────
 storage-01-console.event-central.tema-dev.de {
 
-	import tls_modern
-	import sec_headers
-	encode zstd gzip
+        import tls_modern
+        import sec_headers
+        encode zstd gzip
 
-	# SECURITY: this is the storage ADMIN console. Strongly recommended to
-	# restrict to trusted networks — uncomment and set your CIDRs; everything
-	# else is refused:
-	# @external not remote_ip 203.0.113.0/24 198.51.100.7
-	# abort @external
+        # SECURITY: this is the storage ADMIN console. Strongly recommended to
+        # restrict to trusted networks — uncomment and set your CIDRs; everything
+        # else is refused:
+        # @external not remote_ip 203.0.113.0/24 198.51.100.7
+        # abort @external
 
-	log {
-		output stdout
-		format json
-	}
+        log {
+                output stdout
+                format json
+        }
 
-	# Console = management calls (object uploads go via the S3 API host) → 10MB.
-	# Bump this if you rely on uploading large objects through the console UI.
-	request_body {
-		max_size 10MB
-	}
-	reverse_proxy 127.0.0.1:7451
+        # Console = management calls (object uploads go via the S3 API host) → 10MB.
+        # Bump this if you rely on uploading large objects through the console UI.
+        request_body {
+                max_size 10MB
+        }
+        reverse_proxy 127.0.0.1:7451
 }
 
 # ── RustFS secondary — S3 API ────────────────────────────────────────────────
 storage-02.event-central.tema-dev.de {
 
-	import tls_modern
-	import sec_headers
-	encode zstd gzip
+        import tls_modern
+        import sec_headers
+        encode zstd gzip
 
-	# @external not remote_ip 203.0.113.0/24 198.51.100.7
-	# abort @external
+        # @external not remote_ip 203.0.113.0/24 198.51.100.7
+        # abort @external
 
-	log {
-		output stdout
-		format json
-	}
+        log {
+                output stdout
+                format json
+        }
 
-	request_body {
-		max_size 50MB
-	}
-	reverse_proxy 127.0.0.1:7452
+        request_body {
+                max_size 50MB
+        }
+        reverse_proxy 127.0.0.1:7452
 }
 
 # ── RustFS secondary — admin console ─────────────────────────────────────────
 storage-02-console.event-central.tema-dev.de {
 
-	import tls_modern
-	import sec_headers
-	encode zstd gzip
+        import tls_modern
+        import sec_headers
+        encode zstd gzip
 
-	# SECURITY: admin console — restrict to trusted networks.
-	# @external not remote_ip 203.0.113.0/24 198.51.100.7
-	# abort @external
+        # SECURITY: admin console — restrict to trusted networks.
+        # @external not remote_ip 203.0.113.0/24 198.51.100.7
+        # abort @external
 
-	log {
-		output stdout
-		format json
-	}
+        log {
+                output stdout
+                format json
+        }
 
-	request_body {
-		max_size 10MB
-	}
-	reverse_proxy 127.0.0.1:7453
+        request_body {
+                max_size 10MB
+        }
+        reverse_proxy 127.0.0.1:7453
 }

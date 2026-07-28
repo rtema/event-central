@@ -58,7 +58,7 @@ secrets:
 
 services:
   db:
-    image: postgres:16
+    build: ./db
     environment:
       POSTGRES_USER: event_central
       POSTGRES_DB: event_central
@@ -79,7 +79,7 @@ services:
     restart: unless-stopped
   
   storage-primary:
-    image: rustfs/rustfs:latest # pin to a tested tag for reproducibility
+    build: ./storage/rustfs
     environment:
       RUSTFS_ADDRESS: "0.0.0.0:${storage_primary_port}"
       RUSTFS_CONSOLE_ADDRESS: "0.0.0.0:${storage_primary_console_port}"
@@ -103,7 +103,7 @@ services:
     restart: unless-stopped
 
   storage-secondary:
-    image: rustfs/rustfs:latest
+    build: ./storage/rustfs
     environment:
       RUSTFS_ADDRESS: "0.0.0.0:${storage_secondary_port}"
       RUSTFS_CONSOLE_ADDRESS: "0.0.0.0:${storage_secondary_console_port}"
