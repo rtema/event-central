@@ -42,7 +42,7 @@ COPY src ./src
 
 # Run as an unprivileged user.
 RUN useradd --create-home --uid 10001 app && chown -R app:app /app
-RUN addgroup -g 5000 secrets && addgroup app secrets
+RUN groupadd -g 5000 secrets && usermod -aG secrets app
 USER app
 
 # Default to the web handler; override with `queue`, `migrate`, etc.
