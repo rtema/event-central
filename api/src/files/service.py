@@ -27,6 +27,13 @@ from src.storage.s3 import get_storage
 
 logger = logging.getLogger(__name__)
 
+# Magic has false positives for application/SIMH-tape-data 
+# configure it so that this check is not run
+MAGIC_NO_CHECK_SIMH = 0x0800000  
+_magic_mime = magic.Magic(mime=True)
+magic.magic_setflags(_magic_mime.cookie, _magic_mime.flags | MAGIC_NO_CHECK_SIMH)
+
+
 # We never trust client-declared content types. The bytes are sniffed and only
 # an explicit allow-list is accepted; the declared extension must agree with the
 # sniffed mime. Tune this table for your product.
@@ -91,7 +98,7 @@ def _safe_extension(filename: str | None) -> str | None:
 
 def _sniff_mime(raw: bytes, *, image: Image.Image | None) -> str | None:
     try:
-        sniffed = magic.from_buffer(raw, mime=True)
+        sniffed = _magic_mime.from_buffer(raw)
     except Exception:
         logger.warning("libmagic sniff failed", exc_info=True)
         sniffed = None
