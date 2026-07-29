@@ -51,7 +51,7 @@ msgstr "Die Zugriffsrechte für diesen Benutzer wurden aktualisiert."
 msgid "Access key"
 msgstr "Zugriffstaste"
 
-#: src/components/ui/AppLayout.tsx:84
+#: src/components/ui/AppLayout.tsx:85
 msgid "Account menu"
 msgstr "Kontomenü"
 
@@ -171,6 +171,14 @@ msgstr "Betrag (EUR)"
 #: src/components/users/UsersList.tsx:232
 msgid "Any"
 msgstr "Irgendein"
+
+#: src/components/ui/AppLayout.tsx:211
+msgid "API docs"
+msgstr "API-Dokumentation"
+
+#: src/components/docs/DocsApi.tsx:45
+msgid "API documentation"
+msgstr "API-Dokumentation"
 
 #: src/components/invoices/InvoiceDetail.tsx:288
 msgid "Applied tax rates"
@@ -683,7 +691,7 @@ msgstr "Verwerfen"
 msgid "Document templates"
 msgstr "Dokumentvorlagen"
 
-#: src/components/ui/AppLayout.tsx:150
+#: src/components/ui/AppLayout.tsx:151
 msgid "Document Templates"
 msgstr "Dokumentvorlagen"
 
@@ -707,6 +715,10 @@ msgstr "PDF herunterladen"
 msgid "Download XRechnung"
 msgstr "XRechnung herunterladen"
 
+#: src/components/docs/DocsApi.tsx:73
+msgid "Download YAML"
+msgstr "YAML herunterladen"
+
 #: src/components/users/UsersList.tsx:216
 msgid "Dr."
 msgstr "Dr."
@@ -724,7 +736,7 @@ msgstr "Fällig"
 msgid "Due date"
 msgstr "Fälligkeitsdatum"
 
-#: src/components/ui/AppLayout.tsx:74
+#: src/components/ui/AppLayout.tsx:75
 msgid "E-invoicing console"
 msgstr "Konsole für die elektronische Rechnungsstellung"
 
@@ -795,17 +807,17 @@ msgid "Email preview"
 msgstr "E-Mail-Vorschau"
 
 #: src/components/email-senders/EmailSendersList.tsx:232
-#: src/components/ui/AppLayout.tsx:184
+#: src/components/ui/AppLayout.tsx:185
 msgid "Email senders"
 msgstr "E-Mail-Absender"
 
 #: src/components/email-templates/EmailTemplatesList.tsx:121
-#: src/components/ui/AppLayout.tsx:174
+#: src/components/ui/AppLayout.tsx:175
 msgid "Email templates"
 msgstr "E-Mail-Vorlagen"
 
 #: src/components/emails/EmailsList.tsx:105
-#: src/components/ui/AppLayout.tsx:166
+#: src/components/ui/AppLayout.tsx:167
 msgid "Emails"
 msgstr "E-Mails"
 
@@ -897,7 +909,7 @@ msgstr "Veranstaltungsbeginn"
 
 #: src/components/events/EventsList.tsx:65
 #: src/components/orders/OrdersList.tsx:121
-#: src/components/ui/AppLayout.tsx:134
+#: src/components/ui/AppLayout.tsx:135
 msgid "Events"
 msgstr "Veranstaltungen"
 
@@ -974,7 +986,7 @@ msgid "File removed"
 msgstr "Datei entfernt"
 
 #: src/components/files/FilesList.tsx:118
-#: src/components/ui/AppLayout.tsx:158
+#: src/components/ui/AppLayout.tsx:159
 msgid "Files"
 msgstr "Dateien"
 
@@ -1151,7 +1163,7 @@ msgstr "Rechnung erstellt"
 
 #: src/components/invoices/InvoicesList.tsx:176
 #: src/components/orders/OrderDetail.tsx:281
-#: src/components/ui/AppLayout.tsx:118
+#: src/components/ui/AppLayout.tsx:119
 msgid "Invoices"
 msgstr "Rechnungen"
 
@@ -1245,6 +1257,10 @@ msgstr "Gesamtsumme"
 #: src/components/invoices/InvoiceCreate.tsx:737
 msgid "Links & template"
 msgstr "Links & Vorlage"
+
+#: src/components/docs/DocsApi.tsx:97
+msgid "Loading viewer…"
+msgstr "Viewer wird geladen…"
 
 #: src/components/email-templates/EmailTemplateDetail.tsx:252
 #: src/components/email-templates/EmailTemplateForm.tsx:93
@@ -1471,6 +1487,10 @@ msgstr "Es wurden keine Absender gefunden, die diesen Filtern entsprechen."
 msgid "No senders yet. Add the first one."
 msgstr "Noch keine Absender. Fügen Sie den ersten hinzu."
 
+#: src/components/docs/DocsApi.tsx:87
+msgid "No specification available."
+msgstr "Es liegen keine Angaben vor."
+
 #: src/components/taxes/TaxesList.tsx:40
 msgid "No tax rates yet."
 msgstr "Es liegen noch keine Steuersätze vor."
@@ -1571,7 +1591,7 @@ msgstr "Bestell-Link"
 
 #: src/components/events/EventDetail.tsx:88
 #: src/components/orders/OrdersList.tsx:84
-#: src/components/ui/AppLayout.tsx:126
+#: src/components/ui/AppLayout.tsx:127
 msgid "Orders"
 msgstr "Bestellungen"
 
@@ -1633,7 +1653,7 @@ msgstr "Zahlung verbucht"
 
 #: src/components/orders/OrderDetail.tsx:284
 #: src/components/payments/PaymentsList.tsx:88
-#: src/components/ui/AppLayout.tsx:142
+#: src/components/ui/AppLayout.tsx:143
 msgid "Payments"
 msgstr "Zahlungen"
 
@@ -1850,6 +1870,10 @@ msgstr "Verweise auf Dateien"
 #: src/components/document-templates/DocumentTemplatesList.tsx:118
 msgid "Referenced when generating invoices by template."
 msgstr "Wird bei der Rechnungserstellung anhand einer Vorlage herangezogen."
+
+#: src/components/docs/DocsApi.tsx:64
+msgid "Refresh"
+msgstr "Aktualisieren"
 
 #: src/components/document-templates/DocumentTemplatePreview.tsx:86
 #: src/components/document-templates/DocumentTemplatePreview.tsx:91
@@ -2138,7 +2162,7 @@ msgstr "Anmelden"
 msgid "Sign in failed"
 msgstr "Anmeldung fehlgeschlagen"
 
-#: src/components/ui/AppLayout.tsx:105
+#: src/components/ui/AppLayout.tsx:106
 msgid "Sign out"
 msgstr "Abmelden"
 
@@ -2146,7 +2170,7 @@ msgstr "Abmelden"
 msgid "Sign-in methods configured for this user."
 msgstr "Für diesen Benutzer konfigurierte Anmeldemethoden."
 
-#: src/components/ui/AppLayout.tsx:94
+#: src/components/ui/AppLayout.tsx:95
 msgid "Signed in"
 msgstr "Angemeldet"
 
@@ -2255,7 +2279,7 @@ msgstr "Grund für die Steuerbefreiung"
 
 #: src/components/invoices/InvoiceCreate.tsx:562
 #: src/components/taxes/TaxesList.tsx:24
-#: src/components/ui/AppLayout.tsx:194
+#: src/components/ui/AppLayout.tsx:195
 msgid "Tax rates"
 msgstr "Steuersätze"
 
@@ -2297,6 +2321,10 @@ msgstr "Vorlage gespeichert"
 #: src/components/document-templates/PublicDocumentTemplateEditor.tsx:94
 msgid "Template updated"
 msgstr "Vorlage aktualisiert"
+
+#: src/components/docs/DocsApi.tsx:51
+msgid "The Event Central OpenAPI specification."
+msgstr "Die Event Central OpenAPI-Spezifikation."
 
 #: src/components/pages/NotFoundPage.tsx:16
 msgid "The page you are looking for doesn't exist."
@@ -2477,7 +2505,7 @@ msgstr "Benutzer wiederhergestellt"
 msgid "Username"
 msgstr "Benutzername"
 
-#: src/components/ui/AppLayout.tsx:202
+#: src/components/ui/AppLayout.tsx:203
 #: src/components/users/UsersList.tsx:191
 msgid "Users"
 msgstr "Benutzer"

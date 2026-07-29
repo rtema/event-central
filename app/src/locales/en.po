@@ -51,7 +51,7 @@ msgstr "Access has been updated for this user."
 msgid "Access key"
 msgstr ""
 
-#: src/components/ui/AppLayout.tsx:84
+#: src/components/ui/AppLayout.tsx:85
 msgid "Account menu"
 msgstr "Account menu"
 
@@ -170,6 +170,14 @@ msgstr ""
 #: src/components/users/UsersList.tsx:214
 #: src/components/users/UsersList.tsx:232
 msgid "Any"
+msgstr ""
+
+#: src/components/ui/AppLayout.tsx:211
+msgid "API docs"
+msgstr ""
+
+#: src/components/docs/DocsApi.tsx:45
+msgid "API documentation"
 msgstr ""
 
 #: src/components/invoices/InvoiceDetail.tsx:288
@@ -683,7 +691,7 @@ msgstr ""
 msgid "Document templates"
 msgstr ""
 
-#: src/components/ui/AppLayout.tsx:150
+#: src/components/ui/AppLayout.tsx:151
 msgid "Document Templates"
 msgstr ""
 
@@ -707,6 +715,10 @@ msgstr ""
 msgid "Download XRechnung"
 msgstr ""
 
+#: src/components/docs/DocsApi.tsx:73
+msgid "Download YAML"
+msgstr ""
+
 #: src/components/users/UsersList.tsx:216
 msgid "Dr."
 msgstr ""
@@ -724,7 +736,7 @@ msgstr ""
 msgid "Due date"
 msgstr ""
 
-#: src/components/ui/AppLayout.tsx:74
+#: src/components/ui/AppLayout.tsx:75
 msgid "E-invoicing console"
 msgstr ""
 
@@ -795,17 +807,17 @@ msgid "Email preview"
 msgstr ""
 
 #: src/components/email-senders/EmailSendersList.tsx:232
-#: src/components/ui/AppLayout.tsx:184
+#: src/components/ui/AppLayout.tsx:185
 msgid "Email senders"
 msgstr ""
 
 #: src/components/email-templates/EmailTemplatesList.tsx:121
-#: src/components/ui/AppLayout.tsx:174
+#: src/components/ui/AppLayout.tsx:175
 msgid "Email templates"
 msgstr ""
 
 #: src/components/emails/EmailsList.tsx:105
-#: src/components/ui/AppLayout.tsx:166
+#: src/components/ui/AppLayout.tsx:167
 msgid "Emails"
 msgstr ""
 
@@ -897,7 +909,7 @@ msgstr ""
 
 #: src/components/events/EventsList.tsx:65
 #: src/components/orders/OrdersList.tsx:121
-#: src/components/ui/AppLayout.tsx:134
+#: src/components/ui/AppLayout.tsx:135
 msgid "Events"
 msgstr ""
 
@@ -974,7 +986,7 @@ msgid "File removed"
 msgstr ""
 
 #: src/components/files/FilesList.tsx:118
-#: src/components/ui/AppLayout.tsx:158
+#: src/components/ui/AppLayout.tsx:159
 msgid "Files"
 msgstr ""
 
@@ -1151,7 +1163,7 @@ msgstr ""
 
 #: src/components/invoices/InvoicesList.tsx:176
 #: src/components/orders/OrderDetail.tsx:281
-#: src/components/ui/AppLayout.tsx:118
+#: src/components/ui/AppLayout.tsx:119
 msgid "Invoices"
 msgstr ""
 
@@ -1244,6 +1256,10 @@ msgstr ""
 
 #: src/components/invoices/InvoiceCreate.tsx:737
 msgid "Links & template"
+msgstr ""
+
+#: src/components/docs/DocsApi.tsx:97
+msgid "Loading viewer…"
 msgstr ""
 
 #: src/components/email-templates/EmailTemplateDetail.tsx:252
@@ -1471,6 +1487,10 @@ msgstr ""
 msgid "No senders yet. Add the first one."
 msgstr ""
 
+#: src/components/docs/DocsApi.tsx:87
+msgid "No specification available."
+msgstr ""
+
 #: src/components/taxes/TaxesList.tsx:40
 msgid "No tax rates yet."
 msgstr ""
@@ -1571,7 +1591,7 @@ msgstr ""
 
 #: src/components/events/EventDetail.tsx:88
 #: src/components/orders/OrdersList.tsx:84
-#: src/components/ui/AppLayout.tsx:126
+#: src/components/ui/AppLayout.tsx:127
 msgid "Orders"
 msgstr ""
 
@@ -1633,7 +1653,7 @@ msgstr ""
 
 #: src/components/orders/OrderDetail.tsx:284
 #: src/components/payments/PaymentsList.tsx:88
-#: src/components/ui/AppLayout.tsx:142
+#: src/components/ui/AppLayout.tsx:143
 msgid "Payments"
 msgstr ""
 
@@ -1849,6 +1869,10 @@ msgstr ""
 
 #: src/components/document-templates/DocumentTemplatesList.tsx:118
 msgid "Referenced when generating invoices by template."
+msgstr ""
+
+#: src/components/docs/DocsApi.tsx:64
+msgid "Refresh"
 msgstr ""
 
 #: src/components/document-templates/DocumentTemplatePreview.tsx:86
@@ -2138,7 +2162,7 @@ msgstr "Sign in"
 msgid "Sign in failed"
 msgstr "Sign in failed"
 
-#: src/components/ui/AppLayout.tsx:105
+#: src/components/ui/AppLayout.tsx:106
 msgid "Sign out"
 msgstr "Sign out"
 
@@ -2146,7 +2170,7 @@ msgstr "Sign out"
 msgid "Sign-in methods configured for this user."
 msgstr "Sign-in methods configured for this user."
 
-#: src/components/ui/AppLayout.tsx:94
+#: src/components/ui/AppLayout.tsx:95
 msgid "Signed in"
 msgstr "Signed in"
 
@@ -2255,7 +2279,7 @@ msgstr ""
 
 #: src/components/invoices/InvoiceCreate.tsx:562
 #: src/components/taxes/TaxesList.tsx:24
-#: src/components/ui/AppLayout.tsx:194
+#: src/components/ui/AppLayout.tsx:195
 msgid "Tax rates"
 msgstr ""
 
@@ -2296,6 +2320,10 @@ msgstr ""
 
 #: src/components/document-templates/PublicDocumentTemplateEditor.tsx:94
 msgid "Template updated"
+msgstr ""
+
+#: src/components/docs/DocsApi.tsx:51
+msgid "The Event Central OpenAPI specification."
 msgstr ""
 
 #: src/components/pages/NotFoundPage.tsx:16
@@ -2477,7 +2505,7 @@ msgstr "User restored"
 msgid "Username"
 msgstr ""
 
-#: src/components/ui/AppLayout.tsx:202
+#: src/components/ui/AppLayout.tsx:203
 #: src/components/users/UsersList.tsx:191
 msgid "Users"
 msgstr "Users"
